@@ -35,14 +35,19 @@ export const AppSidebar = () => {
       <div className="flex justify-between items-center p-4 border-b">
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <span className="text-sahara-700 font-bold text-2xl">صحارى</span>
+            <img 
+              src="/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png" 
+              alt="صحارى" 
+              className="h-10 w-auto"
+            />
+            <span className="text-[#0FA0CE] font-bold text-xl">صحارى</span>
           </div>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setCollapsed(!collapsed)}
-          className="hover:bg-sahara-100 text-sahara-700"
+          className="hover:bg-[#D3E4FD] text-[#0EA5E9]"
         >
           {collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
         </Button>
@@ -56,7 +61,7 @@ export const AppSidebar = () => {
               variant="ghost"
               className={cn(
                 "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
-                "hover:bg-sahara-100 hover:text-sahara-700"
+                "hover:bg-[#D3E4FD] hover:text-[#0EA5E9]"
               )}
             >
               <item.icon size={20} />
@@ -72,8 +77,8 @@ export const AppSidebar = () => {
           "flex items-center gap-3 px-4 py-2", 
           collapsed && "justify-center"
         )}>
-          <div className="w-8 h-8 rounded-full bg-sahara-200 flex items-center justify-center">
-            <User size={16} className="text-sahara-700" />
+          <div className="w-8 h-8 rounded-full bg-[#D3E4FD] flex items-center justify-center">
+            <User size={16} className="text-[#0EA5E9]" />
           </div>
           {!collapsed && <div className="text-sm">أحمد محمد</div>}
         </div>
@@ -81,7 +86,7 @@ export const AppSidebar = () => {
           variant="ghost"
           className={cn(
             "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
-            "hover:bg-sahara-100 hover:text-destructive text-muted-foreground",
+            "hover:bg-[#FDE1D3] hover:text-red-500 text-muted-foreground",
             collapsed && "justify-center"
           )}
         >
