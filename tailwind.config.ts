@@ -15,7 +15,8 @@ export default {
 			padding: '2rem',
 			screens: {
 				'2xl': '1400px'
-			}
+			},
+			direction: 'rtl',
 		},
 		extend: {
 			colors: {
@@ -27,6 +28,19 @@ export default {
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
+				},
+				sahara: {
+					50: '#f0f9ff',
+					100: '#dff2ff',
+					200: '#b8e5ff',
+					300: '#78d1ff',
+					400: '#37b7fd',
+					500: '#0e9be8',
+					600: '#0080cc',
+					700: '#0165a5',
+					800: '#065688',
+					900: '#0b4872',
+					950: '#072d49',
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
