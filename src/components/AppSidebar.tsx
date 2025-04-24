@@ -14,17 +14,23 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const { t, language } = useLanguage();
 
   const menuItems = [
-    { icon: Home, name: "الرئيسية", path: "/" },
-    { icon: FileText, name: "طلب شهادة عمل", path: "/work-certificate" },
-    { icon: ClipboardCheck, name: "أمر مهمة", path: "/mission-order" },
-    { icon: Calendar, name: "طلب إجازة", path: "/vacation-request" },
-    { icon: Settings, name: "الإعدادات", path: "/settings" },
+    { icon: Home, name: 'home', path: "/" },
+    { icon: FileText, name: 'workCertificate', path: "/work-certificate" },
+    { icon: ClipboardCheck, name: 'missionOrder', path: "/mission-order" },
+    { icon: Calendar, name: 'vacationRequest', path: "/vacation-request" },
+    { icon: Settings, name: 'settings', path: "/settings" },
   ];
+
+  const chevronIcon = language === 'ar' ? 
+    (collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />) :
+    (collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />);
 
   return (
     <div className={cn(
@@ -40,7 +46,7 @@ export const AppSidebar = () => {
               alt="صحارى" 
               className="h-10 w-auto"
             />
-            <span className="text-[#0FA0CE] font-bold text-xl">صحارى</span>
+            <span className="text-[#0FA0CE] font-bold text-xl">Sahara</span>
           </div>
         )}
         <Button
@@ -49,7 +55,7 @@ export const AppSidebar = () => {
           onClick={() => setCollapsed(!collapsed)}
           className="hover:bg-[#D3E4FD] text-[#0EA5E9]"
         >
-          {collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+          {chevronIcon}
         </Button>
       </div>
       
@@ -65,7 +71,7 @@ export const AppSidebar = () => {
               )}
             >
               <item.icon size={20} />
-              {!collapsed && <span>{item.name}</span>}
+              {!collapsed && <span>{t(item.name)}</span>}
             </Button>
           </Link>
         ))}
@@ -80,7 +86,7 @@ export const AppSidebar = () => {
           <div className="w-8 h-8 rounded-full bg-[#D3E4FD] flex items-center justify-center">
             <User size={16} className="text-[#0EA5E9]" />
           </div>
-          {!collapsed && <div className="text-sm">أحمد محمد</div>}
+          {!collapsed && <div className="text-sm">Ahmed Mohamed</div>}
         </div>
         <Button
           variant="ghost"
@@ -91,7 +97,7 @@ export const AppSidebar = () => {
           )}
         >
           <LogOut size={18} />
-          {!collapsed && <span>تسجيل الخروج</span>}
+          {!collapsed && <span>{t('logout')}</span>}
         </Button>
       </div>
     </div>
