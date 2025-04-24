@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState } from 'react';
 
 type Language = 'ar' | 'fr';
@@ -12,27 +11,37 @@ type Translations = {
 const translations: Translations = {
   ar: {
     home: "الرئيسية",
+    dashboard: "لوحة التحكم",
+    pendingRequests: "الطلبات المعلقة",
+    approvedRequests: "الطلبات الموافق عليها",
+    vacationDays: "أيام الإجازة",
+    awaitingApproval: "في انتظار الموافقة",
+    thisMonth: "هذا الشهر",
+    remaining: "متبقية",
     workCertificate: "طلب شهادة عمل",
     missionOrder: "أمر مهمة",
     vacationRequest: "طلب إجازة",
     settings: "الإعدادات",
-    logout: "تسجيل الخروج",
+    profile: "الملف الشخصي",
     notifications: "الإشعارات",
-    viewAll: "عرض الكل",
-    search: "بحث...",
-    welcome: "مرحباً بك،",
+    logout: "تسجيل الخروج",
   },
   fr: {
     home: "Accueil",
-    workCertificate: "Demande d'attestation",
+    dashboard: "Tableau de bord",
+    pendingRequests: "Demandes en attente",
+    approvedRequests: "Demandes approuvées",
+    vacationDays: "Jours de congé",
+    awaitingApproval: "En attente d'approbation",
+    thisMonth: "Ce mois-ci",
+    remaining: "Restants",
+    workCertificate: "Attestation de travail",
     missionOrder: "Ordre de mission",
     vacationRequest: "Demande de congé",
     settings: "Paramètres",
-    logout: "Déconnexion",
+    profile: "Profil",
     notifications: "Notifications",
-    viewAll: "Voir tout",
-    search: "Rechercher...",
-    welcome: "Bienvenue,",
+    logout: "Déconnexion",
   },
 };
 
