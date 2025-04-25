@@ -43,10 +43,10 @@ export const AppSidebar = () => {
           <div className="flex items-center gap-2">
             <img 
               src="/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png" 
-              alt="صحارى" 
+              alt="CMC" 
               className="h-10 w-auto"
             />
-            <span className="text-[#0FA0CE] font-bold text-xl">Sahara</span>
+            <span className="text-[#0FA0CE] font-bold text-xl">CMC</span>
           </div>
         )}
         <Button
