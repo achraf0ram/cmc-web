@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,7 +34,6 @@ const notificationsFormSchema = z.object({
   emailNotifications: z.boolean().default(true),
   newRequests: z.boolean(),
   requestUpdates: z.boolean(),
-  marketing: z.boolean(),
 });
 
 const passwordFormSchema = z.object({
@@ -71,7 +69,6 @@ const Settings = () => {
       emailNotifications: true,
       newRequests: true,
       requestUpdates: true,
-      marketing: false,
     },
   });
 
@@ -115,7 +112,7 @@ const Settings = () => {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">الإعدادات</h1>
+      <h1 className="text-2xl font-bold mb-6">الإعدا��ات</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-3 mb-8">
@@ -242,27 +239,6 @@ const Settings = () => {
                           <FormLabel className="text-base">تحديثات الطلبات</FormLabel>
                           <FormDescription>
                             إشعارات عند تحديث حالة الطلبات
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={notificationsForm.control}
-                    name="marketing"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">تسويق وإعلانات</FormLabel>
-                          <FormDescription>
-                            استلام معلومات عن التحديثات والميزات الجديدة
                           </FormDescription>
                         </div>
                         <FormControl>

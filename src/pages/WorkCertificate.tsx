@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, FileImage } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
@@ -23,10 +23,12 @@ const formSchema = z.object({
     message: "يرجى وصف الغرض من الشهادة",
   }),
   additionalInfo: z.string().optional(),
+  signature: z.instanceof(File).optional(),
 });
 
 const WorkCertificate = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,6 +42,18 @@ const WorkCertificate = () => {
     console.log(values);
     setIsSubmitted(true);
   }
+
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue("signature", file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSignaturePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -94,6 +108,7 @@ const WorkCertificate = () => {
                     </FormItem>
                   )}
                 />
+                
                 <FormField
                   control={form.control}
                   name="additionalInfo"
@@ -111,6 +126,50 @@ const WorkCertificate = () => {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="signature"
+                  render={({ field: { value, ...fieldProps } }) => (
+                    <FormItem>
+                      <FormLabel>التوقيع</FormLabel>
+                      <FormControl>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-4">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleSignatureChange}
+                              className="hidden"
+                              id="signature-upload"
+                              {...fieldProps}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById("signature-upload")?.click()}
+                              className="w-full"
+                            >
+                              <FileImage className="mr-2 h-4 w-4" />
+                              اختر ملف التوقيع
+                            </Button>
+                          </div>
+                          {signaturePreview && (
+                            <div className="border rounded-md p-2">
+                              <img
+                                src={signaturePreview}
+                                alt="التوقيع"
+                                className="max-h-32 mx-auto"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <div className="flex justify-end gap-3">
                   <Button type="submit">تقديم الطلب</Button>
                 </div>
