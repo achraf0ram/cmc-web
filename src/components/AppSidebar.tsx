@@ -15,10 +15,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { t, language } = useLanguage();
+  const isMobile = useIsMobile();
 
   const menuItems = [
     { icon: Home, name: 'home', path: "/" },
@@ -33,10 +35,14 @@ export const AppSidebar = () => {
     (collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />);
 
   return (
-    <div className={cn(
-      "h-screen bg-white shadow-md flex flex-col transition-all duration-300",
-      collapsed ? "w-20" : "w-64"
-    )}>
+    <div 
+      className={cn(
+        "fixed md:static h-screen bg-white shadow-md flex flex-col transition-all duration-300 z-50",
+        collapsed ? "w-20" : "w-64",
+        isMobile && collapsed && "-translate-x-full",
+        language === 'ar' ? 'right-0' : 'left-0'
+      )}
+    >
       {/* Header */}
       <div className="flex justify-between items-center p-4 border-b">
         {!collapsed && (

@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState } from 'react';
 
 type Language = 'ar' | 'fr';
@@ -25,6 +26,18 @@ const translations: Translations = {
     profile: "الملف الشخصي",
     notifications: "الإشعارات",
     logout: "تسجيل الخروج",
+    search: "بحث",
+    viewAll: "عرض الكل",
+    name: "الاسم",
+    startDate: "تاريخ البداية",
+    endDate: "تاريخ النهاية",
+    submit: "إرسال",
+    cancel: "إلغاء",
+    signatureUpload: "رفع التوقيع",
+    reason: "السبب",
+    type: "النوع",
+    description: "الوصف",
+    save: "حفظ"
   },
   fr: {
     home: "Accueil",
@@ -42,6 +55,18 @@ const translations: Translations = {
     profile: "Profil",
     notifications: "Notifications",
     logout: "Déconnexion",
+    search: "Rechercher",
+    viewAll: "Voir tout",
+    name: "Nom",
+    startDate: "Date de début",
+    endDate: "Date de fin",
+    submit: "Soumettre",
+    cancel: "Annuler",
+    signatureUpload: "Télécharger la signature",
+    reason: "Raison",
+    type: "Type",
+    description: "Description",
+    save: "Enregistrer"
   },
 };
 
@@ -62,7 +87,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      <div dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <div dir={language === 'ar' ? 'rtl' : 'ltr'} className="min-h-screen">
         {children}
       </div>
     </LanguageContext.Provider>
