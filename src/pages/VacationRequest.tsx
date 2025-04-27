@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,8 +29,9 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon, CheckCircle, FileImage } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
   type: z.string({
@@ -52,6 +52,7 @@ const formSchema = z.object({
 const VacationRequest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const { language, t } = useLanguage();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -79,7 +80,7 @@ const VacationRequest = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">طلب إجازة</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('vacationRequestTitle')}</h1>
 
       {isSubmitted ? (
         <Card className="border-green-200 bg-green-50">
@@ -90,17 +91,18 @@ const VacationRequest = () => {
               </div>
               <div>
                 <h2 className="text-xl font-semibold mb-2">
-                  تم تقديم طلبك بنجاح!
+                  {t('requestSubmitted')}
                 </h2>
                 <p className="text-muted-foreground">
-                  سيتم مراجعة طلب الإجازة في أقرب وقت.
-                  يمكنك متابعة حالة الطلب من الصفحة الرئيسية.
+                  {t('requestReviewMessage')}
+                  <br />
+                  {t('followUpMessage')}
                 </p>
                 <Button 
                   className="mt-4" 
                   onClick={() => setIsSubmitted(false)}
                 >
-                  طلب إجازة جديدة
+                  {t('newRequest')}
                 </Button>
               </div>
             </div>
@@ -109,7 +111,7 @@ const VacationRequest = () => {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>معلومات الإجازة</CardTitle>
+            <CardTitle>{t('requestInfo')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -119,21 +121,21 @@ const VacationRequest = () => {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>نوع الإجازة*</FormLabel>
+                      <FormLabel>{t('type')}*</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="اختر نوع الإجازة" />
+                            <SelectValue placeholder={t('type')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="annual">إجازة سنوية</SelectItem>
-                          <SelectItem value="sick">إجازة مرضية</SelectItem>
-                          <SelectItem value="emergency">إجازة اضطرارية</SelectItem>
-                          <SelectItem value="unpaid">إجازة بدون راتب</SelectItem>
+                          <SelectItem value="annual">{t('annualLeave')}</SelectItem>
+                          <SelectItem value="sick">{t('sickLeave')}</SelectItem>
+                          <SelectItem value="emergency">{t('emergencyLeave')}</SelectItem>
+                          <SelectItem value="unpaid">{t('unpaidLeave')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -147,7 +149,7 @@ const VacationRequest = () => {
                     name="startDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>تاريخ البداية*</FormLabel>
+                        <FormLabel>{t('startDate')}*</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -159,9 +161,9 @@ const VacationRequest = () => {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP", { locale: ar })
+                                  format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
                                 ) : (
-                                  <span>اختر تاريخ</span>
+                                  <span>{t('selectDate')}</span>
                                 )}
                                 <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -189,7 +191,7 @@ const VacationRequest = () => {
                     name="endDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>تاريخ النهاية*</FormLabel>
+                        <FormLabel>{t('endDate')}*</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -201,9 +203,9 @@ const VacationRequest = () => {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP", { locale: ar })
+                                  format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
                                 ) : (
-                                  <span>اختر تاريخ</span>
+                                  <span>{t('selectDate')}</span>
                                 )}
                                 <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -235,10 +237,10 @@ const VacationRequest = () => {
                   name="reason"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>سبب الإجازة</FormLabel>
+                      <FormLabel>{t('reason')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="يرجى ذكر سبب الإجازة إذا كان ذلك ضرورياً"
+                          placeholder={t('vacationReasonPlaceholder')}
                           className="resize-none"
                           {...field}
                         />
@@ -253,7 +255,7 @@ const VacationRequest = () => {
                   name="signature"
                   render={({ field: { value, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>التوقيع</FormLabel>
+                      <FormLabel>{t('signatureUpload')}</FormLabel>
                       <FormControl>
                         <div className="flex flex-col gap-4">
                           <div className="flex items-center gap-4">
@@ -272,14 +274,14 @@ const VacationRequest = () => {
                               className="w-full"
                             >
                               <FileImage className="mr-2 h-4 w-4" />
-                              اختر ملف التوقيع
+                              {t('signatureUploadButton')}
                             </Button>
                           </div>
                           {signaturePreview && (
                             <div className="border rounded-md p-2">
                               <img
                                 src={signaturePreview}
-                                alt="التوقيع"
+                                alt={t('signature')}
                                 className="max-h-32 mx-auto"
                               />
                             </div>
@@ -292,7 +294,7 @@ const VacationRequest = () => {
                 />
                 
                 <div className="flex justify-end gap-3">
-                  <Button type="submit">تقديم الطلب</Button>
+                  <Button type="submit">{t('submit')}</Button>
                 </div>
               </form>
             </Form>

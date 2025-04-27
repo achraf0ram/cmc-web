@@ -22,8 +22,9 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon, CheckCircle, FileImage } from "lucide-react";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { ar, fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
   destination: z.string().min(3, {
@@ -45,6 +46,7 @@ const formSchema = z.object({
 const MissionOrder = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const { language, t } = useLanguage();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,7 +76,7 @@ const MissionOrder = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">طلب أمر مهمة</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('missionOrderTitle')}</h1>
 
       {isSubmitted ? (
         <Card className="border-green-200 bg-green-50">
@@ -85,17 +87,18 @@ const MissionOrder = () => {
               </div>
               <div>
                 <h2 className="text-xl font-semibold mb-2">
-                  تم تقديم طلبك بنجاح!
+                  {t('requestSubmitted')}
                 </h2>
                 <p className="text-muted-foreground">
-                  سيتم مراجعة طلب أمر المهمة في أقرب وقت.
-                  يمكنك متابعة حالة الطلب من الصفحة الرئيسية.
+                  {t('requestReviewMessage')}
+                  <br />
+                  {t('followUpMessage')}
                 </p>
                 <Button 
                   className="mt-4" 
                   onClick={() => setIsSubmitted(false)}
                 >
-                  طلب أمر مهمة جديد
+                  {t('newRequest')}
                 </Button>
               </div>
             </div>
@@ -104,7 +107,7 @@ const MissionOrder = () => {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>معلومات المهمة</CardTitle>
+            <CardTitle>{t('requestInfo')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -114,10 +117,10 @@ const MissionOrder = () => {
                   name="destination"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>وجهة المهمة*</FormLabel>
+                      <FormLabel>{t('destination')}*</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="على سبيل المثال: الرياض، جدة، خارج البلاد"
+                          placeholder={t('destinationPlaceholder')}
                           {...field}
                         />
                       </FormControl>
@@ -131,10 +134,10 @@ const MissionOrder = () => {
                   name="purpose"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الغرض من المهمة*</FormLabel>
+                      <FormLabel>{t('purpose')}*</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="وصف مختصر للمهمة والهدف منها"
+                          placeholder={t('purposePlaceholder')}
                           className="resize-none"
                           {...field}
                         />
@@ -150,7 +153,7 @@ const MissionOrder = () => {
                     name="startDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>تاريخ البداية*</FormLabel>
+                        <FormLabel>{t('startDate')}*</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -162,9 +165,9 @@ const MissionOrder = () => {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP", { locale: ar })
+                                  format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
                                 ) : (
-                                  <span>اختر تاريخ</span>
+                                  <span>{t('selectDate')}</span>
                                 )}
                                 <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -192,7 +195,7 @@ const MissionOrder = () => {
                     name="endDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>تاريخ النهاية*</FormLabel>
+                        <FormLabel>{t('endDate')}*</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -204,9 +207,9 @@ const MissionOrder = () => {
                                 )}
                               >
                                 {field.value ? (
-                                  format(field.value, "PPP", { locale: ar })
+                                  format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
                                 ) : (
-                                  <span>اختر تاريخ</span>
+                                  <span>{t('selectDate')}</span>
                                 )}
                                 <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -238,10 +241,10 @@ const MissionOrder = () => {
                   name="additionalInfo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>معلومات إضافية</FormLabel>
+                      <FormLabel>{t('additionalInfo')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="أي متطلبات خاصة أو معلومات إضافية"
+                          placeholder={t('additionalInfoPlaceholder')}
                           className="resize-none"
                           {...field}
                         />
@@ -256,7 +259,7 @@ const MissionOrder = () => {
                   name="signature"
                   render={({ field: { value, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>التوقيع</FormLabel>
+                      <FormLabel>{t('signatureUpload')}</FormLabel>
                       <FormControl>
                         <div className="flex flex-col gap-4">
                           <div className="flex items-center gap-4">
@@ -275,14 +278,14 @@ const MissionOrder = () => {
                               className="w-full"
                             >
                               <FileImage className="mr-2 h-4 w-4" />
-                              اختر ملف التوقيع
+                              {t('signatureUploadButton')}
                             </Button>
                           </div>
                           {signaturePreview && (
                             <div className="border rounded-md p-2">
                               <img
                                 src={signaturePreview}
-                                alt="التوقيع"
+                                alt={t('signature')}
                                 className="max-h-32 mx-auto"
                               />
                             </div>
@@ -295,7 +298,7 @@ const MissionOrder = () => {
                 />
                 
                 <div className="flex justify-end gap-3">
-                  <Button type="submit">تقديم الطلب</Button>
+                  <Button type="submit">{t('submit')}</Button>
                 </div>
               </form>
             </Form>

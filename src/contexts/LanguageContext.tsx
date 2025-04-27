@@ -50,7 +50,16 @@ const translations: Translations = {
     requestReviewMessage: "سيتم مراجعة الطلب وإصدار الشهادة في أقرب وقت",
     followUpMessage: "يمكنك متابعة حالة الطلب من الصفحة الرئيسية",
     newRequest: "طلب جديد",
-    requestInfo: "معلومات الطلب"
+    requestInfo: "معلومات الطلب",
+    destination: "الوجهة",
+    destinationPlaceholder: "على سبيل المثال: الرياض، جدة، خارج البلاد",
+    selectDate: "اختر تاريخ",
+    signature: "التوقيع",
+    annualLeave: "إجازة سنوية",
+    sickLeave: "إجازة مرضية",
+    emergencyLeave: "إجازة اضطرارية",
+    unpaidLeave: "إجازة بدون راتب",
+    vacationReasonPlaceholder: "يرجى ذكر سبب الإجازة إذا كان ذلك ضرورياً"
   },
   fr: {
     home: "Accueil",
@@ -93,7 +102,16 @@ const translations: Translations = {
     requestReviewMessage: "La demande sera examinée et le certificat sera délivré dans les plus brefs délais",
     followUpMessage: "Vous pouvez suivre le statut de votre demande depuis la page d'accueil",
     newRequest: "Nouvelle demande",
-    requestInfo: "Informations sur la demande"
+    requestInfo: "Informations sur la demande",
+    destination: "Destination",
+    destinationPlaceholder: "Par exemple: Riyad, Djeddah, à l'étranger",
+    selectDate: "Sélectionner une date",
+    signature: "Signature",
+    annualLeave: "Congé annuel",
+    sickLeave: "Congé maladie",
+    emergencyLeave: "Congé d'urgence",
+    unpaidLeave: "Congé sans solde",
+    vacationReasonPlaceholder: "Veuillez indiquer la raison du congé si nécessaire"
   },
 };
 
