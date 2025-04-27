@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState } from 'react';
 
 type Language = 'ar' | 'fr';
@@ -37,7 +36,21 @@ const translations: Translations = {
     reason: "السبب",
     type: "النوع",
     description: "الوصف",
-    save: "حفظ"
+    save: "حفظ",
+    requestType: "نوع الطلب",
+    workCertificateTitle: "طلب شهادة عمل",
+    missionOrderTitle: "طلب أمر مهمة",
+    vacationRequestTitle: "طلب إجازة",
+    purposeLabel: "الغرض من الطلب",
+    purposePlaceholder: "على سبيل المثال: ��قديم للبنك، تأشيرة سفر، إلخ",
+    additionalInfo: "معلومات إضافية",
+    additionalInfoPlaceholder: "أي معلومات إضافية ترغب في إضافتها للطلب",
+    signatureUploadButton: "اختر ملف التوقيع",
+    requestSubmitted: "تم تقديم طلبك بنجاح!",
+    requestReviewMessage: "سيتم مراجعة الطلب وإصدار الشهادة في أقرب وقت",
+    followUpMessage: "يمكنك متابعة حالة الطلب من الصفحة الرئيسية",
+    newRequest: "طلب جديد",
+    requestInfo: "معلومات الطلب"
   },
   fr: {
     home: "Accueil",
@@ -66,7 +79,21 @@ const translations: Translations = {
     reason: "Raison",
     type: "Type",
     description: "Description",
-    save: "Enregistrer"
+    save: "Enregistrer",
+    requestType: "Type de demande",
+    workCertificateTitle: "Demande d'attestation de travail",
+    missionOrderTitle: "Demande d'ordre de mission",
+    vacationRequestTitle: "Demande de congé",
+    purposeLabel: "Objectif de la demande",
+    purposePlaceholder: "Par exemple: Soumission à la banque, visa de voyage, etc.",
+    additionalInfo: "Informations supplémentaires",
+    additionalInfoPlaceholder: "Toute information supplémentaire que vous souhaitez ajouter à la demande",
+    signatureUploadButton: "Choisir le fichier de signature",
+    requestSubmitted: "Votre demande a été soumise avec succès !",
+    requestReviewMessage: "La demande sera examinée et le certificat sera délivré dans les plus brefs délais",
+    followUpMessage: "Vous pouvez suivre le statut de votre demande depuis la page d'accueil",
+    newRequest: "Nouvelle demande",
+    requestInfo: "Informations sur la demande"
   },
 };
 

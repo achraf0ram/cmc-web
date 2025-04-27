@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, FileImage } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
   purpose: z.string().min(5, {
@@ -27,6 +26,7 @@ const formSchema = z.object({
 });
 
 const WorkCertificate = () => {
+  const { t } = useLanguage();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
 
@@ -57,7 +57,7 @@ const WorkCertificate = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">طلب شهادة عمل</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('workCertificateTitle')}</h1>
 
       {isSubmitted ? (
         <Card className="border-green-200 bg-green-50">
@@ -68,17 +68,17 @@ const WorkCertificate = () => {
               </div>
               <div>
                 <h2 className="text-xl font-semibold mb-2">
-                  تم تقديم طلبك بنجاح!
+                  {t('requestSubmitted')}
                 </h2>
                 <p className="text-muted-foreground">
-                  سيتم مراجعة الطلب وإصدار الشهادة في أقرب وقت.
-                  يمكنك متابعة حالة الطلب من الصفحة الرئيسية.
+                  {t('requestReviewMessage')}
+                  {t('followUpMessage')}
                 </p>
                 <Button 
                   className="mt-4" 
                   onClick={() => setIsSubmitted(false)}
                 >
-                  طلب شهادة جديدة
+                  {t('newRequest')}
                 </Button>
               </div>
             </div>
@@ -87,7 +87,7 @@ const WorkCertificate = () => {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>معلومات الطلب</CardTitle>
+            <CardTitle>{t('requestInfo')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -97,10 +97,10 @@ const WorkCertificate = () => {
                   name="purpose"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>الغرض من الشهادة*</FormLabel>
+                      <FormLabel>{t('purposeLabel')}*</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="على سبيل المثال: تقديم للبنك، تأشيرة سفر، إلخ"
+                          placeholder={t('purposePlaceholder')}
                           {...field}
                         />
                       </FormControl>
@@ -114,10 +114,10 @@ const WorkCertificate = () => {
                   name="additionalInfo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>معلومات إضافية</FormLabel>
+                      <FormLabel>{t('additionalInfo')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="أي معلومات إضافية ترغب في إضافتها للطلب"
+                          placeholder={t('additionalInfoPlaceholder')}
                           className="resize-none"
                           {...field}
                         />
@@ -132,7 +132,7 @@ const WorkCertificate = () => {
                   name="signature"
                   render={({ field: { value, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>التوقيع</FormLabel>
+                      <FormLabel>{t('signatureUpload')}</FormLabel>
                       <FormControl>
                         <div className="flex flex-col gap-4">
                           <div className="flex items-center gap-4">
@@ -151,14 +151,14 @@ const WorkCertificate = () => {
                               className="w-full"
                             >
                               <FileImage className="mr-2 h-4 w-4" />
-                              اختر ملف التوقيع
+                              {t('signatureUploadButton')}
                             </Button>
                           </div>
                           {signaturePreview && (
                             <div className="border rounded-md p-2">
                               <img
                                 src={signaturePreview}
-                                alt="التوقيع"
+                                alt={t('signatureUpload')}
                                 className="max-h-32 mx-auto"
                               />
                             </div>
@@ -171,7 +171,7 @@ const WorkCertificate = () => {
                 />
 
                 <div className="flex justify-end gap-3">
-                  <Button type="submit">تقديم الطلب</Button>
+                  <Button type="submit">{t('submit')}</Button>
                 </div>
               </form>
             </Form>
