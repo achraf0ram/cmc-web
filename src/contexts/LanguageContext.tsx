@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState } from 'react';
 
 type Language = 'ar' | 'fr';
@@ -60,9 +61,7 @@ const translations: Translations = {
     emergencyLeave: "إجازة اضطرارية",
     unpaidLeave: "إجازة بدون راتب",
     vacationReasonPlaceholder: "يرجى ذكر سبب الإجازة إذا كان ذلك ضرورياً",
-    settings: "الإعدادات",
     profileSettings: "معلومات الملف الشخصي",
-    name: "الاسم",
     email: "البريد الإلكتروني",
     phone: "رقم الهاتف",
     saveChanges: "حفظ التغييرات",
@@ -133,9 +132,7 @@ const translations: Translations = {
     emergencyLeave: "Congé d'urgence",
     unpaidLeave: "Congé sans solde",
     vacationReasonPlaceholder: "Veuillez indiquer la raison du congé si nécessaire",
-    settings: "Paramètres",
     profileSettings: "Informations du profil",
-    name: "Nom",
     email: "E-mail",
     phone: "Téléphone",
     saveChanges: "Enregistrer les modifications",
