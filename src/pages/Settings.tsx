@@ -17,17 +17,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const profileFormSchema = z.object({
-  name: z.string().min(2, {
-    message: "الاسم يجب أن يكون أكثر من حرفين",
-  }),
-  email: z.string().email({
-    message: "بريد إلكتروني غير صالح",
-  }),
-  phone: z.string().min(10, {
-    message: "رقم الهاتف يجب أن يكون على الأقل 10 أرقام",
-  }),
+  name: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(10),
 });
 
 const notificationsFormSchema = z.object({
@@ -37,27 +32,22 @@ const notificationsFormSchema = z.object({
 });
 
 const passwordFormSchema = z.object({
-  currentPassword: z.string().min(8, {
-    message: "كلمة المرور الحالية يجب أن تكون 8 أحرف على الأقل",
-  }),
-  newPassword: z.string().min(8, {
-    message: "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل",
-  }),
-  confirmPassword: z.string().min(8, {
-    message: "تأكيد كلمة المرور يجب أن يكون 8 أحرف على الأقل",
-  }),
+  currentPassword: z.string().min(8),
+  newPassword: z.string().min(8),
+  confirmPassword: z.string().min(8),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "كلمات المرور غير متطابقة",
+  message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"],
 });
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const { t } = useLanguage();
   
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: "أحمد محمد",
+      name: "Ahmed Mohammed",
       email: "ahmed.m@example.com",
       phone: "0501234567",
     },
@@ -84,24 +74,24 @@ const Settings = () => {
   function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
     console.log(values);
     toast({
-      title: "تم تحديث الملف الشخصي",
-      description: "تم حفظ التغييرات بنجاح",
+      title: "Les informations ont été mises à jour",
+      description: "Les modifications ont été enregistrées avec succès",
     });
   }
 
   function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
     console.log(values);
     toast({
-      title: "تم تحديث إعدادات الإشعارات",
-      description: "تم حفظ التغييرات بنجاح",
+      title: "Les paramètres d'alerte ont été mis à jour",
+      description: "Les modifications ont été enregistrées avec succès",
     });
   }
 
   function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
     console.log(values);
     toast({
-      title: "تم تغيير كلمة المرور",
-      description: "تم تغيير كلمة المرور بنجاح",
+      title: "Le mot de passe a été changé",
+      description: "Le mot de passe a été changé avec succès",
     });
     passwordForm.reset({
       currentPassword: "",
@@ -111,58 +101,60 @@ const Settings = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">الإعدا��ات</h1>
+    <div className="container mx-auto px-4 py-6 max-w-3xl">
+      <h1 className="text-2xl font-bold mb-6">{t('settings')}</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="profile">الملف الشخصي</TabsTrigger>
-          <TabsTrigger value="notifications">الإشعارات</TabsTrigger>
-          <TabsTrigger value="password">كلمة المرور</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-8">
+          <TabsTrigger value="profile">{t('profileTab')}</TabsTrigger>
+          <TabsTrigger value="notifications">{t('notificationsTab')}</TabsTrigger>
+          <TabsTrigger value="password">{t('passwordTab')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>معلومات الملف الشخصي</CardTitle>
+              <CardTitle>{t('profileSettings')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...profileForm}>
                 <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-                  <FormField
-                    control={profileForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>الاسم</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={profileForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>البريد الإلكتروني</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <FormField
+                      control={profileForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('name')}</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={profileForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('email')}</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
                   <FormField
                     control={profileForm.control}
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>رقم الهاتف</FormLabel>
+                        <FormLabel>{t('phone')}</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -172,7 +164,7 @@ const Settings = () => {
                   />
                   
                   <div className="flex justify-end">
-                    <Button type="submit">حفظ التغييرات</Button>
+                    <Button type="submit">{t('saveChanges')}</Button>
                   </div>
                 </form>
               </Form>
@@ -183,76 +175,78 @@ const Settings = () => {
         <TabsContent value="notifications">
           <Card>
             <CardHeader>
-              <CardTitle>إعدادات الإشعارات</CardTitle>
+              <CardTitle>{t('notificationSettings')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...notificationsForm}>
                 <form onSubmit={notificationsForm.handleSubmit(onNotificationsSubmit)} className="space-y-6">
-                  <FormField
-                    control={notificationsForm.control}
-                    name="emailNotifications"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">إشعارات البريد الإلكتروني</FormLabel>
-                          <FormDescription>
-                            استلام الإشعارات عبر البريد الإلكتروني
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={notificationsForm.control}
-                    name="newRequests"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">طلبات جديدة</FormLabel>
-                          <FormDescription>
-                            إشعارات عند إنشاء طلبات جديدة
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={notificationsForm.control}
-                    name="requestUpdates"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">تحديثات الطلبات</FormLabel>
-                          <FormDescription>
-                            إشعارات عند تحديث حالة الطلبات
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-4">
+                    <FormField
+                      control={notificationsForm.control}
+                      name="emailNotifications"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">{t('emailNotifications')}</FormLabel>
+                            <FormDescription>
+                              {t('emailNotificationsDesc')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={notificationsForm.control}
+                      name="newRequests"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">{t('newRequests')}</FormLabel>
+                            <FormDescription>
+                              {t('newRequestsDesc')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={notificationsForm.control}
+                      name="requestUpdates"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">{t('requestUpdates')}</FormLabel>
+                            <FormDescription>
+                              {t('requestUpdatesDesc')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
                   <div className="flex justify-end">
-                    <Button type="submit">حفظ التغييرات</Button>
+                    <Button type="submit">{t('saveChanges')}</Button>
                   </div>
                 </form>
               </Form>
@@ -263,55 +257,57 @@ const Settings = () => {
         <TabsContent value="password">
           <Card>
             <CardHeader>
-              <CardTitle>تغيير كلمة المرور</CardTitle>
+              <CardTitle>{t('passwordSettings')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...passwordForm}>
                 <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
-                  <FormField
-                    control={passwordForm.control}
-                    name="currentPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>كلمة المرور الحالية</FormLabel>
-                        <FormControl>
-                          <Input type="password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={passwordForm.control}
-                    name="newPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>كلمة المرور الجديدة</FormLabel>
-                        <FormControl>
-                          <Input type="password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={passwordForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>تأكيد كلمة المرور</FormLabel>
-                        <FormControl>
-                          <Input type="password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid gap-6">
+                    <FormField
+                      control={passwordForm.control}
+                      name="currentPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('currentPassword')}</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={passwordForm.control}
+                      name="newPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('newPassword')}</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={passwordForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('confirmPassword')}</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
                   <div className="flex justify-end">
-                    <Button type="submit">تغيير كلمة المرور</Button>
+                    <Button type="submit">{t('changePassword')}</Button>
                   </div>
                 </form>
               </Form>
