@@ -21,8 +21,7 @@ export const AppHeader = () => {
   return (
     <header className={cn(
       "bg-white border-b py-2 px-6 flex items-center justify-between",
-      "relative z-20",
-      !isMobile && "h-[180px]" // Make header match the height of the white bar on desktop
+      "relative z-20"
     )}>
       <div className="flex-1">
         <div className="relative w-full max-w-sm">
