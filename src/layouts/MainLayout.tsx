@@ -19,9 +19,15 @@ export const MainLayout = () => {
         !isMobile && (language === 'ar' ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'),
         "pt-16 md:pt-0" // Add padding top for mobile menu button
       )}>
+        {/* White top bar for desktop */}
+        <div className={cn(
+          "hidden md:block h-[180px] bg-white w-full border-b",
+          "absolute top-0 left-0 right-0 z-10"
+        )} />
+        
         <AppHeader />
         
-        <main className="flex-1 bg-slate-50 p-6">
+        <main className="flex-1 bg-slate-50 p-6 relative z-20 md:mt-[180px]">
           <Outlet />
         </main>
       </div>

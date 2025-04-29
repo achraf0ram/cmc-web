@@ -1,9 +1,12 @@
+
 import { Search, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,9 +16,14 @@ import {
 
 export const AppHeader = () => {
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
   
   return (
-    <header className="bg-white border-b py-2 px-6 flex items-center justify-between">
+    <header className={cn(
+      "bg-white border-b py-2 px-6 flex items-center justify-between",
+      "relative z-20",
+      !isMobile && "h-[180px]" // Make header match the height of the white bar on desktop
+    )}>
       <div className="flex-1">
         <div className="relative w-full max-w-sm">
           <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
