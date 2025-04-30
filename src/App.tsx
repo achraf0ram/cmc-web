@@ -1,11 +1,15 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { MainLayout } from "./layouts/MainLayout";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import Index from "./pages/Index";
+import SignInPage from "./pages/SignIn";
+import SignUpPage from "./pages/SignUp";
 import WorkCertificate from "./pages/WorkCertificate";
 import MissionOrder from "./pages/MissionOrder";
 import VacationRequest from "./pages/VacationRequest";
@@ -22,14 +26,40 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<MainLayout />}>
+            {/* Auth routes */}
+            <Route path="/sign-in/*" element={
+              <SignedOut>
+                <SignInPage />
+              </SignedOut>
+            } />
+            <Route path="/sign-up/*" element={
+              <SignedOut>
+                <SignUpPage />
+              </SignedOut>
+            } />
+            
+            {/* Protected routes */}
+            <Route path="/" element={
+              <SignedIn>
+                <MainLayout />
+              </SignedIn>
+            }>
               <Route index element={<Index />} />
               <Route path="work-certificate" element={<WorkCertificate />} />
               <Route path="mission-order" element={<MissionOrder />} />
               <Route path="vacation-request" element={<VacationRequest />} />
               <Route path="settings" element={<Settings />} />
             </Route>
-            <Route path="*" element={<NotFound />} />
+
+            {/* Redirect to sign in if not authenticated */}
+            <Route path="*" element={
+              <SignedIn>
+                <NotFound />
+              </SignedIn>
+            } />
+
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/sign-in" replace />} />
           </Routes>
         </BrowserRouter>
       </LanguageProvider>
