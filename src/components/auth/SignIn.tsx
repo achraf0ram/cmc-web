@@ -1,9 +1,21 @@
 
 import { SignIn as ClerkSignIn } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export const SignIn = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSignInStart = () => {
+    setIsLoading(true);
+  };
+
+  const handleSignInComplete = () => {
+    setIsLoading(false);
+    navigate("/");
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
@@ -18,6 +30,13 @@ export const SignIn = () => {
           <p className="text-gray-600 mt-2">منصة إدارة طلبات الموارد البشرية</p>
         </div>
         
+        {isLoading && (
+          <div className="flex justify-center items-center mb-4">
+            <Loader2 className="h-6 w-6 animate-spin text-[#0EA5E9]" />
+            <span className="mr-2 text-[#0EA5E9]">جاري تسجيل الدخول...</span>
+          </div>
+        )}
+        
         <ClerkSignIn 
           appearance={{
             elements: {
@@ -29,11 +48,12 @@ export const SignIn = () => {
           routing="path"
           path="/sign-in"
           signUpUrl="/sign-up"
-          afterSignInUrl="/"
-          redirectUrl="/"
+          fallbackRedirectUrl="/"
+          forceRedirectUrl="/"
+          onSubmit={handleSignInStart}
+          onComplete={handleSignInComplete}
         />
       </div>
     </div>
   );
 };
-
