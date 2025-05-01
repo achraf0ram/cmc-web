@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useUser } from "@clerk/clerk-react";
 
 const profileFormSchema = z.object({
   name: z.string().min(2),
@@ -43,15 +44,25 @@ const passwordFormSchema = z.object({
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const { t } = useLanguage();
+  const { user, isLoaded } = useUser();
   
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: "Ahmed Mohammed",
-      email: "ahmed.m@example.com",
-      phone: "0501234567",
+      name: "",
+      email: "",
+      phone: "",
     },
   });
+
+  // Update form with Clerk user data when available
+  useEffect(() => {
+    if (isLoaded && user) {
+      profileForm.setValue("name", user.fullName || "");
+      profileForm.setValue("email", user.primaryEmailAddress?.emailAddress || "");
+      profileForm.setValue("phone", user.phoneNumbers[0]?.phoneNumber || "");
+    }
+  }, [isLoaded, user, profileForm]);
 
   const notificationsForm = useForm<z.infer<typeof notificationsFormSchema>>({
     resolver: zodResolver(notificationsFormSchema),
@@ -71,33 +82,68 @@ const Settings = () => {
     },
   });
 
-  function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
-    console.log(values);
-    toast({
-      title: "Les informations ont été mises à jour",
-      description: "Les modifications ont été enregistrées avec succès",
-    });
+  async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
+    try {
+      if (isLoaded && user) {
+        // Update user data in Clerk
+        await user.update({
+          firstName: values.name.split(' ')[0],
+          lastName: values.name.split(' ').slice(1).join(' '),
+        });
+        
+        // Update primary email if changed and it's not the primary one
+        if (values.email !== user.primaryEmailAddress?.emailAddress) {
+          // Note: This part might require additional verification steps
+          // For a complete implementation, refer to Clerk documentation
+        }
+        
+        toast({
+          title: t('profileUpdated'),
+          description: t('profileUpdatedSuccess'),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: t('updateError'),
+        description: t('profileUpdateFailed'),
+        variant: "destructive",
+      });
+    }
   }
 
   function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
     console.log(values);
     toast({
-      title: "Les paramètres d'alerte ont été mis à jour",
-      description: "Les modifications ont été enregistrées avec succès",
+      title: t('notificationsUpdated'),
+      description: t('notificationsUpdatedSuccess'),
     });
   }
 
-  function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
-    console.log(values);
-    toast({
-      title: "Le mot de passe a été changé",
-      description: "Le mot de passe a été changé avec succès",
-    });
-    passwordForm.reset({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
+  async function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
+    try {
+      // Note: Password change typically requires current password verification
+      // This is a placeholder for the actual implementation
+      // For a complete implementation, refer to Clerk documentation
+      
+      toast({
+        title: t('passwordChanged'),
+        description: t('passwordChangedSuccess'),
+      });
+      
+      passwordForm.reset({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast({
+        title: t('updateError'),
+        description: t('passwordChangeFailed'),
+        variant: "destructive",
+      });
+    }
   }
 
   return (

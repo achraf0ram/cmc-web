@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FileText,
   ClipboardCheck,
@@ -17,12 +17,16 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useClerk, useUser } from "@clerk/clerk-react";
 
 export const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { signOut } = useClerk();
+  const { user } = useUser();
+  const navigate = useNavigate();
 
   const menuItems = [
     { icon: Home, name: 'home', path: "/" },
@@ -31,6 +35,11 @@ export const AppSidebar = () => {
     { icon: Calendar, name: 'vacationRequest', path: "/vacation-request" },
     { icon: Settings, name: 'settings', path: "/settings" },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/sign-in");
+  };
 
   const chevronIcon = language === 'ar' ? 
     (collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />) :
@@ -117,15 +126,19 @@ export const AppSidebar = () => {
         
         {/* Footer */}
         <div className="border-t py-4 flex flex-col gap-2">
-          <div className={cn(
+          <Link to="/settings" className={cn(
             "flex items-center gap-3 px-4 py-2", 
             collapsed && "justify-center"
           )}>
             <div className="w-8 h-8 rounded-full bg-[#D3E4FD] flex items-center justify-center">
               <User size={16} className="text-[#0EA5E9]" />
             </div>
-            {!collapsed && <div className="text-sm">Ahmed Mohamed</div>}
-          </div>
+            {!collapsed && (
+              <div className="text-sm">
+                {user?.fullName || user?.firstName || "User"}
+              </div>
+            )}
+          </Link>
           <Button
             variant="ghost"
             className={cn(
@@ -133,6 +146,7 @@ export const AppSidebar = () => {
               "hover:bg-[#FDE1D3] hover:text-red-500 text-muted-foreground",
               collapsed && "justify-center"
             )}
+            onClick={handleSignOut}
           >
             <LogOut size={18} />
             {!collapsed && <span>{t('logout')}</span>}
