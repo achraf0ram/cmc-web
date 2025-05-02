@@ -1,16 +1,50 @@
 
-import { SignUp as ClerkSignUp } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Loader2, User, Lock, Mail } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 export const SignUp = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSignUpComplete = () => {
-    setIsLoading(false);
-    navigate("/");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const success = await signup(fullName, email, password);
+      if (success) {
+        toast({
+          title: "تم إنشاء الحساب بنجاح",
+          description: "مرحباً بك في منصة CMC",
+        });
+        navigate("/");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "خطأ في إنشاء الحساب",
+          description: "يرجى التحقق من البيانات المدخلة",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "خطأ في إنشاء الحساب",
+        description: "حدث خطأ أثناء محاولة إنشاء الحساب. يرجى المحاولة مرة أخرى",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -26,32 +60,84 @@ export const SignUp = () => {
           <p className="text-gray-600 mt-2">منصة إدارة طلبات الموارد البشرية</p>
         </div>
         
-        {isLoading && (
-          <div className="flex justify-center items-center mb-4">
-            <Loader2 className="h-6 w-6 animate-spin text-[#0EA5E9]" />
-            <span className="mr-2 text-[#0EA5E9]">جاري تسجيل الحساب...</span>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="fullName">الاسم الكامل</Label>
+            <div className="relative">
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="أدخل الاسم الكامل"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="pl-10 pr-4"
+                required
+                dir="rtl"
+              />
+              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            </div>
           </div>
-        )}
-        
-        <ClerkSignUp 
-          appearance={{
-            elements: {
-              formButtonPrimary: "bg-[#0EA5E9] hover:bg-[#0EA5E9]/90 text-white py-2 px-4 rounded w-full",
-              card: "shadow-none",
-              footer: "hidden",
-            }
-          }}
-          routing="path"
-          path="/sign-up"
-          signInUrl="/sign-in"
-          fallbackRedirectUrl="/"
-          forceRedirectUrl="/"
-          afterSignUpUrl="/"
-          beforeSignUpUrl={(e) => {
-            setIsLoading(true);
-            return e;
-          }}
-        />
+          
+          <div className="space-y-2">
+            <Label htmlFor="email">البريد الإلكتروني</Label>
+            <div className="relative">
+              <Input
+                id="email"
+                type="email"
+                placeholder="أدخل البريد الإلكتروني"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 pr-4"
+                required
+                dir="rtl"
+              />
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="password">كلمة المرور</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type="password"
+                placeholder="أدخل كلمة المرور"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 pr-4"
+                required
+                dir="rtl"
+              />
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                جاري إنشاء الحساب...
+              </>
+            ) : (
+              "إنشاء حساب"
+            )}
+          </Button>
+          
+          <div className="text-center mt-4 text-sm">
+            لديك حساب بالفعل؟{" "}
+            <Button
+              variant="link"
+              className="p-0 text-[#0EA5E9]"
+              onClick={() => navigate("/sign-in")}
+            >
+              تسجيل الدخول
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

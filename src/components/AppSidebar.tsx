@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -17,15 +16,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useClerk, useUser } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { signOut } = useClerk();
-  const { user } = useUser();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const menuItems = [
@@ -36,8 +34,8 @@ export const AppSidebar = () => {
     { icon: Settings, name: 'settings', path: "/settings" },
   ];
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    logout();
     navigate("/sign-in");
   };
 
@@ -135,7 +133,7 @@ export const AppSidebar = () => {
             </div>
             {!collapsed && (
               <div className="text-sm">
-                {user?.fullName || user?.firstName || "User"}
+                {user?.fullName || "المستخدم"}
               </div>
             )}
           </Link>
