@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Settings = () => {
   const { t } = useLanguage();
@@ -39,11 +40,14 @@ const Settings = () => {
   
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold">{t('settings')}</h2>
-        <p className="text-muted-foreground mt-1">
-          {t('settingsDescription')}
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-semibold">{t('settings')}</h2>
+          <p className="text-muted-foreground mt-1">
+            {t('settingsDescription')}
+          </p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <Card>
@@ -87,6 +91,25 @@ const Settings = () => {
               )}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('appearanceSettings')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>{t('darkMode')}</Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('darkModeDescription')}
+                </p>
+              </div>
+              <ThemeToggle />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

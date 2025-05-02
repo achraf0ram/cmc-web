@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { MainLayout } from "./layouts/MainLayout";
 import Index from "./pages/Index";
 import SignInPage from "./pages/SignIn";
@@ -51,47 +52,49 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Auth routes */}
-              <Route path="/sign-in" element={
-                <PublicRoute>
-                  <SignInPage />
-                </PublicRoute>
-              } />
-              <Route path="/sign-up" element={
-                <PublicRoute>
-                  <SignUpPage />
-                </PublicRoute>
-              } />
-              
-              {/* Protected routes */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <MainLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Index />} />
-                <Route path="work-certificate" element={<WorkCertificate />} />
-                <Route path="mission-order" element={<MissionOrder />} />
-                <Route path="vacation-request" element={<VacationRequest />} />
-                <Route path="settings" element={<Settings />} />
-              </Route>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Auth routes */}
+                <Route path="/sign-in" element={
+                  <PublicRoute>
+                    <SignInPage />
+                  </PublicRoute>
+                } />
+                <Route path="/sign-up" element={
+                  <PublicRoute>
+                    <SignUpPage />
+                  </PublicRoute>
+                } />
+                
+                {/* Protected routes */}
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <MainLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<Index />} />
+                  <Route path="work-certificate" element={<WorkCertificate />} />
+                  <Route path="mission-order" element={<MissionOrder />} />
+                  <Route path="vacation-request" element={<VacationRequest />} />
+                  <Route path="settings" element={<Settings />} />
+                </Route>
 
-              {/* Not found route */}
-              <Route path="*" element={
-                <ProtectedRoute>
-                  <NotFound />
-                </ProtectedRoute>
-              } />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </LanguageProvider>
+                {/* Not found route */}
+                <Route path="*" element={
+                  <ProtectedRoute>
+                    <NotFound />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </BrowserRouter>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

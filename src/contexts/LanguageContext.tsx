@@ -1,186 +1,193 @@
 
-import { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Language = 'ar' | 'fr';
+// Define available languages
+type Language = 'en' | 'ar';
 
-type Translations = {
-  [key in Language]: {
-    [key: string]: string;
+// Define translation key structure
+interface Translations {
+  [key: string]: {
+    en: string;
+    ar: string;
   };
-};
+}
 
-const translations: Translations = {
-  ar: {
-    home: "الرئيسية",
-    dashboard: "لوحة التحكم",
-    pendingRequests: "الطلبات المعلقة",
-    approvedRequests: "الطلبات الموافق عليها",
-    vacationDays: "أيام الإجازة",
-    awaitingApproval: "في انتظار الموافقة",
-    thisMonth: "هذا الشهر",
-    remaining: "متبقية",
-    workCertificate: "طلب شهادة عمل",
-    missionOrder: "أمر مهمة",
-    vacationRequest: "طلب إجازة",
-    settings: "الإعدادات",
-    profile: "الملف الشخصي",
-    notifications: "الإشعارات",
-    logout: "تسجيل الخروج",
-    search: "بحث",
-    viewAll: "عرض الكل",
-    name: "الاسم",
-    startDate: "تاريخ البداية",
-    endDate: "تاريخ النهاية",
-    submit: "إرسال",
-    cancel: "إلغاء",
-    signatureUpload: "رفع التوقيع",
-    reason: "السبب",
-    type: "النوع",
-    description: "الوصف",
-    save: "حفظ",
-    requestType: "نوع الطلب",
-    workCertificateTitle: "طلب شهادة عمل",
-    missionOrderTitle: "طلب أمر مهمة",
-    vacationRequestTitle: "طلب إجازة",
-    purposeLabel: "الغرض من الطلب",
-    purposePlaceholder: "على سبيل المثال: تقديم للبنك، تأشيرة سفر، إلخ",
-    additionalInfo: "معلومات إضافية",
-    additionalInfoPlaceholder: "أي معلومات إضافية ترغب في إضافتها للطلب",
-    signatureUploadButton: "اختر ملف التوقيع",
-    requestSubmitted: "تم تقديم طلبك بنجاح!",
-    requestReviewMessage: "سيتم مراجعة الطلب وإصدار الشهادة في أقرب وقت",
-    followUpMessage: "يمكنك متابعة حالة الطلب من الصفحة الرئيسية",
-    newRequest: "طلب جديد",
-    requestInfo: "معلومات الطلب",
-    destination: "الوجهة",
-    destinationPlaceholder: "على سبيل المثال: الرياض، جدة، خارج البلاد",
-    selectDate: "اختر تاريخ",
-    signature: "التوقيع",
-    annualLeave: "إجازة سنوية",
-    sickLeave: "إجازة مرضية",
-    emergencyLeave: "إجازة اضطرارية",
-    unpaidLeave: "إجازة بدون راتب",
-    vacationReasonPlaceholder: "يرجى ذكر سبب الإجازة إذا كان ذلك ضرورياً",
-    profileSettings: "معلومات الملف الشخصي",
-    email: "البريد الإلكتروني",
-    phone: "رقم الهاتف",
-    saveChanges: "حفظ التغييرات",
-    notificationSettings: "إعدادات الإشعارات",
-    emailNotifications: "إشعارات البريد الإلكتروني",
-    emailNotificationsDesc: "استلام الإشعارات عبر البريد الإلكتروني",
-    newRequests: "طلبات جديدة",
-    newRequestsDesc: "إشعارات عند إنشاء طلبات جديدة",
-    requestUpdates: "تحديثات الطلبات",
-    requestUpdatesDesc: "إشعارات عند تحديث حالة الطلبات",
-    passwordSettings: "تغيير كلمة المرور",
-    currentPassword: "كلمة المرور الحالية",
-    newPassword: "كلمة المرور الجديدة",
-    confirmPassword: "تأكيد كلمة المرور",
-    changePassword: "تغيير كلمة المرور",
-    profileTab: "الملف الشخصي",
-    notificationsTab: "الإشعارات",
-    passwordTab: "كلمة المرور",
-  },
-  fr: {
-    home: "Accueil",
-    dashboard: "Tableau de bord",
-    pendingRequests: "Demandes en attente",
-    approvedRequests: "Demandes approuvées",
-    vacationDays: "Jours de congé",
-    awaitingApproval: "En attente d'approbation",
-    thisMonth: "Ce mois-ci",
-    remaining: "Restants",
-    workCertificate: "Attestation de travail",
-    missionOrder: "Ordre de mission",
-    vacationRequest: "Demande de congé",
-    settings: "Paramètres",
-    profile: "Profil",
-    notifications: "Notifications",
-    logout: "Déconnexion",
-    search: "Rechercher",
-    viewAll: "Voir tout",
-    name: "Nom",
-    startDate: "Date de début",
-    endDate: "Date de fin",
-    submit: "Soumettre",
-    cancel: "Annuler",
-    signatureUpload: "Télécharger la signature",
-    reason: "Raison",
-    type: "Type",
-    description: "Description",
-    save: "Enregistrer",
-    requestType: "Type de demande",
-    workCertificateTitle: "Demande d'attestation de travail",
-    missionOrderTitle: "Demande d'ordre de mission",
-    vacationRequestTitle: "Demande de congé",
-    purposeLabel: "Objectif de la demande",
-    purposePlaceholder: "Par exemple: Soumission à la banque, visa de voyage, etc.",
-    additionalInfo: "Informations supplémentaires",
-    additionalInfoPlaceholder: "Toute information supplémentaire que vous souhaitez ajouter à la demande",
-    signatureUploadButton: "Choisir le fichier de signature",
-    requestSubmitted: "Votre demande a été soumise avec succès !",
-    requestReviewMessage: "La demande sera examinée et le certificat sera délivré dans les plus brefs délais",
-    followUpMessage: "Vous pouvez suivre le statut de votre demande depuis la page d'accueil",
-    newRequest: "Nouvelle demande",
-    requestInfo: "Informations sur la demande",
-    destination: "Destination",
-    destinationPlaceholder: "Par exemple: Riyad, Djeddah, à l'étranger",
-    selectDate: "Sélectionner une date",
-    signature: "Signature",
-    annualLeave: "Congé annuel",
-    sickLeave: "Congé maladie",
-    emergencyLeave: "Congé d'urgence",
-    unpaidLeave: "Congé sans solde",
-    vacationReasonPlaceholder: "Veuillez indiquer la raison du congé si nécessaire",
-    profileSettings: "Informations du profil",
-    email: "E-mail",
-    phone: "Téléphone",
-    saveChanges: "Enregistrer les modifications",
-    notificationSettings: "Paramètres de notification",
-    emailNotifications: "Notifications par e-mail",
-    emailNotificationsDesc: "Recevoir des notifications par e-mail",
-    newRequests: "Nouvelles demandes",
-    newRequestsDesc: "Notifications lors de la création de nouvelles demandes",
-    requestUpdates: "Mises à jour des demandes",
-    requestUpdatesDesc: "Notifications lors de la mise à jour du statut des demandes",
-    passwordSettings: "Changer le mot de passe",
-    currentPassword: "Mot de passe actuel",
-    newPassword: "Nouveau mot de passe",
-    confirmPassword: "Confirmer le mot de passe",
-    changePassword: "Changer le mot de passe",
-    profileTab: "Profil",
-    notificationsTab: "Notifications",
-    passwordTab: "Mot de passe",
-  }
-};
-
-type LanguageContextType = {
+// Define the context type
+interface LanguageContextType {
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (language: Language) => void;
   t: (key: string) => string;
+}
+
+// Default translations
+const translations: Translations = {
+  dashboard: {
+    en: 'Dashboard',
+    ar: 'لوحة التحكم',
+  },
+  welcome: {
+    en: 'Welcome',
+    ar: 'مرحباً',
+  },
+  recentRequests: {
+    en: 'Recent Requests',
+    ar: 'الطلبات الأخيرة',
+  },
+  upcomingEvents: {
+    en: 'Upcoming Events',
+    ar: 'الأحداث القادمة',
+  },
+  pendingApprovals: {
+    en: 'Pending Approvals',
+    ar: 'موافقات معلقة',
+  },
+  settings: {
+    en: 'Settings',
+    ar: 'الإعدادات',
+  },
+  settingsDescription: {
+    en: 'Manage your account settings and preferences',
+    ar: 'إدارة إعدادات وتفضيلات حسابك',
+  },
+  profileSettings: {
+    en: 'Profile Settings',
+    ar: 'إعدادات الملف الشخصي',
+  },
+  appearanceSettings: {
+    en: 'Appearance Settings',
+    ar: 'إعدادات المظهر',
+  },
+  darkMode: {
+    en: 'Dark Mode',
+    ar: 'الوضع المظلم',
+  },
+  lightMode: {
+    en: 'Light Mode',
+    ar: 'الوضع الفاتح',
+  },
+  darkModeDescription: {
+    en: 'Toggle between light and dark mode',
+    ar: 'التبديل بين الوضع الفاتح والوضع المظلم',
+  },
+  fullName: {
+    en: 'Full Name',
+    ar: 'الاسم الكامل',
+  },
+  enterFullName: {
+    en: 'Enter your full name',
+    ar: 'أدخل اسمك الكامل',
+  },
+  email: {
+    en: 'Email',
+    ar: 'البريد الإلكتروني',
+  },
+  saveChanges: {
+    en: 'Save Changes',
+    ar: 'حفظ التغييرات',
+  },
+  saving: {
+    en: 'Saving...',
+    ar: 'جاري الحفظ...',
+  },
+  vacationRequest: {
+    en: 'Vacation Request',
+    ar: 'طلب إجازة',
+  },
+  workCertificate: {
+    en: 'Work Certificate',
+    ar: 'شهادة عمل',
+  },
+  missionOrder: {
+    en: 'Mission Order',
+    ar: 'أمر مهمة',
+  },
+  signIn: {
+    en: 'Sign In',
+    ar: 'تسجيل الدخول',
+  },
+  signUp: {
+    en: 'Sign Up',
+    ar: 'إنشاء حساب',
+  },
+  startDate: {
+    en: 'Start Date',
+    ar: 'تاريخ البدء',
+  },
+  endDate: {
+    en: 'End Date',
+    ar: 'تاريخ الانتهاء',
+  },
+  reason: {
+    en: 'Reason',
+    ar: 'السبب',
+  },
+  submit: {
+    en: 'Submit',
+    ar: 'إرسال',
+  },
+  submitting: {
+    en: 'Submitting...',
+    ar: 'جاري الإرسال...',
+  },
+  selectDates: {
+    en: 'Select dates',
+    ar: 'اختر التواريخ',
+  },
+  pleaseWait: {
+    en: 'Please wait...',
+    ar: 'برجاء الانتظار...',
+  },
+  enterReason: {
+    en: 'Enter reason for vacation',
+    ar: 'أدخل سبب الإجازة',
+  },
+  success: {
+    en: 'Success',
+    ar: 'نجاح',
+  },
+  successfullySubmitted: {
+    en: 'Your request has been successfully submitted',
+    ar: 'تم تقديم طلبك بنجاح',
+  },
 };
 
+// Create context
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('ar');
+// Provider component
+export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
+  // Initialize state with preferred language or default to Arabic
+  const [language, setLanguage] = useState<Language>(() => {
+    const savedLanguage = localStorage.getItem('language') as Language;
+    return savedLanguage || 'ar';
+  });
 
+  // Update document direction when language changes
+  useEffect(() => {
+    localStorage.setItem('language', language);
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+  }, [language]);
+
+  // Translation function
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    if (translations[key]) {
+      return translations[key][language];
+    }
+    console.warn(`Translation missing for key: ${key}`);
+    return key;
   };
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      <div dir={language === 'ar' ? 'rtl' : 'ltr'} className="min-h-screen">
-        {children}
-      </div>
+      {children}
     </LanguageContext.Provider>
   );
-}
+};
 
-export const useLanguage = () => {
+// Custom hook to use the language context
+export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
