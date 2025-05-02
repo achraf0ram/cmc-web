@@ -8,10 +8,6 @@ export const SignIn = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignInStart = () => {
-    setIsLoading(true);
-  };
-
   const handleSignInComplete = () => {
     setIsLoading(false);
     navigate("/");
@@ -50,8 +46,11 @@ export const SignIn = () => {
           signUpUrl="/sign-up"
           fallbackRedirectUrl="/"
           forceRedirectUrl="/"
-          onSubmit={handleSignInStart}
-          onComplete={handleSignInComplete}
+          afterSignInUrl="/"
+          beforeSignInUrl={(e) => {
+            setIsLoading(true);
+            return e;
+          }}
         />
       </div>
     </div>
