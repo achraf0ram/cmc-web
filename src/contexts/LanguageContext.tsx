@@ -2,12 +2,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 // Define available languages
-type Language = 'en' | 'ar';
+type Language = 'fr' | 'ar';
 
 // Define translation key structure
 interface Translations {
   [key: string]: {
-    en: string;
+    fr: string;
     ar: string;
   };
 }
@@ -22,132 +22,176 @@ interface LanguageContextType {
 // Default translations
 const translations: Translations = {
   dashboard: {
-    en: 'Dashboard',
+    fr: 'Tableau de bord',
     ar: 'لوحة التحكم',
   },
   welcome: {
-    en: 'Welcome',
+    fr: 'Bienvenue',
     ar: 'مرحباً',
   },
   recentRequests: {
-    en: 'Recent Requests',
+    fr: 'Demandes récentes',
     ar: 'الطلبات الأخيرة',
   },
   upcomingEvents: {
-    en: 'Upcoming Events',
+    fr: 'Événements à venir',
     ar: 'الأحداث القادمة',
   },
   pendingApprovals: {
-    en: 'Pending Approvals',
+    fr: 'Approbations en attente',
     ar: 'موافقات معلقة',
   },
   settings: {
-    en: 'Settings',
+    fr: 'Paramètres',
     ar: 'الإعدادات',
   },
   settingsDescription: {
-    en: 'Manage your account settings and preferences',
+    fr: 'Gérez les paramètres et les préférences de votre compte',
     ar: 'إدارة إعدادات وتفضيلات حسابك',
   },
   profileSettings: {
-    en: 'Profile Settings',
+    fr: 'Paramètres du profil',
     ar: 'إعدادات الملف الشخصي',
   },
   appearanceSettings: {
-    en: 'Appearance Settings',
+    fr: 'Paramètres d\'apparence',
     ar: 'إعدادات المظهر',
   },
   darkMode: {
-    en: 'Dark Mode',
+    fr: 'Mode sombre',
     ar: 'الوضع المظلم',
   },
   lightMode: {
-    en: 'Light Mode',
+    fr: 'Mode clair',
     ar: 'الوضع الفاتح',
   },
   darkModeDescription: {
-    en: 'Toggle between light and dark mode',
+    fr: 'Basculer entre le mode clair et le mode sombre',
     ar: 'التبديل بين الوضع الفاتح والوضع المظلم',
   },
   fullName: {
-    en: 'Full Name',
+    fr: 'Nom complet',
     ar: 'الاسم الكامل',
   },
   enterFullName: {
-    en: 'Enter your full name',
+    fr: 'Entrez votre nom complet',
     ar: 'أدخل اسمك الكامل',
   },
   email: {
-    en: 'Email',
+    fr: 'Email',
     ar: 'البريد الإلكتروني',
   },
   saveChanges: {
-    en: 'Save Changes',
+    fr: 'Enregistrer les modifications',
     ar: 'حفظ التغييرات',
   },
   saving: {
-    en: 'Saving...',
+    fr: 'Enregistrement...',
     ar: 'جاري الحفظ...',
   },
   vacationRequest: {
-    en: 'Vacation Request',
+    fr: 'Demande de congé',
     ar: 'طلب إجازة',
   },
   workCertificate: {
-    en: 'Work Certificate',
+    fr: 'Certificat de travail',
     ar: 'شهادة عمل',
   },
   missionOrder: {
-    en: 'Mission Order',
+    fr: 'Ordre de mission',
     ar: 'أمر مهمة',
   },
   signIn: {
-    en: 'Sign In',
+    fr: 'Se connecter',
     ar: 'تسجيل الدخول',
   },
   signUp: {
-    en: 'Sign Up',
+    fr: 'S\'inscrire',
     ar: 'إنشاء حساب',
   },
   startDate: {
-    en: 'Start Date',
+    fr: 'Date de début',
     ar: 'تاريخ البدء',
   },
   endDate: {
-    en: 'End Date',
+    fr: 'Date de fin',
     ar: 'تاريخ الانتهاء',
   },
   reason: {
-    en: 'Reason',
+    fr: 'Raison',
     ar: 'السبب',
   },
   submit: {
-    en: 'Submit',
+    fr: 'Soumettre',
     ar: 'إرسال',
   },
   submitting: {
-    en: 'Submitting...',
+    fr: 'Soumission...',
     ar: 'جاري الإرسال...',
   },
   selectDates: {
-    en: 'Select dates',
+    fr: 'Sélectionner les dates',
     ar: 'اختر التواريخ',
   },
   pleaseWait: {
-    en: 'Please wait...',
+    fr: 'Veuillez patienter...',
     ar: 'برجاء الانتظار...',
   },
   enterReason: {
-    en: 'Enter reason for vacation',
+    fr: 'Entrez la raison du congé',
     ar: 'أدخل سبب الإجازة',
   },
   success: {
-    en: 'Success',
+    fr: 'Succès',
     ar: 'نجاح',
   },
   successfullySubmitted: {
-    en: 'Your request has been successfully submitted',
+    fr: 'Votre demande a été soumise avec succès',
     ar: 'تم تقديم طلبك بنجاح',
+  },
+  home: {
+    fr: 'Accueil',
+    ar: 'الرئيسية',
+  },
+  search: {
+    fr: 'Rechercher',
+    ar: 'بحث',
+  },
+  notifications: {
+    fr: 'Notifications',
+    ar: 'الإشعارات',
+  },
+  viewAll: {
+    fr: 'Voir tout',
+    ar: 'عرض الكل',
+  },
+  logout: {
+    fr: 'Déconnexion',
+    ar: 'تسجيل الخروج',
+  },
+  pendingRequests: {
+    fr: 'Demandes en attente',
+    ar: 'الطلبات المعلقة',
+  },
+  approvedRequests: {
+    fr: 'Demandes approuvées',
+    ar: 'الطلبات الموافق عليها',
+  },
+  vacationDays: {
+    fr: 'Jours de congé',
+    ar: 'أيام الإجازة',
+  },
+  awaitingApproval: {
+    fr: 'En attente d\'approbation',
+    ar: 'في انتظار الموافقة',
+  },
+  thisMonth: {
+    fr: 'Ce mois-ci',
+    ar: 'هذا الشهر',
+  },
+  remaining: {
+    fr: 'Restant',
+    ar: 'متبقي',
   },
 };
 
@@ -166,6 +210,7 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     localStorage.setItem('language', language);
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
   }, [language]);
 
   // Translation function

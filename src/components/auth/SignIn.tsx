@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const SignIn = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { toast } = useToast();
+  const { language, t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,22 +26,26 @@ export const SignIn = () => {
       const success = await login(email, password);
       if (success) {
         toast({
-          title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك في منصة CMC",
+          title: language === 'ar' ? "تم تسجيل الدخول بنجاح" : "Connexion réussie",
+          description: language === 'ar' ? "مرحباً بك في منصة CMC" : "Bienvenue sur la plateforme CMC",
         });
         navigate("/");
       } else {
         toast({
           variant: "destructive",
-          title: "خطأ في تسجيل الدخول",
-          description: "يرجى التحقق من بريدك الإلكتروني وكلمة المرور",
+          title: language === 'ar' ? "خطأ في تسجيل الدخول" : "Erreur de connexion",
+          description: language === 'ar' 
+            ? "يرجى التحقق من بريدك الإلكتروني وكلمة المرور" 
+            : "Veuillez vérifier votre email et mot de passe",
         });
       }
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "خطأ في تسجيل الدخول",
-        description: "حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى",
+        title: language === 'ar' ? "خطأ في تسجيل الدخول" : "Erreur de connexion",
+        description: language === 'ar'
+          ? "حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى"
+          : "Une erreur s'est produite lors de la tentative de connexion. Veuillez réessayer",
       });
     } finally {
       setIsLoading(false);
@@ -56,41 +62,49 @@ export const SignIn = () => {
             className="mx-auto h-16 w-auto mb-4" 
           />
           <h2 className="text-2xl font-bold text-[#0FA0CE]">CMC</h2>
-          <p className="text-gray-600 mt-2">منصة إدارة طلبات الموارد البشرية</p>
+          <p className="text-gray-600 mt-2">
+            {language === 'ar' 
+              ? "منصة إدارة طلبات الموارد البشرية"
+              : "Plateforme de gestion des demandes RH"}
+          </p>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
+            <Label htmlFor="email">
+              {language === 'ar' ? "البريد الإلكتروني" : "Email"}
+            </Label>
             <div className="relative">
               <Input
                 id="email"
                 type="email"
-                placeholder="أدخل البريد الإلكتروني"
+                placeholder={language === 'ar' ? "أدخل البريد الإلكتروني" : "Entrez votre email"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 pr-4"
+                className={language === 'ar' ? "pl-10 pr-4" : "pl-4 pr-10"}
                 required
-                dir="rtl"
+                dir={language === 'ar' ? "rtl" : "ltr"}
               />
-              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <User className={`absolute top-3 h-4 w-4 text-muted-foreground ${language === 'ar' ? "left-3" : "right-3"}`} />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">كلمة المرور</Label>
+            <Label htmlFor="password">
+              {language === 'ar' ? "كلمة المرور" : "Mot de passe"}
+            </Label>
             <div className="relative">
               <Input
                 id="password"
                 type="password"
-                placeholder="أدخل كلمة المرور"
+                placeholder={language === 'ar' ? "أدخل كلمة المرور" : "Entrez votre mot de passe"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-4"
+                className={language === 'ar' ? "pl-10 pr-4" : "pl-4 pr-10"}
                 required
-                dir="rtl"
+                dir={language === 'ar' ? "rtl" : "ltr"}
               />
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Lock className={`absolute top-3 h-4 w-4 text-muted-foreground ${language === 'ar' ? "left-3" : "right-3"}`} />
             </div>
           </div>
           
@@ -102,21 +116,21 @@ export const SignIn = () => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                جاري تسجيل الدخول...
+                {language === 'ar' ? "جاري تسجيل الدخول..." : "Connexion en cours..."}
               </>
             ) : (
-              "تسجيل الدخول"
+              language === 'ar' ? "تسجيل الدخول" : "Se connecter"
             )}
           </Button>
           
           <div className="text-center mt-4 text-sm">
-            ليس لديك حساب؟{" "}
+            {language === 'ar' ? "ليس لديك حساب؟" : "Vous n'avez pas de compte?"}{" "}
             <Button
               variant="link"
               className="p-0 text-[#0EA5E9]"
               onClick={() => navigate("/sign-up")}
             >
-              إنشاء حساب جديد
+              {language === 'ar' ? "إنشاء حساب جديد" : "Créer un nouveau compte"}
             </Button>
           </div>
         </form>

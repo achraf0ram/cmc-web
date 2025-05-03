@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const SignUp = () => {
   const navigate = useNavigate();
   const { signup } = useAuth();
   const { toast } = useToast();
+  const { language } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,22 +27,24 @@ export const SignUp = () => {
       const success = await signup(fullName, email, password);
       if (success) {
         toast({
-          title: "تم إنشاء الحساب بنجاح",
-          description: "مرحباً بك في منصة CMC",
+          title: language === 'ar' ? "تم إنشاء الحساب بنجاح" : "Compte créé avec succès",
+          description: language === 'ar' ? "مرحباً بك في منصة CMC" : "Bienvenue sur la plateforme CMC",
         });
         navigate("/");
       } else {
         toast({
           variant: "destructive",
-          title: "خطأ في إنشاء الحساب",
-          description: "يرجى التحقق من البيانات المدخلة",
+          title: language === 'ar' ? "خطأ في إنشاء الحساب" : "Erreur lors de la création du compte",
+          description: language === 'ar' ? "يرجى التحقق من البيانات المدخلة" : "Veuillez vérifier les informations saisies",
         });
       }
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "خطأ في إنشاء الحساب",
-        description: "حدث خطأ أثناء محاولة إنشاء الحساب. يرجى المحاولة مرة أخرى",
+        title: language === 'ar' ? "خطأ في إنشاء الحساب" : "Erreur lors de la création du compte",
+        description: language === 'ar'
+          ? "حدث خطأ أثناء محاولة إنشاء الحساب. يرجى المحاولة مرة أخرى"
+          : "Une erreur s'est produite lors de la tentative de création du compte. Veuillez réessayer",
       });
     } finally {
       setIsLoading(false);
@@ -57,58 +61,68 @@ export const SignUp = () => {
             className="mx-auto h-16 w-auto mb-4" 
           />
           <h2 className="text-2xl font-bold text-[#0FA0CE]">CMC</h2>
-          <p className="text-gray-600 mt-2">منصة إدارة طلبات الموارد البشرية</p>
+          <p className="text-gray-600 mt-2">
+            {language === 'ar'
+              ? "منصة إدارة طلبات الموارد البشرية"
+              : "Plateforme de gestion des demandes RH"}
+          </p>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">الاسم الكامل</Label>
+            <Label htmlFor="fullName">
+              {language === 'ar' ? "الاسم الكامل" : "Nom complet"}
+            </Label>
             <div className="relative">
               <Input
                 id="fullName"
                 type="text"
-                placeholder="أدخل الاسم الكامل"
+                placeholder={language === 'ar' ? "أدخل الاسم الكامل" : "Entrez votre nom complet"}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="pl-10 pr-4"
+                className={language === 'ar' ? "pl-10 pr-4" : "pl-4 pr-10"}
                 required
-                dir="rtl"
+                dir={language === 'ar' ? "rtl" : "ltr"}
               />
-              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <User className={`absolute top-3 h-4 w-4 text-muted-foreground ${language === 'ar' ? "left-3" : "right-3"}`} />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
+            <Label htmlFor="email">
+              {language === 'ar' ? "البريد الإلكتروني" : "Email"}
+            </Label>
             <div className="relative">
               <Input
                 id="email"
                 type="email"
-                placeholder="أدخل البريد الإلكتروني"
+                placeholder={language === 'ar' ? "أدخل البريد الإلكتروني" : "Entrez votre email"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 pr-4"
+                className={language === 'ar' ? "pl-10 pr-4" : "pl-4 pr-10"}
                 required
-                dir="rtl"
+                dir={language === 'ar' ? "rtl" : "ltr"}
               />
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Mail className={`absolute top-3 h-4 w-4 text-muted-foreground ${language === 'ar' ? "left-3" : "right-3"}`} />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">كلمة المرور</Label>
+            <Label htmlFor="password">
+              {language === 'ar' ? "كلمة المرور" : "Mot de passe"}
+            </Label>
             <div className="relative">
               <Input
                 id="password"
                 type="password"
-                placeholder="أدخل كلمة المرور"
+                placeholder={language === 'ar' ? "أدخل كلمة المرور" : "Entrez votre mot de passe"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-4"
+                className={language === 'ar' ? "pl-10 pr-4" : "pl-4 pr-10"}
                 required
-                dir="rtl"
+                dir={language === 'ar' ? "rtl" : "ltr"}
               />
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Lock className={`absolute top-3 h-4 w-4 text-muted-foreground ${language === 'ar' ? "left-3" : "right-3"}`} />
             </div>
           </div>
           
@@ -120,21 +134,21 @@ export const SignUp = () => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                جاري إنشاء الحساب...
+                {language === 'ar' ? "جاري إنشاء الحساب..." : "Création du compte en cours..."}
               </>
             ) : (
-              "إنشاء حساب"
+              language === 'ar' ? "إنشاء حساب" : "Créer un compte"
             )}
           </Button>
           
           <div className="text-center mt-4 text-sm">
-            لديك حساب بالفعل؟{" "}
+            {language === 'ar' ? "لديك حساب بالفعل؟" : "Vous avez déjà un compte?"}{" "}
             <Button
               variant="link"
               className="p-0 text-[#0EA5E9]"
               onClick={() => navigate("/sign-in")}
             >
-              تسجيل الدخول
+              {language === 'ar' ? "تسجيل الدخول" : "Se connecter"}
             </Button>
           </div>
         </form>
