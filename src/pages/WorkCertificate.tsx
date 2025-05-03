@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,14 +20,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
   purpose: z.string().min(5, {
-    message: "يرجى وصف الغرض من الشهادة",
+    message: "Purpose is required and must be at least 5 characters",
   }),
   additionalInfo: z.string().optional(),
   signature: z.instanceof(File).optional(),
 });
 
 const WorkCertificate = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
 
@@ -102,6 +103,7 @@ const WorkCertificate = () => {
                         <Input 
                           placeholder={t('purposePlaceholder')}
                           {...field}
+                          dir={language === 'ar' ? "rtl" : "ltr"}
                         />
                       </FormControl>
                       <FormMessage />
@@ -120,6 +122,7 @@ const WorkCertificate = () => {
                           placeholder={t('additionalInfoPlaceholder')}
                           className="resize-none"
                           {...field}
+                          dir={language === 'ar' ? "rtl" : "ltr"}
                         />
                       </FormControl>
                       <FormMessage />

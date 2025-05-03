@@ -193,6 +193,55 @@ const translations: Translations = {
     fr: 'Restant',
     ar: 'متبقي',
   },
+  // Work certificate translations
+  workCertificateTitle: {
+    fr: 'Demande de certificat de travail',
+    ar: 'طلب شهادة عمل',
+  },
+  requestSubmitted: {
+    fr: 'Demande soumise',
+    ar: 'تم تقديم الطلب',
+  },
+  requestReviewMessage: {
+    fr: 'Votre demande est en cours d\'examen. ',
+    ar: 'طلبك قيد المراجعة. ',
+  },
+  followUpMessage: {
+    fr: 'Nous vous contacterons sous peu.',
+    ar: 'سنتواصل معك قريبًا.',
+  },
+  newRequest: {
+    fr: 'Nouvelle demande',
+    ar: 'طلب جديد',
+  },
+  requestInfo: {
+    fr: 'Informations sur la demande',
+    ar: 'معلومات الطلب',
+  },
+  purposeLabel: {
+    fr: 'Objet',
+    ar: 'الغرض',
+  },
+  purposePlaceholder: {
+    fr: 'Veuillez décrire l\'objectif du certificat',
+    ar: 'يرجى وصف الغرض من الشهادة',
+  },
+  additionalInfo: {
+    fr: 'Informations supplémentaires',
+    ar: 'معلومات إضافية',
+  },
+  additionalInfoPlaceholder: {
+    fr: 'Toute information complémentaire que vous souhaitez ajouter',
+    ar: 'أي معلومات إضافية ترغب في إضافتها',
+  },
+  signatureUpload: {
+    fr: 'Télécharger la signature',
+    ar: 'تحميل التوقيع',
+  },
+  signatureUploadButton: {
+    fr: 'Sélectionner le fichier de signature',
+    ar: 'اختر ملف التوقيع',
+  }
 };
 
 // Create context
