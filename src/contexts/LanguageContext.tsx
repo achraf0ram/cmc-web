@@ -241,7 +241,76 @@ const translations: Translations = {
   signatureUploadButton: {
     fr: 'Sélectionner le fichier de signature',
     ar: 'اختر ملف التوقيع',
-  }
+  },
+  // New settings page translations
+  profileTab: {
+    fr: 'Profil',
+    ar: 'الملف الشخصي',
+  },
+  notificationsTab: {
+    fr: 'Notifications',
+    ar: 'الإشعارات',
+  },
+  passwordTab: {
+    fr: 'Mot de passe',
+    ar: 'كلمة المرور',
+  },
+  name: {
+    fr: 'Nom',
+    ar: 'الاسم',
+  },
+  phone: {
+    fr: 'Téléphone',
+    ar: 'رقم الهاتف',
+  },
+  notificationSettings: {
+    fr: 'Paramètres de notification',
+    ar: 'إعدادات الإشعارات',
+  },
+  emailNotifications: {
+    fr: 'Notifications par email',
+    ar: 'إشعارات البريد الإلكتروني',
+  },
+  emailNotificationsDesc: {
+    fr: 'Recevoir des notifications par email',
+    ar: 'تلقي الإشعارات عبر البريد الإلكتروني',
+  },
+  newRequests: {
+    fr: 'Nouvelles demandes',
+    ar: 'الطلبات الجديدة',
+  },
+  newRequestsDesc: {
+    fr: 'Notifications pour les nouvelles demandes',
+    ar: 'إشعارات للطلبات الجديدة',
+  },
+  requestUpdates: {
+    fr: 'Mises à jour des demandes',
+    ar: 'تحديثات الطلبات',
+  },
+  requestUpdatesDesc: {
+    fr: 'Notifications pour les mises à jour des demandes',
+    ar: 'إشعارات لتحديثات الطلبات',
+  },
+  passwordSettings: {
+    fr: 'Paramètres du mot de passe',
+    ar: 'إعدادات كلمة المرور',
+  },
+  currentPassword: {
+    fr: 'Mot de passe actuel',
+    ar: 'كلمة المرور الحالية',
+  },
+  newPassword: {
+    fr: 'Nouveau mot de passe',
+    ar: 'كلمة المرور الجديدة',
+  },
+  confirmPassword: {
+    fr: 'Confirmer le mot de passe',
+    ar: 'تأكيد كلمة المرور',
+  },
+  changePassword: {
+    fr: 'Changer le mot de passe',
+    ar: 'تغيير كلمة المرور',
+  },
 };
 
 // Create context
