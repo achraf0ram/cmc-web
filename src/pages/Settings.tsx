@@ -103,10 +103,7 @@ const Settings = () => {
 
   return (
     <div className="container mx-auto py-4 max-w-3xl">
-      <div className="flex justify-between items-center mb-5">
-        <h1 className="text-2xl font-bold">{t('settings')}</h1>
-        <ThemeToggle />
-      </div>
+      <h1 className="text-2xl font-bold mb-5">{t('settings')}</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="gap-1 grid grid-cols-1 md:grid-cols-3 mb-3">
