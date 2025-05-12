@@ -16,8 +16,8 @@ export const MainLayout = () => {
       
       <div className={cn(
         "flex-1 flex flex-col",
-        !isMobile && (language === 'ar' ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'),
-        "pt-16 md:pt-0" // Add padding top for mobile menu button
+        !isMobile && (language === 'ar' ? 'mr-0 md:mr-0' : 'ml-0 md:ml-0'),
+        "pt-16 md:pt-0" 
       )}>
         <AppHeader />
         
