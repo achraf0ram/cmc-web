@@ -1,7 +1,7 @@
-import { SignIn } from "../components/auth/SignIn";
+import { SignUp } from "../components/auth/SignUp";
 
-const SignInPage = () => {
-    return <SignIn />;
+const SignUpPage = () => {
+    return <SignUp />;
 };
 
-export default SignInPage;
+export default SignUpPage;
