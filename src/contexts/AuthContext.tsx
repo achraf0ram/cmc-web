@@ -24,14 +24,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [authToken, setAuthToken] = useState<string | null>(localStorage.getItem("authToken"));
 
+  // تحديث المستخدم عند تغيّر authToken
   useEffect(() => {
-    // Check if user is stored in localStorage and set the state
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+    } else {
+      setUser(null);
     }
     setIsLoading(false);
-  }, []);
+  }, [authToken]);
 
   // Login method
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -43,16 +45,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         {
           headers: {
             "Content-Type": "application/json",
-             'Authorization': `Bearer ${authToken}`, // Si vous utilisez un token d'authentification
+            // لا ترسل Authorization هنا
           },
-          withCredentials: true, // utile si vous gérez les cookies/session côté Laravel
+          withCredentials: true,
         }
       );
 
       if (response.data.token && response.data.user) {
         const userData: User = {
           id: response.data.user.id,
-          fullName: response.data.user.name, // Laravel par défaut: 'name'
+          fullName: response.data.user.name,
           email: response.data.user.email,
         };
 
@@ -79,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const response = await axios.post(
         "http://localhost:8000/api/register",
-        { name: fullName, email, password }, // Laravel attend 'name'
+        { name: fullName, email, password },
         {
           headers: {
             "Content-Type": "application/json",
