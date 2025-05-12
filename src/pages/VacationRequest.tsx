@@ -1,162 +1,185 @@
-
 import { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription 
-} from "@/components/ui/card";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { CheckCircle, FileImage } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const VacationRequest = () => {
+const formSchema = z.object({
+  purpose: z.string().min(5, {
+    message: "يرجى وصف الغرض من الشهادة",
+  }),
+  additionalInfo: z.string().optional(),
+  signature: z.instanceof(File).optional(),
+});
+
+const WorkCertificate = () => {
   const { t } = useLanguage();
-  const { toast } = useToast();
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
-  const [reason, setReason] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!startDate || !endDate) {
-      toast({
-        title: t('error'),
-        description: t('pleaseSelectDates'),
-        variant: "destructive",
-      });
-      return;
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      purpose: "",
+      additionalInfo: "",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+    setIsSubmitted(true);
+  }
+
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue("signature", file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSignaturePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-
-    if (!reason.trim()) {
-      toast({
-        title: t('error'),
-        description: t('pleaseEnterReason'),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: t('success'),
-        description: t('vacationRequestSubmitted'),
-      });
-      
-      // Reset form
-      setStartDate(undefined);
-      setEndDate(undefined);
-      setReason("");
-      setIsSubmitting(false);
-    }, 1000);
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">{t('vacationRequest')}</h1>
-      
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>{t('newVacationRequest')}</CardTitle>
-          <CardDescription>{t('fillVacationDetails')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">{t('startDate')}</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-right",
-                        !startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="ml-auto h-4 w-4" />
-                      {startDate ? format(startDate, "PPP") : t('selectDate')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={setStartDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">{t('workCertificateTitle')}</h1>
+
+      {isSubmitted ? (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              
-              <div className="space-y-2">
-                <label className="block text-sm font-medium">{t('endDate')}</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-right",
-                        !endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="ml-auto h-4 w-4" />
-                      {endDate ? format(endDate, "PPP") : t('selectDate')}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+              <div>
+                <h2 className="text-xl font-semibold mb-2">
+                  {t('requestSubmitted')}
+                </h2>
+                <p className="text-muted-foreground">
+                  {t('requestReviewMessage')}
+                  {t('followUpMessage')}
+                </p>
+                <Button 
+                  className="mt-4" 
+                  onClick={() => setIsSubmitted(false)}
+                >
+                  {t('newRequest')}
+                </Button>
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <label className="block text-sm font-medium">{t('reason')}</label>
-              <Textarea
-                placeholder={t('enterReason')}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="min-h-[120px]"
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full md:w-auto" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                  {t('submitting')}
-                </>
-              ) : (
-                t('submitRequest')
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('requestInfo')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="purpose"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('purposeLabel')}*</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={t('purposePlaceholder')}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="additionalInfo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('additionalInfo')}</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder={t('additionalInfoPlaceholder')}
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="signature"
+                  render={({ field: { value, ...fieldProps } }) => (
+                    <FormItem>
+                      <FormLabel>{t('signatureUpload')}</FormLabel>
+                      <FormControl>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-4">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleSignatureChange}
+                              className="hidden"
+                              id="signature-upload"
+                              {...fieldProps}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById("signature-upload")?.click()}
+                              className="w-full"
+                            >
+                              <FileImage className="mr-2 h-4 w-4" />
+                              {t('signatureUploadButton')}
+                            </Button>
+                          </div>
+                          {signaturePreview && (
+                            <div className="border rounded-md p-2">
+                              <img
+                                src={signaturePreview}
+                                alt={t('signatureUpload')}
+                                className="max-h-32 mx-auto"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end gap-3">
+                  <Button type="submit">{t('submit')}</Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
 
-export default VacationRequest;
+export default WorkCertificate;
