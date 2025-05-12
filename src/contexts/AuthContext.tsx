@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 // User type definition
 type User = {
@@ -145,3 +147,30 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+const SignInPage = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // اجلب القيم من الفورم
+    const email = /* ... */;
+    const password = /* ... */;
+    const success = await login(email, password);
+    if (success) {
+      navigate("/"); // أو navigate("/home") حسب ما تريد
+    } else {
+      // عرض رسالة خطأ
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* ...حقول الإدخال... */}
+      <button type="submit">تسجيل الدخول</button>
+    </form>
+  );
+};
+
+export default SignInPage;
