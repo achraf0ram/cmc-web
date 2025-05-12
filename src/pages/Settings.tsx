@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +18,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+// import { Label } from "@/components/ui/label";
+// import { useToast } from "@/hooks/use-toast";
+// import { useAuth } from "@/contexts/AuthContext";
+// import { Loader2 } from "lucide-react";
 
 const profileFormSchema = z.object({
   name: z.string().min(2),
@@ -43,7 +47,7 @@ const passwordFormSchema = z.object({
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
@@ -75,24 +79,24 @@ const Settings = () => {
   function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
     console.log(values);
     toast({
-      title: language === 'ar' ? "تم تحديث المعلومات" : "Les informations ont été mises à jour",
-      description: language === 'ar' ? "تم حفظ التعديلات بنجاح" : "Les modifications ont été enregistrées avec succès",
+      title: "Les informations ont été mises à jour",
+      description: "Les modifications ont été enregistrées avec succès",
     });
   }
 
   function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
     console.log(values);
     toast({
-      title: language === 'ar' ? "تم تحديث إعدادات الإشعارات" : "Les paramètres d'alerte ont été mis à jour",
-      description: language === 'ar' ? "تم حفظ التعديلات بنجاح" : "Les modifications ont été enregistrées avec succès",
+      title: "Les paramètres d'alerte ont été mis à jour",
+      description: "Les modifications ont été enregistrées avec succès",
     });
   }
 
   function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
     console.log(values);
     toast({
-      title: language === 'ar' ? "تم تغيير كلمة المرور" : "Le mot de passe a été changé",
-      description: language === 'ar' ? "تم تغيير كلمة المرور بنجاح" : "Le mot de passe a été changé avec succès",
+      title: "Le mot de passe a été changé",
+      description: "Le mot de passe a été changé avec succès",
     });
     passwordForm.reset({
       currentPassword: "",
@@ -106,7 +110,7 @@ const Settings = () => {
       <h1 className="text-2xl font-bold mb-5">{t('settings')}</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="gap-1 grid grid-cols-1 md:grid-cols-3 mb-3">
+        <TabsList className=" space-x-5 grid-cols-1 md:grid-cols-3 mb-3">
           <TabsTrigger value="profile">{t('profileTab')}</TabsTrigger>
           <TabsTrigger value="notifications">{t('notificationsTab')}</TabsTrigger>
           <TabsTrigger value="password">{t('passwordTab')}</TabsTrigger>
@@ -128,7 +132,7 @@ const Settings = () => {
                         <FormItem>
                           <FormLabel>{t('name')}</FormLabel>
                           <FormControl>
-                            <Input {...field} dir={language === 'ar' ? 'rtl' : 'ltr'} />
+                            <Input {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -181,7 +185,7 @@ const Settings = () => {
             <CardContent>
               <Form {...notificationsForm}>
                 <form onSubmit={notificationsForm.handleSubmit(onNotificationsSubmit)} className="space-y-6">
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <FormField
                       control={notificationsForm.control}
                       name="emailNotifications"
