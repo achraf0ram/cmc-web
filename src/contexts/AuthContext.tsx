@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-
+export {};
 // User type definition
 type User = {
   id: string;
@@ -47,7 +46,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         {
           headers: {
             "Content-Type": "application/json",
-            // لا ترسل Authorization هنا
           },
           withCredentials: true,
         }
