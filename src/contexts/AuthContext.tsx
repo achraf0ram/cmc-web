@@ -1,6 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
+// User type definition
 type User = {
   id: string;
   fullName: string;
@@ -21,9 +22,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  
+  const [authToken, setAuthToken] = useState<string | null>(localStorage.getItem("authToken"));
+
   useEffect(() => {
-    // Check if user is stored in localStorage
+    // Check if user is stored in localStorage and set the state
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -31,26 +33,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
+  // Login method
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      // Simulated login - in a real app, this would be an API call
-      // For demo purposes, we'll accept any email that looks valid with any password
-      if (!email.includes('@')) {
-        return false;
+      const response = await axios.post(
+        "http://localhost:8000/api/login",
+        { email, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+             'Authorization': `Bearer ${authToken}`, // Si vous utilisez un token d'authentification
+          },
+          withCredentials: true, // utile si vous gérez les cookies/session côté Laravel
+        }
+      );
+
+      if (response.data.token && response.data.user) {
+        const userData: User = {
+          id: response.data.user.id,
+          fullName: response.data.user.name, // Laravel par défaut: 'name'
+          email: response.data.user.email,
+        };
+
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("authToken", response.data.token);
+
+        setUser(userData);
+        setAuthToken(response.data.token);
+        return true;
       }
-      
-      // Create a mock user
-      const mockUser: User = {
-        id: `user_${Math.random().toString(36).substr(2, 9)}`,
-        fullName: email.split('@')[0],
-        email,
-      };
-      
-      // Store user in localStorage
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      setUser(mockUser);
-      return true;
+
+      return false;
     } catch (error) {
       console.error("Login error:", error);
       return false;
@@ -59,25 +73,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Signup method
   const signup = async (fullName: string, email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      // Simulated signup - in a real app, this would be an API call
-      if (!email.includes('@') || !fullName || !password) {
-        return false;
+      const response = await axios.post(
+        "http://localhost:8000/api/register",
+        { name: fullName, email, password }, // Laravel attend 'name'
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.token && response.data.user) {
+        const userData: User = {
+          id: response.data.user.id,
+          fullName: response.data.user.name,
+          email: response.data.user.email,
+        };
+
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("authToken", response.data.token);
+
+        setUser(userData);
+        setAuthToken(response.data.token);
+        return true;
       }
 
-      // Create a mock user
-      const mockUser: User = {
-        id: `user_${Math.random().toString(36).substr(2, 9)}`,
-        fullName,
-        email,
-      };
-      
-      // Store user in localStorage
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      setUser(mockUser);
-      return true;
+      return false;
     } catch (error) {
       console.error("Signup error:", error);
       return false;
@@ -86,20 +112,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Logout method
   const logout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
     setUser(null);
+    setAuthToken(null);
   };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        isAuthenticated: !!user, 
-        isLoading, 
-        login, 
-        signup, 
-        logout 
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        signup,
+        logout,
       }}
     >
       {children}
