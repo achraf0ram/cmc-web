@@ -5,16 +5,17 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { MainLayout } from "./layouts/MainLayout";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import MainLayout from "./layouts/MainLayout";
 import Index from "./pages/Index";
-import SignInPage from "./pages/SignIn";
-import SignUpPage from "./pages/SignUp";
 import WorkCertificate from "./pages/WorkCertificate";
 import MissionOrder from "./pages/MissionOrder";
 import VacationRequest from "./pages/VacationRequest";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import SignInPage from "./pages/SignIn";
+import SignUpPage from "./pages/SignUp";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const queryClient = new QueryClient();
 
@@ -52,7 +53,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LanguageProvider>
-        <AuthProvider>
+      <AuthProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -68,6 +69,11 @@ const App = () => (
                   <SignUpPage />
                 </PublicRoute>
               } />
+              <Route path="/forgot-password" element={
+                <PublicRoute>
+                  <ForgotPassword />
+                </PublicRoute>
+              } />
               
               {/* Protected routes */}
               <Route path="/" element={
@@ -81,15 +87,9 @@ const App = () => (
                 <Route path="vacation-request" element={<VacationRequest />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
-
-              {/* Not found route */}
-              <Route path="*" element={
-                <ProtectedRoute>
-                  <NotFound />
-                </ProtectedRoute>
-              } />
-            </Routes>
-          </BrowserRouter>
+            <Route path="*" element= {<NotFound />} />
+          </Routes>
+        </BrowserRouter>
         </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>

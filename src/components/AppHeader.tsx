@@ -21,15 +21,16 @@ export const AppHeader = () => {
   return (
     <header className={cn(
       "bg-white border-b py-2 px-6 flex items-center justify-between",
-      "relative z-20"
+      "relative z-20 h-20"
     )}>
       <div className="flex-1">
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+        <div className="relative w-full max-w-xs">
+          <Search className="absolute right-5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
             placeholder={t('search')}
-            className="pl-4 pr-10 bg-slate-50 border-slate-200"
-          />
+            className=" pl-4 pr-10 bg-slate-50 border-slate-200"
+            /> 
+        
         </div>
       </div>
       
