@@ -1,3 +1,4 @@
+
 import { AppHeader } from "@/components/AppHeader";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet } from "react-router-dom";
@@ -5,7 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export const MainLayout = () => {
+const MainLayout = () => {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   

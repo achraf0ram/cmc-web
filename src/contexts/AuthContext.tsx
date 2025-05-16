@@ -1,11 +1,12 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-// أنواع البيانات
+// Type definitions
 type User = {
   id: number;
-  name: string;
+  fullName: string; // Changed from 'name' to 'fullName' to match usage in AppSidebar
   email: string;
 };
 
@@ -14,20 +15,20 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string, password_confirmation: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
 };
 
-// إنشاء السياق
+// Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// مزود السياق
+// Context provider
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  // تحميل المستخدم من localStorage عند بدء التطبيق
+  // Load user from localStorage when app starts
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
@@ -38,16 +39,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  // تسجيل الدخول
+  // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      // أولاً: csrf-cookie
+      // First: csrf-cookie
       await axios.get(`${import.meta.env.VITE_API_URL}/sanctum/csrf-cookie`, {
         withCredentials: true,
       });
 
-      // ثانياً: طلب الدخول
+      // Second: login request
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL || "http://localhost:8000/api"}/login`,
         { email, password },
@@ -55,16 +56,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           headers: {
             "Accept": "application/json",
           },
-          withCredentials: true, // إذا كنت تستخدم sanctum
+          withCredentials: true,
         }
       );
       const { user, token } = response.data;
-      if (!user || !token) throw new Error("بيانات الاستجابة غير صحيحة");
+      if (!user || !token) throw new Error("Invalid response data");
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);
       setUser(user);
-      navigate('/'); // الانتقال للواجهة الرئيسية بعد الدخول
+      navigate('/');
       return true;
     } catch (error) {
       console.error('Login error:', error);
@@ -74,26 +75,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // التسجيل
-  const signup = async (name: string, email: string, password: string, password_confirmation: string): Promise<boolean> => {
+  // Signup function - updated to use only 3 parameters to match usage in SignUp component
+  const signup = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      // أولاً: احصل على csrf-cookie من الباكند (مطلوب مع sanctum)
+      // First: get csrf-cookie from backend (required with sanctum)
       await axios.get(`${import.meta.env.VITE_API_URL}/sanctum/csrf-cookie`, {
         withCredentials: true,
       });
 
-      // ثانياً: أرسل بيانات التسجيل
+      // Second: send registration data
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/register`,
-        { name, email, password, password_confirmation },
+        { name, email, password }, // Removed password_confirmation to match signature
         {
           headers: { "Accept": "application/json" },
           withCredentials: true,
         }
       );
       const { user, token } = response.data;
-      if (!user || !token) throw new Error("بيانات الاستجابة غير صحيحة");
+      if (!user || !token) throw new Error("Invalid response data");
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);
@@ -108,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // تسجيل الخروج
+  // Logout function
   const logout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
@@ -133,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// هوك للوصول إلى السياق بسهولة
+// Hook for easy context access
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
