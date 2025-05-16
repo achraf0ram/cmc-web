@@ -118,6 +118,17 @@ export const SignIn = () => {
               إنشاء حساب جديد
             </Button>
           </div>
+
+          <div className="text-left">
+            <Button
+              variant="link"
+              className="p-0 text-[#0EA5E9] text-sm"
+              onClick={() => navigate("/forgot-password")}
+              type="button"
+            >
+              هل نسيت كلمة السر؟
+            </Button>
+          </div>
         </form>
       </div>
     </div>
