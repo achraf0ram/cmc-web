@@ -6,7 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const MainLayout = () => {
+export const MainLayout = () => {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   
@@ -16,8 +16,8 @@ const MainLayout = () => {
       
       <div className={cn(
         "flex-1 flex flex-col",
-        !isMobile && (language === 'ar' ? 'mr-0 md:mr-0' : 'ml-0 md:ml-0'),
-        "pt-16 md:pt-0" 
+        !isMobile && (language === 'ar' ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'),
+        "pt-16 md:pt-0" // Add padding top for mobile menu button
       )}>
         <AppHeader />
         
@@ -28,5 +28,3 @@ const MainLayout = () => {
     </div>
   );
 };
-
-export default MainLayout;

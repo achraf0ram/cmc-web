@@ -25,7 +25,6 @@ export const AppSidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { logout, user } = useAuth();
   const navigate = useNavigate();
-  
 
   const menuItems = [
     { icon: Home, name: 'home', path: "/" },
@@ -41,26 +40,21 @@ export const AppSidebar = () => {
   };
 
   const chevronIcon = language === 'ar' ? 
-  (collapsed ? 
-    <ChevronLeft size={18} /> : 
-    <ChevronRight size={18} />) :
-  (collapsed ? 
-    <ChevronRight size={18} /> : 
-    <ChevronLeft size={18} />);
+    (collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />) :
+    (collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />);
 
   // Mobile toggle button that appears at the top of the screen
   const MobileToggle = () => (
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => setIsMobileOpen(!isMobileOpen)}  // Toggle mobile sidebar visibility
+      onClick={() => setIsMobileOpen(!isMobileOpen)}
       className={cn(
-        "fixed top-4 z-40 hover:bg-[#D3E4FD] text-[#0EA5E9]",
+        "fixed top-4 z-50 hover:bg-[#D3E4FD] text-[#0EA5E9]",
         language === 'ar' ? 'right-4' : 'left-4'
       )}
     >
-      {/* Change icon to X when sidebar is open */}
-      {isMobileOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
+      <Menu size={24} />
     </Button>
   );
 
@@ -79,7 +73,7 @@ export const AppSidebar = () => {
         )}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b h-20">
+        <div className="flex justify-between items-center p-4 border-b">
           {!collapsed && (
             <div className="flex items-center gap-2">
               <img 
@@ -112,7 +106,7 @@ export const AppSidebar = () => {
             <Link 
               to={item.path} 
               key={item.path}
-              onClick={() => isMobile && setIsMobileOpen(false)}  // Close mobile sidebar when clicking on a menu item
+              onClick={() => isMobile && setIsMobileOpen(false)}
             >
               <Button
                 variant="ghost"
@@ -130,7 +124,7 @@ export const AppSidebar = () => {
         
         {/* Footer */}
         <div className="border-t py-4 flex flex-col gap-2">
-          <div className={cn(
+          <Link to="/settings" className={cn(
             "flex items-center gap-3 px-4 py-2", 
             collapsed && "justify-center"
           )}>
@@ -138,9 +132,11 @@ export const AppSidebar = () => {
               <User size={16} className="text-[#0EA5E9]" />
             </div>
             {!collapsed && (
-              <div className="text-sm">{user?.fullName || "user"}</div>
+              <div className="text-sm">
+                {user?.fullName || "المستخدم"}
+              </div>
             )}
-          </div>
+          </Link>
           <Button
             variant="ghost"
             className={cn(

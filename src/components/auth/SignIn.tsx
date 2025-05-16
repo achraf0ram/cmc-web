@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, User, Lock } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,17 +15,9 @@ export const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage("");
-    
-    if (!email || !password) {
-      setErrorMessage("يرجى إدخال البريد الإلكتروني وكلمة المرور");
-      return;
-    }
-    
     setIsLoading(true);
 
     try {
@@ -37,7 +29,6 @@ export const SignIn = () => {
         });
         navigate("/");
       } else {
-        setErrorMessage("فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور");
         toast({
           variant: "destructive",
           title: "خطأ في تسجيل الدخول",
@@ -45,7 +36,6 @@ export const SignIn = () => {
         });
       }
     } catch (error) {
-      setErrorMessage("حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى");
       toast({
         variant: "destructive",
         title: "خطأ في تسجيل الدخول",
@@ -58,8 +48,8 @@ export const SignIn = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-9 shadow-lg">
-        <div className="mb-7 text-center">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
+        <div className="mb-6 text-center">
           <img 
             src="/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png" 
             alt="CMC" 
@@ -68,12 +58,6 @@ export const SignIn = () => {
           <h2 className="text-2xl font-bold text-[#0FA0CE]">CMC</h2>
           <p className="text-gray-600 mt-2">منصة إدارة طلبات الموارد البشرية</p>
         </div>
-        
-        {errorMessage && (
-          <div className="mb-4 p-3 text-sm text-white bg-red-500 rounded-md">
-            {errorMessage}
-          </div>
-        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -133,17 +117,6 @@ export const SignIn = () => {
               onClick={() => navigate("/sign-up")}
             >
               إنشاء حساب جديد
-            </Button>
-          </div>
-
-          <div className="text-center">
-            <Button
-              variant="link"
-              className="p-0 text-[#0EA5E9] text-sm"
-              onClick={() => navigate("/forgot-password")}
-              type="button"
-            >
-              هل نسيت كلمة السر؟
             </Button>
           </div>
         </form>
