@@ -2,11 +2,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from "@/hooks/use-toast";
 
 // Type definitions
 type User = {
   id: number;
-  fullName: string; // Changed from 'name' to 'fullName' to match usage in AppSidebar
+  fullName: string;
   email: string;
 };
 
@@ -43,24 +44,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Define API URL properly
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+      
       // First: csrf-cookie
-      await axios.get(`${import.meta.env.VITE_API_URL}/sanctum/csrf-cookie`, {
+      await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
         withCredentials: true,
       });
 
       // Second: login request
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || "http://localhost:8000/api"}/login`,
+        `${apiUrl}/login`,
         { email, password },
         {
           headers: {
             "Accept": "application/json",
+            "Content-Type": "application/json",
           },
           withCredentials: true,
         }
       );
+      
       const { user, token } = response.data;
       if (!user || !token) throw new Error("Invalid response data");
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);

@@ -29,4 +29,4 @@ const MainLayout = () => {
   );
 };
 
-export { MainLayout };
+export default MainLayout;

@@ -15,9 +15,17 @@ export const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
+    
+    if (!email || !password) {
+      setErrorMessage("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -29,6 +37,7 @@ export const SignIn = () => {
         });
         navigate("/");
       } else {
+        setErrorMessage("فشل تسجيل الدخول. يرجى التحقق من البريد الإلكتروني وكلمة المرور");
         toast({
           variant: "destructive",
           title: "خطأ في تسجيل الدخول",
@@ -36,6 +45,7 @@ export const SignIn = () => {
         });
       }
     } catch (error) {
+      setErrorMessage("حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى");
       toast({
         variant: "destructive",
         title: "خطأ في تسجيل الدخول",
@@ -58,6 +68,12 @@ export const SignIn = () => {
           <h2 className="text-2xl font-bold text-[#0FA0CE]">CMC</h2>
           <p className="text-gray-600 mt-2">منصة إدارة طلبات الموارد البشرية</p>
         </div>
+        
+        {errorMessage && (
+          <div className="mb-4 p-3 text-sm text-white bg-red-500 rounded-md">
+            {errorMessage}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
