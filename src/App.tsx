@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,7 +15,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
-
+import ForgotPassword from "./pages/ForgotPassword";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">Chargement...</div>;
+    return <div className="flex h-screen items-center justify-center">جاري التحميل...</div>;
   }
 
   if (!isAuthenticated) {
@@ -38,7 +39,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">Chargement...</div>;
+    return <div className="flex h-screen items-center justify-center">جاري التحميل...</div>;
   }
 
   if (isAuthenticated) {
@@ -66,6 +67,11 @@ const App = () => (
               <Route path="/sign-up" element={
                 <PublicRoute>
                   <SignUpPage />
+                </PublicRoute>
+              } />
+              <Route path="/forgot-password" element={
+                <PublicRoute>
+                  <ForgotPassword />
                 </PublicRoute>
               } />
               

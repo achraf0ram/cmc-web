@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, User, Lock } from "lucide-react";
@@ -119,7 +120,7 @@ export const SignIn = () => {
             </Button>
           </div>
 
-          <div className="text-left">
+          <div className="text-center">
             <Button
               variant="link"
               className="p-0 text-[#0EA5E9] text-sm"
