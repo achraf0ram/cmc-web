@@ -47,6 +47,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
+  // Check for Google Auth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userData = urlParams.get('user');
+    
+    if (token && userData) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userData));
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setUser(user);
+        
+        // Clean URL
+        navigate('/', { replace: true });
+        
+        toast({
+          title: "تم تسجيل الدخول بنجاح",
+          description: "مرحباً بك في منصة CMC",
+        });
+      } catch (error) {
+        console.error('Error processing Google auth callback:', error);
+      }
+    }
+  }, [navigate]);
+
   // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
