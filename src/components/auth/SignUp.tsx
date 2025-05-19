@@ -16,13 +16,15 @@ export const SignUp = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage("");
 
     try {
-      const success = await signup(fullName, email, password);
+      const success = await signup(fullName, email, password, password);
       if (success) {
         toast({
           title: "تم إنشاء الحساب بنجاح",
@@ -30,6 +32,7 @@ export const SignUp = () => {
         });
         navigate("/");
       } else {
+        setErrorMessage("فشل إنشاء الحساب. يرجى التحقق من البيانات المدخلة");
         toast({
           variant: "destructive",
           title: "خطأ في إنشاء الحساب",
@@ -37,6 +40,7 @@ export const SignUp = () => {
         });
       }
     } catch (error) {
+      setErrorMessage("حدث خطأ أثناء محاولة إنشاء الحساب. يرجى المحاولة مرة أخرى");
       toast({
         variant: "destructive",
         title: "خطأ في إنشاء الحساب",
@@ -59,6 +63,12 @@ export const SignUp = () => {
           <h2 className="text-2xl font-bold text-[#0FA0CE]">CMC</h2>
           <p className="text-gray-600 mt-2">منصة إدارة طلبات الموارد البشرية</p>
         </div>
+        
+        {errorMessage && (
+          <div className="mb-4 p-3 text-sm text-white bg-red-500 rounded-md">
+            {errorMessage}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

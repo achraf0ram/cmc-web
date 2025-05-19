@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 // Type definitions
 type User = {
   id: number;
-  fullName: string;  // Ensure this property exists
+  fullName: string;
   email: string;
 };
 
@@ -16,7 +16,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string, password_confirmation: string) => Promise<boolean>;
   logout: () => void;
 };
 
@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Signup function
-  const signup = async (name: string, email: string, password: string): Promise<boolean> => {
+  const signup = async (name: string, email: string, password: string, password_confirmation: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -103,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Second: send registration data
       const response = await axios.post(
         `${apiUrl}/register`,
-        { name, email, password, password_confirmation: password }, // Added password_confirmation
+        { name, email, password, password_confirmation },
         {
           headers: { "Accept": "application/json" },
           withCredentials: true,
