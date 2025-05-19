@@ -53,10 +53,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LanguageProvider>
-      <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+        <BrowserRouter>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
             <Routes>
               {/* Auth routes */}
               <Route path="/sign-in" element={
@@ -87,10 +87,10 @@ const App = () => (
                 <Route path="vacation-request" element={<VacationRequest />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
-            <Route path="*" element= {<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
-        </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>

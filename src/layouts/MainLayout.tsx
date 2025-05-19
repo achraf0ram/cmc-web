@@ -16,7 +16,7 @@ const MainLayout = () => {
       
       <div className={cn(
         "flex-1 flex flex-col",
-        !isMobile && (language === 'ar' ? 'mr-0 md:mr-0' : 'ml-0 md:ml-0'),
+        !isMobile && (language === 'ar' ? 'mr-64 md:mr-20' : 'ml-64 md:ml-20'),
         "pt-16 md:pt-0" 
       )}>
         <AppHeader />

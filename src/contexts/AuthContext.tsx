@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 // Type definitions
 type User = {
   id: number;
-  fullName: string;
+  fullName: string;  // Ensure this property exists
   email: string;
 };
 
@@ -34,8 +34,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      try {
+        setUser(JSON.parse(storedUser));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        // Handle corrupted localStorage data
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
     setIsLoading(false);
   }, []);
@@ -45,8 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      // Define API URL properly
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+      // Define API URL properly with a fallback
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
       
       // First: csrf-cookie
       await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
@@ -73,7 +80,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);
       setUser(user);
-      navigate('/');
       return true;
     } catch (error) {
       console.error('Login error:', error);
@@ -83,31 +89,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Signup function - updated to use only 3 parameters to match usage in SignUp component
+  // Signup function
   const signup = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      
       // First: get csrf-cookie from backend (required with sanctum)
-      await axios.get(`${import.meta.env.VITE_API_URL}/sanctum/csrf-cookie`, {
+      await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
         withCredentials: true,
       });
 
       // Second: send registration data
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/register`,
-        { name, email, password }, // Removed password_confirmation to match signature
+        `${apiUrl}/register`,
+        { name, email, password, password_confirmation: password }, // Added password_confirmation
         {
           headers: { "Accept": "application/json" },
           withCredentials: true,
         }
       );
+      
       const { user, token } = response.data;
       if (!user || !token) throw new Error("Invalid response data");
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', token);
       setUser(user);
-      navigate('/');
       return true;
     } catch (error) {
       console.error('Signup error:', error);
