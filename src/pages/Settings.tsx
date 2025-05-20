@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,16 +19,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-// import { Label } from "@/components/ui/label";
-// import { useToast } from "@/hooks/use-toast";
-// import { useAuth } from "@/contexts/AuthContext";
-// import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "lucide-react";
 
 const profileFormSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  phone: z.string().min(10),
+  fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  phone: z.string().min(10, { message: "Phone number must be at least 10 characters" }),
 });
 
 const notificationsFormSchema = z.object({
@@ -37,9 +36,9 @@ const notificationsFormSchema = z.object({
 });
 
 const passwordFormSchema = z.object({
-  currentPassword: z.string().min(8),
-  newPassword: z.string().min(8),
-  confirmPassword: z.string().min(8),
+  currentPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  newPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"],
@@ -47,14 +46,16 @@ const passwordFormSchema = z.object({
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const [isUpdating, setIsUpdating] = useState(false);
   const { t } = useLanguage();
+  const { user, updateUser } = useAuth();
   
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: "Achraf Ramdani",
-      email: "ram.m@example.com",
-      phone: "0501234567",
+      fullName: user?.fullName || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
     },
   });
 
@@ -76,27 +77,50 @@ const Settings = () => {
     },
   });
 
-  function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
-    console.log(values);
-    toast({
-      title: "Les informations ont été mises à jour",
-      description: "Les modifications ont été enregistrées avec succès",
-    });
+  async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
+    try {
+      setIsUpdating(true);
+      console.log("Updating profile with:", values);
+      
+      // If updateUser is available in your AuthContext, use it to update the user profile
+      if (updateUser && user) {
+        await updateUser({
+          ...user,
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone
+        });
+        
+        toast({
+          title: t('profileUpdated'),
+          description: t('profileUpdatedSuccess'),
+        });
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: t('errorUpdatingProfile'),
+        description: t('errorTryAgain'),
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   }
 
   function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
     console.log(values);
     toast({
-      title: "Les paramètres d'alerte ont été mis à jour",
-      description: "Les modifications ont été enregistrées avec succès",
+      title: t('notificationsUpdated'),
+      description: t('settingsSavedSuccess'),
     });
   }
 
   function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
     console.log(values);
     toast({
-      title: "Le mot de passe a été changé",
-      description: "Le mot de passe a été changé avec succès",
+      title: t('passwordChanged'),
+      description: t('passwordChangedSuccess'),
     });
     passwordForm.reset({
       currentPassword: "",
@@ -122,12 +146,25 @@ const Settings = () => {
               <CardTitle>{t('profileSettings')}</CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="flex flex-col items-center mb-6">
+                <Avatar className="h-24 w-24 mb-4">
+                  {user?.photoURL ? (
+                    <AvatarImage src={user.photoURL} alt={user.fullName || "User"} />
+                  ) : (
+                    <AvatarFallback className="text-4xl">
+                      <User />
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <h2 className="text-xl font-medium">{user?.fullName || t('yourProfile')}</h2>
+              </div>
+              
               <Form {...profileForm}>
                 <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
                     <FormField
                       control={profileForm.control}
-                      name="name"
+                      name="fullName"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t('name')}</FormLabel>
@@ -146,8 +183,13 @@ const Settings = () => {
                         <FormItem>
                           <FormLabel>{t('email')}</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} disabled={user?.provider === 'google'} />
                           </FormControl>
+                          {user?.provider === 'google' && (
+                            <FormDescription>
+                              {t('googleAccountEmail')}
+                            </FormDescription>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -169,7 +211,9 @@ const Settings = () => {
                   />
                   
                   <div className="flex justify-end">
-                    <Button type="submit">{t('saveChanges')}</Button>
+                    <Button type="submit" disabled={isUpdating}>
+                      {isUpdating ? t('saving') : t('saveChanges')}
+                    </Button>
                   </div>
                 </form>
               </Form>
@@ -265,57 +309,63 @@ const Settings = () => {
               <CardTitle>{t('passwordSettings')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Form {...passwordForm}>
-                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
-                  <div className="grid gap-6">
-                    <FormField
-                      control={passwordForm.control}
-                      name="currentPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('currentPassword')}</FormLabel>
-                          <FormControl>
-                            <Input type="password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              {user?.provider === 'google' ? (
+                <div className="p-4 text-center">
+                  <p>{t('googleAccountPassword')}</p>
+                </div>
+              ) : (
+                <Form {...passwordForm}>
+                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
+                    <div className="grid gap-6">
+                      <FormField
+                        control={passwordForm.control}
+                        name="currentPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('currentPassword')}</FormLabel>
+                            <FormControl>
+                              <Input type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={passwordForm.control}
+                        name="newPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('newPassword')}</FormLabel>
+                            <FormControl>
+                              <Input type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={passwordForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('confirmPassword')}</FormLabel>
+                            <FormControl>
+                              <Input type="password" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     
-                    <FormField
-                      control={passwordForm.control}
-                      name="newPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('newPassword')}</FormLabel>
-                          <FormControl>
-                            <Input type="password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={passwordForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t('confirmPassword')}</FormLabel>
-                          <FormControl>
-                            <Input type="password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button type="submit">{t('changePassword')}</Button>
-                  </div>
-                </form>
-              </Form>
+                    <div className="flex justify-end">
+                      <Button type="submit">{t('changePassword')}</Button>
+                    </div>
+                  </form>
+                </Form>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
