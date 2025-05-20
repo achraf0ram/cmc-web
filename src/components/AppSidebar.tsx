@@ -19,7 +19,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const AppSidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -37,7 +37,7 @@ export const AppSidebar = () => {
 
   const handleSignOut = () => {
     logout();
-    navigate("/sign-in");
+    navigate("/login", { replace: true });
   };
 
   const chevronIcon = language === 'ar' ? 
@@ -67,32 +67,34 @@ export const AppSidebar = () => {
   return (
     <>
       {isMobile && <MobileToggle />}
-      <div 
+      <div
         className={cn(
           "fixed md:static h-screen bg-white shadow-md flex flex-col transition-all duration-300 z-40",
           collapsed ? "w-20" : "w-64",
-          isMobile ? (
-            isMobileOpen ? "translate-x-0" : 
-            language === 'ar' ? "translate-x-full" : "-translate-x-full"
-          ) : "",
-          language === 'ar' ? 'right-0' : 'left-0'
-        )}
-      >
+          isMobile
+            ? isMobileOpen
+              ? "translate-x-0"
+              : language === "ar"
+              ? "translate-x-full"
+              : "-translate-x-full"
+            : "",
+          language === "ar" ? "right-0" : "left-0"
+        )}>
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b h-20">
+        <div className='flex justify-between items-center p-4 border-b h-20'>
           {!collapsed && (
-            <div className="flex items-center gap-2">
-              <img 
-                src="/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png" 
-                alt="CMC" 
-                className="h-10 w-auto"
+            <div className='flex items-center gap-2'>
+              <img
+                src='/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png'
+                alt='CMC'
+                className='h-10 w-auto'
               />
-              <span className="text-[#0FA0CE] font-bold text-xl">CMC</span>
+              <span className='text-[#0FA0CE] font-bold text-xl'>CMC</span>
             </div>
           )}
           <Button
-            variant="ghost"
-            size="icon"
+            variant='ghost'
+            size='icon'
             onClick={() => {
               if (isMobile) {
                 setIsMobileOpen(false);
@@ -100,65 +102,66 @@ export const AppSidebar = () => {
                 setCollapsed(!collapsed);
               }
             }}
-            className="hover:bg-[#D3E4FD] text-[#0EA5E9]"
-          >
+            className='hover:bg-[#D3E4FD] text-[#0EA5E9]'>
             {chevronIcon}
           </Button>
         </div>
-        
+
         {/* Navigation */}
-        <div className="flex-1 py-4 flex flex-col gap-2">
+        <div className='flex-1 py-4 flex flex-col gap-2'>
           {menuItems.map((item) => (
-            <Link 
-              to={item.path} 
+            <Link
+              to={item.path}
               key={item.path}
-              onClick={() => isMobile && setIsMobileOpen(false)}  // Close mobile sidebar when clicking on a menu item
+              onClick={() => isMobile && setIsMobileOpen(false)} // Close mobile sidebar when clicking on a menu item
             >
               <Button
-                variant="ghost"
+                variant='ghost'
                 className={cn(
                   "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
                   "hover:bg-[#D3E4FD] hover:text-[#0EA5E9]"
-                )}
-              >
+                )}>
                 <item.icon size={20} />
                 {!collapsed && <span>{t(item.name)}</span>}
               </Button>
             </Link>
           ))}
         </div>
-        
+
         {/* Footer */}
-        <div className="border-t py-4 flex flex-col gap-2">
-          <div className={cn(
-            "flex items-center gap-3 px-4 py-2", 
-            collapsed && "justify-center"
-          )}>
-            <div className="w-8 h-8 rounded-full bg-[#D3E4FD] flex items-center justify-center">
-              <User size={16} className="text-[#0EA5E9]" />
+        <div className='border-t py-4 flex flex-col gap-2'>
+          <div
+            className={cn(
+              "flex items-center gap-3 px-4 py-2",
+              collapsed && "justify-center"
+            )}>
+            <div className='w-8 h-8 rounded-full bg-[#D3E4FD] flex items-center justify-center'>
+              <User
+                size={16}
+                className='text-[#0EA5E9]'
+              />
             </div>
             {!collapsed && (
-              <div className="text-sm">{user?.fullName || "user"}</div>
+              <div className='text-sm'>{user?.name || "user"}</div>
             )}
           </div>
           <Button
-            variant="ghost"
+            variant='ghost'
             className={cn(
               "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
               "hover:bg-[#FDE1D3] hover:text-red-500 text-muted-foreground",
               collapsed && "justify-center"
             )}
-            onClick={handleSignOut}
-          >
+            onClick={handleSignOut}>
             <LogOut size={18} />
-            {!collapsed && <span>{t('logout')}</span>}
+            {!collapsed && <span>{t("logout")}</span>}
           </Button>
         </div>
       </div>
       {/* Overlay for mobile */}
       {isMobile && isMobileOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 z-30"
+        <div
+          className='fixed inset-0 bg-black/20 z-30'
           onClick={() => setIsMobileOpen(false)}
         />
       )}
