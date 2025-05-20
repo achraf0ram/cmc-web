@@ -18,6 +18,8 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (name: string, email: string, password: string, password_confirmation: string) => Promise<boolean>;
   logout: () => void;
+  forgotPassword: (email: string) => Promise<boolean>;
+  resetPassword: (email: string, password: string, password_confirmation: string, token: string) => Promise<boolean>;
 };
 
 // Create context
@@ -153,6 +155,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Forgot password function
+  const forgotPassword = async (email: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      
+      await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
+        withCredentials: true,
+      });
+
+      await axios.post(
+        `${apiUrl}/forgot-password`,
+        { email },
+        {
+          headers: { "Accept": "application/json" },
+          withCredentials: true,
+        }
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Reset password function
+  const resetPassword = async (email: string, password: string, password_confirmation: string, token: string): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+      
+      await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
+        withCredentials: true,
+      });
+
+      await axios.post(
+        `${apiUrl}/reset-password`,
+        { email, password, password_confirmation, token },
+        {
+          headers: { "Accept": "application/json" },
+          withCredentials: true,
+        }
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Reset password error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Logout function
   const logout = () => {
     localStorage.removeItem('user');
@@ -171,6 +229,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         signup,
         logout,
+        forgotPassword,
+        resetPassword,
       }}
     >
       {children}

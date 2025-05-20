@@ -57,7 +57,6 @@ export const SignIn = () => {
   };
 
   const handleGoogleLogin = () => {
-    // Will implement in AuthContext
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
     window.location.href = `${apiUrl}/auth/google`;
   };

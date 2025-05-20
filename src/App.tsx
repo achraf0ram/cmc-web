@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,11 @@ const App = () => (
               <Route path="/forgot-password" element={
                 <PublicRoute>
                   <ForgotPassword />
+                </PublicRoute>
+              } />
+              <Route path="/reset-password" element={
+                <PublicRoute>
+                  <ResetPassword />
                 </PublicRoute>
               } />
               
