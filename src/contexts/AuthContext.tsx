@@ -1,223 +1,139 @@
+// src/contexts/AuthContext.tsx
+import React, { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { toast } from "@/hooks/use-toast";
-
-// Type definitions
-type User = {
+// Define User type
+interface User {
   id: number;
-  fullName: string;
+  name: string;
   email: string;
-};
+  email_verified_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
-type AuthContextType = {
+// Define context type
+interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string, password_confirmation: string) => Promise<boolean>;
-  logout: () => void;
-  forgotPassword: (email: string) => Promise<boolean>;
-  resetPassword: (email: string, password: string, password_confirmation: string, token: string) => Promise<boolean>;
-};
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    passwordConfirmation: string
+  ) => Promise<{ success: boolean; errors?: Record<string, string[]> }>;
+  logout: () => Promise<void>;
+  error: string | null;
+  validationErrors: Record<string, string[]> | null;
+}
 
-// Create context
+// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Context provider
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const navigate = useNavigate();
+// Create axios instance
+const api = axios.create({
+  baseURL: "http://localhost:8000",
+  withCredentials: true,
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
+});
 
-  // Load user from localStorage when app starts
+// AuthProvider component
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<
+    string,
+    string[]
+  > | null>(null);
+
+  const getCsrf = async () => {
+    await api.get("/sanctum/csrf-cookie");
+  };
+
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    if (storedUser && token) {
+    const fetchUser = async () => {
       try {
-        setUser(JSON.parse(storedUser));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        // Handle corrupted localStorage data
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        await getCsrf();
+        const res = await api.get("api/user");
+        console.log("User data:", res.data);
+        setUser(res.data);
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    };
+
+    fetchUser();
   }, []);
 
-  // Check for Google Auth callback
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    const userData = urlParams.get('user');
-    
-    if (token && userData) {
-      try {
-        const user = JSON.parse(decodeURIComponent(userData));
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', token);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        setUser(user);
-        
-        // Clean URL
-        navigate('/', { replace: true });
-        
-        toast({
-          title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك في منصة CMC",
-        });
-      } catch (error) {
-        console.error('Error processing Google auth callback:', error);
-      }
-    }
-  }, [navigate]);
-
-  // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
+    setError(null);
+    setValidationErrors(null);
     try {
-      setIsLoading(true);
-      
-      // Define API URL properly with a fallback
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      
-      // First: csrf-cookie
-      await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
-        withCredentials: true,
-      });
-
-      // Second: login request
-      const response = await axios.post(
-        `${apiUrl}/login`,
-        { email, password },
-        {
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-      
-      const { user, token } = response.data;
-      if (!user || !token) throw new Error("Invalid response data");
-      
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
-      setUser(user);
+      await getCsrf();
+      const res = await api.post("/login", { email, password });
+      setUser(res.data.user || res.data); // Adjust to your Laravel response
       return true;
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errors = err.response.data.errors;
+        setValidationErrors(errors);
+        setError("Validation failed");
+        return false;
+      }
+      const errorMessage = err.response?.data?.message || "Login failed";
+      setError(errorMessage);
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  // Signup function
-  const signup = async (name: string, email: string, password: string, password_confirmation: string): Promise<boolean> => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    passwordConfirmation: string
+  ): Promise<{ success: boolean; errors?: Record<string, string[]> }> => {
+    setError(null);
+    setValidationErrors(null);
     try {
-      setIsLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      
-      // First: get csrf-cookie from backend (required with sanctum)
-      await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
-        withCredentials: true,
+      await getCsrf();
+      const res = await axios.post("http://localhost:8000/register", {
+        name,
+        email,
+        password,
+        password_confirmation: passwordConfirmation,
       });
-
-      // Second: send registration data
-      const response = await axios.post(
-        `${apiUrl}/register`,
-        { name, email, password, password_confirmation },
-        {
-          headers: { "Accept": "application/json" },
-          withCredentials: true,
-        }
-      );
-      
-      const { user, token } = response.data;
-      if (!user || !token) throw new Error("Invalid response data");
-      
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
-      setUser(user);
-      return true;
-    } catch (error) {
-      console.error('Signup error:', error);
-      return false;
-    } finally {
-      setIsLoading(false);
+      setUser(res.data.user || res.data); // Adjust to your Laravel response
+      return { success: true };
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errors = err.response.data.errors;
+        setValidationErrors(errors);
+        setError("Validation failed");
+        return { success: false, errors };
+      }
+      const errorMessage = err.response?.data?.message || "Registration failed";
+      setError(errorMessage);
+      return { success: false, errors: { general: [errorMessage] } };
     }
   };
 
-  // Forgot password function
-  const forgotPassword = async (email: string): Promise<boolean> => {
+  const logout = async () => {
     try {
-      setIsLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      
-      await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
-        withCredentials: true,
-      });
-
-      await axios.post(
-        `${apiUrl}/forgot-password`,
-        { email },
-        {
-          headers: { "Accept": "application/json" },
-          withCredentials: true,
-        }
-      );
-      
-      return true;
-    } catch (error) {
-      console.error('Forgot password error:', error);
-      return false;
-    } finally {
-      setIsLoading(false);
+      await api.post("/logout");
+      setUser(null);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Logout failed");
     }
-  };
-
-  // Reset password function
-  const resetPassword = async (email: string, password: string, password_confirmation: string, token: string): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      
-      await axios.get(`${apiUrl}/sanctum/csrf-cookie`, {
-        withCredentials: true,
-      });
-
-      await axios.post(
-        `${apiUrl}/reset-password`,
-        { email, password, password_confirmation, token },
-        {
-          headers: { "Accept": "application/json" },
-          withCredentials: true,
-        }
-      );
-      
-      return true;
-    } catch (error) {
-      console.error('Reset password error:', error);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    setUser(null);
-    delete axios.defaults.headers.common['Authorization'];
-    navigate('/sign-in');
   };
 
   return (
@@ -227,22 +143,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         login,
-        signup,
+        register,
         logout,
-        forgotPassword,
-        resetPassword,
-      }}
-    >
+        error,
+        validationErrors,
+      }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook for easy context access
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used inside AuthProvider");
   return context;
 };
