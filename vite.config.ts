@@ -13,7 +13,10 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     // Use React plugin with Babel instead of SWC
-    react(),
+    react({
+      // Explicitly configure React import
+      jsxRuntime: 'automatic'
+    }),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
@@ -22,8 +25,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Add esbuild configuration as fallback
+  // Remove esbuild jsxInject configuration as we're using automatic JSX runtime
   esbuild: {
-    jsxInject: `import React from 'react'`,
+    // jsxInject: `import React from 'react'`, // Remove this line
   },
 }));
