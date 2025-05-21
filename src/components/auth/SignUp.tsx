@@ -22,10 +22,7 @@ export const SignUp = () => {
     setIsLoading(true);
 
     try {
-      const response = await register(name, email, password, password_confirmation);
-      if (!response?.success) {
-        throw new Error("فشل إنشاء الحساب");
-      }
+      await register(name,email,password,password_confirmation);
       toast({
         title: "تم إنشاء الحساب بنجاح",
         description: "مرحباً بك في منصة CMC",
