@@ -1,5 +1,6 @@
+
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import type { ConfigEnv, UserConfig } from "vite";
@@ -11,19 +12,8 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    // Use the SWC plugin with a fallback to Babel if SWC fails
-    {
-      ...react(),
-      enforce: 'pre',
-      apply: 'build',
-      transformIndexHtml: undefined,
-      handleHotUpdate: undefined,
-      name: 'vite-plugin-react-swc-fallback',
-      configResolved(config: UserConfig) {
-        // Keep the resolved config for later use
-        console.log("Vite config resolved");
-      },
-    },
+    // Use React plugin with Babel instead of SWC
+    react(),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
