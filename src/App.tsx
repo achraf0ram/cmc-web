@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,7 +15,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
-
+import ResetPasswordPage from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +27,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <div className="flex h-screen items-center justify-center">Chargement...</div>;
   }
 
-  if (isAuthenticated) {
+  if (!isAuthenticated) {
     console.log("User is not authenticated");
     return <Navigate to="/login" replace />;
   }
@@ -73,6 +74,14 @@ const App = () => (
                 element={
                   <PublicRoute>
                     <SignUpPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/reset-password'
+                element={
+                  <PublicRoute>
+                    <ResetPasswordPage />
                   </PublicRoute>
                 }
               />
