@@ -33,20 +33,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      // Simulated login - in a real app, this would be an API call
-      // For demo purposes, we'll accept any email that looks valid with any password
-      if (!email.includes('@')) {
-        return false;
-      }
-      
-      // Create a mock user
+      // السماح بأي بريد وكلمة مرور بدون تحقق
       const mockUser: User = {
         id: `user_${Math.random().toString(36).substr(2, 9)}`,
-        fullName: email.split('@')[0],
+        fullName: email ? email.split('@')[0] : "user",
         email,
       };
-      
-      // Store user in localStorage
       localStorage.setItem("user", JSON.stringify(mockUser));
       setUser(mockUser);
       return true;
