@@ -113,7 +113,7 @@ export const SignIn = () => {
             <Button
               variant="link"
               className="p-0 text-[#0EA5E9]"
-              onClick={() => navigate("/sign-up")}
+              onClick={() => navigate("/register")}
             >
               إنشاء حساب جديد
             </Button>
