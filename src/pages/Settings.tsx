@@ -26,7 +26,7 @@ import { User } from "lucide-react";
 const profileFormSchema = z.object({
   fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
-  phone: z.string().min(10, { message: "Phone number must be at least 10 characters" }).optional(),
+  phone: z.string().min(10, { message: "Phone number must be at least 10 characters" }),
 });
 
 const notificationsFormSchema = z.object({
@@ -53,7 +53,7 @@ const Settings = () => {
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      fullName: user?.fullName || user?.name || "",
+      fullName: user?.fullName || "",
       email: user?.email || "",
       phone: user?.phone || "",
     },
@@ -84,21 +84,17 @@ const Settings = () => {
       
       // If updateUser is available in your AuthContext, use it to update the user profile
       if (updateUser && user) {
-        const success = await updateUser({
+        await updateUser({
           ...user,
           fullName: values.fullName,
           email: values.email,
-          phone: values.phone || ""
+          phone: values.phone
         });
         
-        if (success) {
-          toast({
-            title: t('profileUpdated'),
-            description: t('profileUpdatedSuccess'),
-          });
-        } else {
-          throw new Error("Failed to update profile");
-        }
+        toast({
+          title: t('profileUpdated'),
+          description: t('profileUpdatedSuccess'),
+        });
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -138,7 +134,7 @@ const Settings = () => {
       <h1 className="text-2xl font-bold mb-5">{t('settings')}</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="space-x-5 grid-cols-1 md:grid-cols-3 mb-3">
+        <TabsList className=" space-x-5 grid-cols-1 md:grid-cols-3 mb-3">
           <TabsTrigger value="profile">{t('profileTab')}</TabsTrigger>
           <TabsTrigger value="notifications">{t('notificationsTab')}</TabsTrigger>
           <TabsTrigger value="password">{t('passwordTab')}</TabsTrigger>
@@ -153,14 +149,14 @@ const Settings = () => {
               <div className="flex flex-col items-center mb-6">
                 <Avatar className="h-24 w-24 mb-4">
                   {user?.photoURL ? (
-                    <AvatarImage src={user.photoURL} alt={user.fullName || user.name || "User"} />
+                    <AvatarImage src={user.photoURL} alt={user.fullName || "User"} />
                   ) : (
                     <AvatarFallback className="text-4xl">
                       <User />
                     </AvatarFallback>
                   )}
                 </Avatar>
-                <h2 className="text-xl font-medium">{user?.fullName || user?.name || t('yourProfile')}</h2>
+                <h2 className="text-xl font-medium">{user?.fullName || t('yourProfile')}</h2>
               </div>
               
               <Form {...profileForm}>

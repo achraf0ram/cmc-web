@@ -10,10 +10,6 @@ interface User {
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
-  fullName?: string;
-  phone?: string;
-  photoURL?: string;
-  provider?: string;
 }
 
 // Define context type
@@ -29,16 +25,8 @@ interface AuthContextType {
     passwordConfirmation: string
   ) => Promise<{ success: boolean; errors?: Record<string, string[]> }>;
   logout: () => Promise<void>;
-  updateUser: (userData: User) => Promise<boolean>;
   error: string | null;
   validationErrors: Record<string, string[]> | null;
-  resetPassword: (
-    email: string, 
-    password: string, 
-    passwordConfirmation: string, 
-    token: string
-  ) => Promise<boolean>;
-  forgotPassword?: (email: string) => Promise<boolean>;
 }
 
 // Create the context
@@ -76,13 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         await getCsrf();
         const res = await api.get("api/user");
         console.log("User data:", res.data);
-        // Map backend response to our User interface
-        const userData = {
-          ...res.data,
-          fullName: res.data.name, // Use name as fullName if not provided
-          provider: res.data.provider || 'email', // Default to email provider
-        };
-        setUser(userData);
+        setUser(res.data);
       } catch {
         setUser(null);
       } finally {
@@ -99,13 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await getCsrf();
       const res = await api.post("/login", { email, password });
-      // Map backend response to our User interface
-      const userData = {
-        ...res.data.user || res.data,
-        fullName: (res.data.user || res.data).name, // Use name as fullName
-        provider: 'email', // Default to email provider
-      };
-      setUser(userData);
+      setUser(res.data.user || res.data); // Adjust to your Laravel response
       return true;
     } catch (err: any) {
       if (err.response?.status === 422) {
@@ -136,13 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password,
         password_confirmation: passwordConfirmation,
       });
-      // Map backend response to our User interface
-      const userData = {
-        ...res.data.user || res.data,
-        fullName: (res.data.user || res.data).name, // Use name as fullName
-        provider: 'email', // Default to email provider
-      };
-      setUser(userData);
+      setUser(res.data.user || res.data); // Adjust to your Laravel response
       return { success: true };
     } catch (err: any) {
       if (err.response?.status === 422) {
@@ -157,88 +127,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const updateUser = async (userData: User): Promise<boolean> => {
-    setError(null);
-    try {
-      await getCsrf();
-      const res = await api.put(`/api/user/${userData.id}`, userData);
-      if (res.status === 200) {
-        setUser(userData);
-        return true;
-      }
-      return false;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Update failed";
-      setError(errorMessage);
-      return false;
-    }
-  };
-
   const logout = async () => {
     try {
       await api.post("/logout");
       setUser(null);
     } catch (err: any) {
       setError(err.response?.data?.message || "Logout failed");
-    }
-  };
-
-  // Add resetPassword function
-  const resetPassword = async (
-    email: string,
-    password: string,
-    passwordConfirmation: string,
-    token: string
-  ): Promise<boolean> => {
-    setError(null);
-    setValidationErrors(null);
-    try {
-      await getCsrf();
-      const res = await api.post("/reset-password", {
-        email,
-        password,
-        password_confirmation: passwordConfirmation,
-        token
-      });
-      
-      if (res.status === 200) {
-        return true;
-      }
-      return false;
-    } catch (err: any) {
-      if (err.response?.status === 422) {
-        const errors = err.response.data.errors;
-        setValidationErrors(errors);
-        setError("Validation failed");
-        return false;
-      }
-      const errorMessage = err.response?.data?.message || "Password reset failed";
-      setError(errorMessage);
-      return false;
-    }
-  };
-
-  // Add forgotPassword function for completeness
-  const forgotPassword = async (email: string): Promise<boolean> => {
-    setError(null);
-    setValidationErrors(null);
-    try {
-      await getCsrf();
-      const res = await api.post("/forgot-password", { email });
-      if (res.status === 200) {
-        return true;
-      }
-      return false;
-    } catch (err: any) {
-      if (err.response?.status === 422) {
-        const errors = err.response.data.errors;
-        setValidationErrors(errors);
-        setError("Validation failed");
-        return false;
-      }
-      const errorMessage = err.response?.data?.message || "Password reset request failed";
-      setError(errorMessage);
-      return false;
     }
   };
 
@@ -251,11 +145,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         login,
         register,
         logout,
-        updateUser,
         error,
         validationErrors,
-        resetPassword,
-        forgotPassword
       }}>
       {children}
     </AuthContext.Provider>
