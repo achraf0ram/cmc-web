@@ -26,7 +26,7 @@ export const SignIn = () => {
           title: "تم تسجيل الدخول بنجاح",
           description: "مرحباً بك في منصة CMC",
         });
-        navigate("/", { replace: true });
+        navigate("/");
       } else {
         toast({
           variant: "destructive",
@@ -113,7 +113,7 @@ export const SignIn = () => {
             <Button
               variant="link"
               className="p-0 text-[#0EA5E9]"
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/sign-up")}
             >
               إنشاء حساب جديد
             </Button>
