@@ -27,6 +27,6 @@ export default defineConfig(({ mode }) => ({
   },
   // Remove esbuild jsxInject configuration as we're using automatic JSX runtime
   esbuild: {
-    // jsxInject: `import React from 'react'`, // Remove this line
+    // We don't need jsxInject when using automatic runtime
   },
 }));
