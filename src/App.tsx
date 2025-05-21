@@ -15,6 +15,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
+import ResetPasswordPage from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,14 @@ const App = () => (
                 element={
                   <PublicRoute>
                     <SignUpPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/reset-password'
+                element={
+                  <PublicRoute>
+                    <ResetPasswordPage />
                   </PublicRoute>
                 }
               />

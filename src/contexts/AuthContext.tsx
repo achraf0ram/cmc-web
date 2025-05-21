@@ -1,4 +1,3 @@
-
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
@@ -33,6 +32,13 @@ interface AuthContextType {
   updateUser: (userData: User) => Promise<boolean>;
   error: string | null;
   validationErrors: Record<string, string[]> | null;
+  resetPassword: (
+    email: string, 
+    password: string, 
+    passwordConfirmation: string, 
+    token: string
+  ) => Promise<boolean>;
+  forgotPassword?: (email: string) => Promise<boolean>;
 }
 
 // Create the context
@@ -177,6 +183,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // Add resetPassword function
+  const resetPassword = async (
+    email: string,
+    password: string,
+    passwordConfirmation: string,
+    token: string
+  ): Promise<boolean> => {
+    setError(null);
+    setValidationErrors(null);
+    try {
+      await getCsrf();
+      const res = await api.post("/reset-password", {
+        email,
+        password,
+        password_confirmation: passwordConfirmation,
+        token
+      });
+      
+      if (res.status === 200) {
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errors = err.response.data.errors;
+        setValidationErrors(errors);
+        setError("Validation failed");
+        return false;
+      }
+      const errorMessage = err.response?.data?.message || "Password reset failed";
+      setError(errorMessage);
+      return false;
+    }
+  };
+
+  // Add forgotPassword function for completeness
+  const forgotPassword = async (email: string): Promise<boolean> => {
+    setError(null);
+    setValidationErrors(null);
+    try {
+      await getCsrf();
+      const res = await api.post("/forgot-password", { email });
+      if (res.status === 200) {
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errors = err.response.data.errors;
+        setValidationErrors(errors);
+        setError("Validation failed");
+        return false;
+      }
+      const errorMessage = err.response?.data?.message || "Password reset request failed";
+      setError(errorMessage);
+      return false;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -189,6 +254,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         updateUser,
         error,
         validationErrors,
+        resetPassword,
+        forgotPassword
       }}>
       {children}
     </AuthContext.Provider>
