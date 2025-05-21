@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, User, Lock } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 export const SignIn = () => {
+
   const navigate = useNavigate();
   const { login } = useAuth();
   const { toast } = useToast();
@@ -15,18 +16,22 @@ export const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
       const success = await login(email, password);
-      if (success) {
+      if (success ) {
         toast({
           title: "تم تسجيل الدخول بنجاح",
           description: "مرحباً بك في منصة CMC",
         });
-        navigate("/");
+        navigate("/", { replace: true });
+  
+        console.log("Login successful", { email, password });
       } else {
         toast({
           variant: "destructive",
