@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -26,6 +27,8 @@ export const AppSidebar = () => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   
+  // Get display name - prioritize fullName if available, otherwise fall back to name
+  const displayName = user?.fullName || user?.name || t("user");
 
   const menuItems = [
     { icon: Home, name: 'home', path: "/" },
@@ -142,7 +145,7 @@ export const AppSidebar = () => {
               />
             </div>
             {!collapsed && (
-              <div className='text-sm'>{user?.name || "user"}</div>
+              <div className='text-sm'>{displayName}</div>
             )}
           </div>
           <Button

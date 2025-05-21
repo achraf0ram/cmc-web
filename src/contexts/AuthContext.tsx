@@ -1,3 +1,4 @@
+
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
@@ -10,6 +11,10 @@ interface User {
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
+  fullName?: string;
+  phone?: string;
+  photoURL?: string;
+  provider?: string;
 }
 
 // Define context type
@@ -25,6 +30,7 @@ interface AuthContextType {
     passwordConfirmation: string
   ) => Promise<{ success: boolean; errors?: Record<string, string[]> }>;
   logout: () => Promise<void>;
+  updateUser: (userData: User) => Promise<boolean>;
   error: string | null;
   validationErrors: Record<string, string[]> | null;
 }
@@ -64,7 +70,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         await getCsrf();
         const res = await api.get("api/user");
         console.log("User data:", res.data);
-        setUser(res.data);
+        // Map backend response to our User interface
+        const userData = {
+          ...res.data,
+          fullName: res.data.name, // Use name as fullName if not provided
+          provider: res.data.provider || 'email', // Default to email provider
+        };
+        setUser(userData);
       } catch {
         setUser(null);
       } finally {
@@ -81,7 +93,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await getCsrf();
       const res = await api.post("/login", { email, password });
-      setUser(res.data.user || res.data); // Adjust to your Laravel response
+      // Map backend response to our User interface
+      const userData = {
+        ...res.data.user || res.data,
+        fullName: (res.data.user || res.data).name, // Use name as fullName
+        provider: 'email', // Default to email provider
+      };
+      setUser(userData);
       return true;
     } catch (err: any) {
       if (err.response?.status === 422) {
@@ -112,7 +130,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password,
         password_confirmation: passwordConfirmation,
       });
-      setUser(res.data.user || res.data); // Adjust to your Laravel response
+      // Map backend response to our User interface
+      const userData = {
+        ...res.data.user || res.data,
+        fullName: (res.data.user || res.data).name, // Use name as fullName
+        provider: 'email', // Default to email provider
+      };
+      setUser(userData);
       return { success: true };
     } catch (err: any) {
       if (err.response?.status === 422) {
@@ -124,6 +148,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage = err.response?.data?.message || "Registration failed";
       setError(errorMessage);
       return { success: false, errors: { general: [errorMessage] } };
+    }
+  };
+
+  const updateUser = async (userData: User): Promise<boolean> => {
+    setError(null);
+    try {
+      await getCsrf();
+      const res = await api.put(`/api/user/${userData.id}`, userData);
+      if (res.status === 200) {
+        setUser(userData);
+        return true;
+      }
+      return false;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || "Update failed";
+      setError(errorMessage);
+      return false;
     }
   };
 
@@ -145,6 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         login,
         register,
         logout,
+        updateUser,
         error,
         validationErrors,
       }}>
