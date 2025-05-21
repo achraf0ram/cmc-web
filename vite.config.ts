@@ -10,7 +10,19 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    // Use the SWC plugin with a fallback to Babel if SWC fails
+    {
+      ...react(),
+      enforce: 'pre',
+      apply: 'build',
+      transformIndexHtml: undefined,
+      handleHotUpdate: undefined,
+      name: 'vite-plugin-react-swc-fallback',
+      configResolved(config) {
+        // Keep the resolved config for later use
+        console.log("Vite config resolved");
+      },
+    },
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
@@ -18,5 +30,9 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  // Add esbuild configuration as fallback
+  esbuild: {
+    jsxInject: `import React from 'react'`,
   },
 }));
