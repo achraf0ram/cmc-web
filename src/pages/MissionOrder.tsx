@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,39 +21,55 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, CheckCircle, FileImage } from "lucide-react";
+import { CalendarIcon, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ar, fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
+  fullName: z.string().min(3, {
+    message: "يرجى إدخال الاسم الكامل",
+  }),
+  matricule: z.string().min(1, {
+    message: "يرجى إدخال رقم التسجيل",
+  }),
   destination: z.string().min(3, {
-    message: "يرجى ذكر وجهة المهمة",
+    message: "يرجى تحديد وجهة المهمة",
   }),
   purpose: z.string().min(5, {
     message: "يرجى وصف الغرض من المهمة",
   }),
+  driver: z.string().optional(),
+  transportMethod: z.string().optional(),
   startDate: z.date({
     required_error: "يرجى تحديد تاريخ البداية",
   }),
+  startTime: z.string().optional(),
   endDate: z.date({
     required_error: "يرجى تحديد تاريخ النهاية",
   }),
+  endTime: z.string().optional(),
   additionalInfo: z.string().optional(),
-  signature: z.instanceof(File).optional(),
 });
 
 const MissionOrder = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const { language, t } = useLanguage();
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      fullName: user?.fullName || "",
+      matricule: "",
       destination: "",
       purpose: "",
+      driver: "",
+      transportMethod: "",
+      startTime: "",
+      endTime: "",
       additionalInfo: "",
     },
   });
@@ -60,18 +77,106 @@ const MissionOrder = () => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     setIsSubmitted(true);
+    generatePDF(values);
   }
 
-  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      form.setValue("signature", file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSignaturePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const generatePDF = (data: z.infer<typeof formSchema>) => {
+    // Format dates
+    const startDateFormatted = format(data.startDate, "yyyy-MM-dd");
+    const endDateFormatted = format(data.endDate, "yyyy-MM-dd");
+    
+    // Create mission order PDF content
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="fr" dir="rtl">
+      <head>
+      <meta charset="UTF-8" />
+      <title>Ordre de mission / أمر مهمة</title>
+      <style>
+        body { font-family: Arial, sans-serif; direction: rtl; line-height: 1.6; }
+        h1 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        td, th { border: 1px solid #333; padding: 8px; vertical-align: top; }
+        .fr { font-style: italic; direction: ltr; text-align: left; }
+      </style>
+      </head>
+      <body>
+
+      <h1>ORDRE DE MISSION <br> أمر مهمة</h1>
+
+      <table>
+        <tr>
+          <td>Monsieur/Madame :<br><span class="fr">Monsieur/Madame :</span></td>
+          <td>${data.fullName}</td>
+        </tr>
+        <tr>
+          <td>Matricule :<br><span class="fr">Matricule :</span></td>
+          <td>${data.matricule}</td>
+        </tr>
+        <tr>
+          <td>De se rendre à :<br><span class="fr">De se rendre à :</span></td>
+          <td>${data.destination}</td>
+        </tr>
+        <tr>
+          <td>Pour accomplir la mission suivante :<br><span class="fr">Pour accomplir la mission suivante :</span></td>
+          <td>${data.purpose}</td>
+        </tr>
+        <tr>
+          <td>Conducteur :<br><span class="fr">Conducteur :</span></td>
+          <td>${data.driver || ""}</td>
+        </tr>
+        <tr>
+          <td>Date de départ :<br><span class="fr">Date de départ :</span></td>
+          <td>${startDateFormatted}</td>
+        </tr>
+        <tr>
+          <td>Heure :<br><span class="fr">Heure :</span></td>
+          <td>${data.startTime || ""}</td>
+        </tr>
+        <tr>
+          <td>Date de retour :<br><span class="fr">Date de retour :</span></td>
+          <td>${endDateFormatted}</td>
+        </tr>
+        <tr>
+          <td>Heure :<br><span class="fr">Heure :</span></td>
+          <td>${data.endTime || ""}</td>
+        </tr>
+        <tr>
+          <td>L'intéressé(e) utilisera :<br><span class="fr">L'intéressé(e) utilisera :</span></td>
+          <td>${data.transportMethod || ""}</td>
+        </tr>
+      </table>
+
+      <p><strong>Cadre réservé à l'entité de destinations / القسم المخصص لجهة الوصول :</strong></p>
+      <p>Visa d'arrivée / تأشيرة الوصول</p>
+      <p>Date et Heure d'arrivée : ..................................................</p>
+      <p>Cachet et signature : ..................................................</p>
+      <p>Visa de départ / تأشيرة المغادرة</p>
+      <p>Date et Heure de départ : ..................................................</p>
+      <p>Cachet et signature : ..................................................</p>
+
+      <p><em>NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.<br>ملاحظة : تأشيرة المغادرة إلزامية للمهمات التي تزيد عن يوم واحد.</em></p>
+
+      </body>
+      </html>
+    `;
+    
+    // Create a new blob with the HTML content
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    
+    // Create a URL for the blob
+    const url = URL.createObjectURL(blob);
+    
+    // Create a temporary link to download the file
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mission_order_${startDateFormatted}.html`;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Clean up
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -94,12 +199,13 @@ const MissionOrder = () => {
                   <br />
                   {t('followUpMessage')}
                 </p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => setIsSubmitted(false)}
-                >
-                  {t('newRequest')}
-                </Button>
+                <div className="flex flex-col gap-3 mt-4">
+                  <Button 
+                    onClick={() => setIsSubmitted(false)}
+                  >
+                    {t('newRequest')}
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -112,6 +218,42 @@ const MissionOrder = () => {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fullName')}*</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={t('fullNamePlaceholder')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="matricule"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('matricule')}*</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={t('matriculePlaceholder')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
                 <FormField
                   control={form.control}
                   name="destination"
@@ -147,7 +289,24 @@ const MissionOrder = () => {
                   )}
                 />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="driver"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('driver')}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={t('driverPlaceholder')}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="startDate"
@@ -169,7 +328,7 @@ const MissionOrder = () => {
                                 ) : (
                                   <span>{t('selectDate')}</span>
                                 )}
-                                <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -192,6 +351,25 @@ const MissionOrder = () => {
                   
                   <FormField
                     control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('startTime')}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="time"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
                     name="endDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
@@ -211,7 +389,7 @@ const MissionOrder = () => {
                                 ) : (
                                   <span>{t('selectDate')}</span>
                                 )}
-                                <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -234,7 +412,41 @@ const MissionOrder = () => {
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('endTime')}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="time"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
+                
+                <FormField
+                  control={form.control}
+                  name="transportMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('transportMethod')}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={t('transportMethodPlaceholder')}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <FormField
                   control={form.control}
@@ -248,49 +460,6 @@ const MissionOrder = () => {
                           className="resize-none"
                           {...field}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="signature"
-                  render={({ field: { value, ...fieldProps } }) => (
-                    <FormItem>
-                      <FormLabel>{t('signatureUpload')}</FormLabel>
-                      <FormControl>
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center gap-4">
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleSignatureChange}
-                              className="hidden"
-                              id="signature-upload"
-                              {...fieldProps}
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => document.getElementById("signature-upload")?.click()}
-                              className="w-full"
-                            >
-                              <FileImage className="mr-2 h-4 w-4" />
-                              {t('signatureUploadButton')}
-                            </Button>
-                          </div>
-                          {signaturePreview && (
-                            <div className="border rounded-md p-2">
-                              <img
-                                src={signaturePreview}
-                                alt={t('signature')}
-                                className="max-h-32 mx-auto"
-                              />
-                            </div>
-                          )}
-                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
