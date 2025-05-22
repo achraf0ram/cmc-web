@@ -27,6 +27,7 @@ import { ar, fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import jsPDF from "jspdf";
 
 const formSchema = z.object({
   fullName: z.string().min(3, {
@@ -42,6 +43,7 @@ const formSchema = z.object({
     message: "يرجى وصف الغرض من المهمة",
   }),
   driver: z.string().optional(),
+  driverMatricule: z.string().optional(),
   transportMethod: z.string().optional(),
   startDate: z.date({
     required_error: "يرجى تحديد تاريخ البداية",
@@ -58,6 +60,7 @@ const MissionOrder = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { language, t } = useLanguage();
   const { user } = useAuth();
+  const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,6 +70,7 @@ const MissionOrder = () => {
       destination: "",
       purpose: "",
       driver: "",
+      driverMatricule: "",
       transportMethod: "",
       startTime: "",
       endTime: "",
@@ -81,102 +85,120 @@ const MissionOrder = () => {
   }
 
   const generatePDF = (data: z.infer<typeof formSchema>) => {
-    // Format dates
-    const startDateFormatted = format(data.startDate, "yyyy-MM-dd");
-    const endDateFormatted = format(data.endDate, "yyyy-MM-dd");
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const currentDate = format(new Date(), "dd/MM/yyyy");
     
-    // Create mission order PDF content
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html lang="fr" dir="rtl">
-      <head>
-      <meta charset="UTF-8" />
-      <title>Ordre de mission / أمر مهمة</title>
-      <style>
-        body { font-family: Arial, sans-serif; direction: rtl; line-height: 1.6; }
-        h1 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        td, th { border: 1px solid #333; padding: 8px; vertical-align: top; }
-        .fr { font-style: italic; direction: ltr; text-align: left; }
-      </style>
-      </head>
-      <body>
-
-      <h1>ORDRE DE MISSION <br> أمر مهمة</h1>
-
-      <table>
-        <tr>
-          <td>Monsieur/Madame :<br><span class="fr">Monsieur/Madame :</span></td>
-          <td>${data.fullName}</td>
-        </tr>
-        <tr>
-          <td>Matricule :<br><span class="fr">Matricule :</span></td>
-          <td>${data.matricule}</td>
-        </tr>
-        <tr>
-          <td>De se rendre à :<br><span class="fr">De se rendre à :</span></td>
-          <td>${data.destination}</td>
-        </tr>
-        <tr>
-          <td>Pour accomplir la mission suivante :<br><span class="fr">Pour accomplir la mission suivante :</span></td>
-          <td>${data.purpose}</td>
-        </tr>
-        <tr>
-          <td>Conducteur :<br><span class="fr">Conducteur :</span></td>
-          <td>${data.driver || ""}</td>
-        </tr>
-        <tr>
-          <td>Date de départ :<br><span class="fr">Date de départ :</span></td>
-          <td>${startDateFormatted}</td>
-        </tr>
-        <tr>
-          <td>Heure :<br><span class="fr">Heure :</span></td>
-          <td>${data.startTime || ""}</td>
-        </tr>
-        <tr>
-          <td>Date de retour :<br><span class="fr">Date de retour :</span></td>
-          <td>${endDateFormatted}</td>
-        </tr>
-        <tr>
-          <td>Heure :<br><span class="fr">Heure :</span></td>
-          <td>${data.endTime || ""}</td>
-        </tr>
-        <tr>
-          <td>L'intéressé(e) utilisera :<br><span class="fr">L'intéressé(e) utilisera :</span></td>
-          <td>${data.transportMethod || ""}</td>
-        </tr>
-      </table>
-
-      <p><strong>Cadre réservé à l'entité de destinations / القسم المخصص لجهة الوصول :</strong></p>
-      <p>Visa d'arrivée / تأشيرة الوصول</p>
-      <p>Date et Heure d'arrivée : ..................................................</p>
-      <p>Cachet et signature : ..................................................</p>
-      <p>Visa de départ / تأشيرة المغادرة</p>
-      <p>Date et Heure de départ : ..................................................</p>
-      <p>Cachet et signature : ..................................................</p>
-
-      <p><em>NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.<br>ملاحظة : تأشيرة المغادرة إلزامية للمهمات التي تزيد عن يوم واحد.</em></p>
-
-      </body>
-      </html>
-    `;
+    // Add the OFPPT logo
+    doc.addImage(logoPath, 'PNG', 20, 10, 50, 20);
     
-    // Create a new blob with the HTML content
-    const blob = new Blob([htmlContent], { type: 'text/html' });
+    // Add headers and reference number
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text("N/Réf : OFP/DR Casa Settat/", 20, 40);
+    doc.text("/N°", 70, 40);
+    doc.text("…/2025", 75, 40);
+    doc.text(`Casablanca, le ${currentDate}`, 145, 40);
     
-    // Create a URL for the blob
-    const url = URL.createObjectURL(blob);
+    // Add the title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("ORDRE DE MISSION", 80, 55);
+    doc.text("OFFICE DE LA FORMATION PROFESSIONNELLE", 50, 62);
+    doc.text("ET DE LA PROMOTION DU TRAVAIL", 70, 69);
     
-    // Create a temporary link to download the file
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `mission_order_${startDateFormatted}.html`;
-    document.body.appendChild(link);
-    link.click();
+    doc.text("D E S I G N E", 90, 80);
     
-    // Clean up
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Create table for mission details
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    
+    // Table header and borders
+    doc.rect(20, 85, 170, 100); // Main rectangle
+    
+    // Row 1
+    doc.line(20, 95, 190, 95); // Horizontal line after row 1
+    doc.line(130, 85, 130, 95); // Vertical line in row 1
+    doc.text("Monsieur/Madame :", 25, 90);
+    doc.text(data.fullName, 70, 90);
+    doc.text("Matricule :", 135, 90);
+    doc.text(data.matricule, 155, 90);
+    
+    // Row 2
+    doc.line(20, 105, 190, 105); // Horizontal line after row 2
+    doc.text("De se rendre à", 25, 100);
+    doc.text(":", 60, 100);
+    doc.text(data.destination, 70, 100);
+    
+    // Row 3
+    doc.line(20, 115, 190, 115); // Horizontal line after row 3
+    doc.text("Pour accomplir la mission suivante :", 25, 110);
+    doc.text(data.purpose, 90, 110);
+    
+    // Row 4
+    doc.line(20, 125, 190, 125); // Horizontal line after row 4
+    doc.line(130, 115, 130, 125); // Vertical line in row 4
+    doc.text("Conducteur :", 25, 120);
+    doc.text(data.driver || "", 70, 120);
+    doc.text("Matricule :", 135, 120);
+    doc.text(data.driverMatricule || "", 155, 120);
+    
+    // Row 5
+    doc.line(20, 135, 190, 135); // Horizontal line after row 5
+    doc.line(130, 125, 130, 135); // Vertical line in row 5
+    doc.text("Date de départ", 25, 130);
+    doc.text(":", 60, 130);
+    doc.text(format(data.startDate, "yyyy-MM-dd"), 70, 130);
+    doc.text("Heure :", 135, 130);
+    doc.text(data.startTime || "", 155, 130);
+    
+    // Row 6
+    doc.line(20, 145, 190, 145); // Horizontal line after row 6
+    doc.line(130, 135, 130, 145); // Vertical line in row 6
+    doc.text("Date de retour", 25, 140);
+    doc.text(":", 60, 140);
+    doc.text(format(data.endDate, "yyyy-MM-dd"), 70, 140);
+    doc.text("Heure :", 135, 140);
+    doc.text(data.endTime || "", 155, 140);
+    
+    // Row 7
+    doc.text("L'intéressé(e) utilisera :", 25, 150);
+    doc.text(data.transportMethod || "", 70, 150);
+    
+    // Add the section for destination entity
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    
+    // Add grey background for the header of this section
+    doc.setFillColor(220, 220, 220);
+    doc.rect(20, 195, 170, 10, "F");
+    doc.text("Cadre réservé à l'entité de destinations", 70, 201);
+    
+    // Create 2-column table below
+    doc.rect(20, 205, 170, 40); // Main rectangle
+    doc.line(105, 205, 105, 245); // Vertical line dividing the columns
+    
+    // Headers for each column
+    doc.text("Visa d'arrivée", 55, 211);
+    doc.text("Visa de départ", 140, 211);
+    
+    // Dividing lines to separate headers from content
+    doc.line(20, 215, 190, 215);
+    
+    // Content rows
+    doc.setFont("helvetica", "normal");
+    doc.text("Date et Heure d'arrivée :", 25, 222);
+    doc.text("Date et Heure de départ :", 110, 222);
+    
+    doc.text("Cachet et signature :", 25, 235);
+    doc.text("Cachet et signature :", 110, 235);
+    
+    // Add the note at the bottom
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, 255);
+    
+    // Save the PDF
+    doc.save(`ordre_mission_${data.fullName.replace(/\s+/g, '_')}.pdf`);
   };
 
   return (
@@ -289,22 +311,41 @@ const MissionOrder = () => {
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="driver"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('driver')}</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder={t('driverPlaceholder')}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="driver"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('driver')}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={t('driverPlaceholder')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="driverMatricule"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('driverMatricule')}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={t('driverMatriculePlaceholder')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
@@ -341,6 +382,7 @@ const MissionOrder = () => {
                                 date < new Date(new Date().setHours(0, 0, 0, 0))
                               }
                               initialFocus
+                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
@@ -405,6 +447,7 @@ const MissionOrder = () => {
                                 );
                               }}
                               initialFocus
+                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>

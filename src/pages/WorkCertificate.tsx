@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, Download } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import jsPDF from "jspdf";
+import { format } from "date-fns";
 
 const formSchema = z.object({
   fullName: z.string().min(3, {
@@ -39,6 +41,7 @@ const WorkCertificate = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,78 +63,66 @@ const WorkCertificate = () => {
   }
 
   const generatePDF = (data: z.infer<typeof formSchema>) => {
-    // Create work certificate PDF content
-    const currentDate = new Date().toLocaleDateString();
+    // Create a new jsPDF instance
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const currentDate = format(new Date(), "dd/MM/yyyy");
     
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html lang="fr" dir="rtl">
-      <head>
-      <meta charset="UTF-8" />
-      <title>Attestation de travail / شهادة عمل</title>
-      <style>
-        body { font-family: Arial, sans-serif; direction: rtl; line-height: 1.6; }
-        h1 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        td, th { border: 1px solid #333; padding: 8px; vertical-align: top; }
-        .fr { font-style: italic; direction: ltr; text-align: left; }
-      </style>
-      </head>
-      <body>
-
-      <h1>ATTESTATION DE TRAVAIL <br> شهادة عمل</h1>
-
-      <p>Nous soussignés, Directeur Régional Casablanca-Settat de l'Office de la Formation Professionnelle et de la Promotion du Travail (OFPPT), attestons que :</p>
-
-      <table>
-        <tr>
-          <td>Nom / الاسم :</td>
-          <td>${data.fullName}</td>
-        </tr>
-        <tr>
-          <td>Matricule :</td>
-          <td>${data.matricule}</td>
-        </tr>
-        <tr>
-          <td>Grade / الدرجة :</td>
-          <td>${data.grade || ""}</td>
-        </tr>
-        <tr>
-          <td>Embauché depuis / موظف منذ :</td>
-          <td>${data.hireDate || ""}</td>
-        </tr>
-        <tr>
-          <td>Fonction / الوظيفة :</td>
-          <td>${data.function || ""}</td>
-        </tr>
-      </table>
-
-      <p>La présente attestation est délivrée à l'intéressé pour servir et valoir ce que de droit.</p>
-      <p>Motif: ${data.purpose}</p>
-      ${data.additionalInfo ? `<p>Information additionnelle: ${data.additionalInfo}</p>` : ''}
-      
-      <p>Fait le: ${currentDate}</p>
-
-      </body>
-      </html>
-    `;
+    // Add the OFPPT logo at the top
+    const imgData = logoPath;
+    doc.addImage(imgData, 'PNG', 20, 10, 50, 20);
     
-    // Create a new blob with the HTML content
-    const blob = new Blob([htmlContent], { type: 'text/html' });
+    // Add headers and reference number
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text("N/Réf. : OFP/DR CASA SETTAT/DAAL/SRRH /N°", 20, 40);
+    doc.text("164 / 2025", 90, 40);
+    doc.text(`Casablanca, le ${currentDate}`, 140, 40);
     
-    // Create a URL for the blob
-    const url = URL.createObjectURL(blob);
+    // Add the title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("ATTESTATION DE TRAVAIL", 80, 60);
     
-    // Create a temporary link to download the file
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `work_certificate_${data.fullName}.html`;
-    document.body.appendChild(link);
-    link.click();
+    // Add the main text
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text("Nous soussignés, Directeur Régional Casablanca-Settat de l'Office de la Formation", 20, 70);
+    doc.text("Professionnelle et de la Promotion du Travail (OFPPT), attestons que :", 20, 75);
     
-    // Clean up
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Add the employee information
+    doc.setFontSize(12);
+    doc.text("Monsieur/Madame :", 20, 85);
+    doc.text(data.fullName, 70, 85);
+    
+    doc.text("Matricule :", 20, 95);
+    doc.text(data.matricule, 70, 95);
+    
+    doc.text("Grade :", 20, 105);
+    doc.text(data.grade || "", 70, 105);
+    
+    doc.text("Est employé au sein de notre organisme depuis le :", 20, 115);
+    doc.text(data.hireDate || "", 120, 115);
+    
+    doc.text("En qualité de :", 20, 125);
+    doc.text(data.function || "", 70, 125);
+    
+    // Add purpose
+    if (data.purpose) {
+      doc.text("Motif : " + data.purpose, 20, 135);
+    }
+    
+    // Add the closing text
+    doc.text("La présente attestation est délivrée à l'intéressé pour servir et valoir ce que de droit.", 20, 145);
+    
+    // Add the footer with contact information
+    doc.setFontSize(9);
+    doc.text("Direction Régionale CASABLANCA -SETTAT", 20, 230);
+    doc.text("50, rue Colonel Driss Cheraibi", 20, 234);
+    doc.text("Aïn Bordja-Casablanca", 20, 238);
+    doc.text("Tel :05 22 60 80 82-Fax :05 22 6039 65", 20, 242);
+    
+    // Save the PDF
+    doc.save(`attestation_travail_${data.fullName.replace(/\s+/g, '_')}.pdf`);
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, Calendar, Download } from "lucide-react";
+import { CheckCircle, CalendarIcon, Download } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
@@ -29,9 +30,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ar, fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import jsPDF from "jspdf";
 
 const formSchema = z.object({
   fullName: z.string().min(3, {
@@ -67,6 +70,7 @@ const VacationRequest = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -94,7 +98,71 @@ const VacationRequest = () => {
   }
 
   const generatePDF = (data: z.infer<typeof formSchema>) => {
-    // Create vacation request PDF content
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const currentDate = format(new Date(), "dd/MM/yyyy");
+    
+    // Add the OFPPT logo
+    doc.addImage(logoPath, 'PNG', 20, 10, 50, 20);
+    
+    // Add reference and date
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text("Réf : OFP/DR……/CMC…../N°", 20, 40);
+    doc.text("/2025", 75, 40);
+    doc.text("Date :", 20, 45);
+    doc.text(currentDate, 35, 45);
+    
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Demande de congé", 80, 60);
+    doc.text("طلب إجازة", 95, 65);
+    
+    // Personal information
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    
+    doc.text("Nom & Prénom :", 20, 75);
+    doc.text(data.fullName, 60, 75);
+    doc.text(":الاسم الكامل", 160, 75);
+    
+    doc.text("Matricule :", 20, 80);
+    doc.text(data.matricule, 60, 80);
+    doc.text(":الرقم الوظيفي", 160, 80);
+    
+    doc.text("Echelle :", 20, 85);
+    doc.text(data.echelle || "", 60, 85);
+    doc.text("Echelon :", 100, 85);
+    doc.text(":السلم", 160, 85);
+    
+    doc.text("Grade :", 20, 90);
+    doc.text(data.grade || "", 60, 90);
+    doc.text(":الدرجة", 160, 90);
+    
+    doc.text("Fonction :", 20, 95);
+    doc.text(data.fonction || "", 60, 95);
+    doc.text(":الوظيفة", 160, 95);
+    
+    // Affectation section
+    doc.setFont("helvetica", "bold");
+    doc.text("Affectation", 90, 105);
+    doc.text("التعيين", 100, 110);
+    doc.setFont("helvetica", "normal");
+    
+    doc.text("Direction :", 20, 120);
+    doc.text(data.direction || "", 60, 120);
+    doc.text(":المديرية", 160, 120);
+    
+    doc.text("Adresse :", 20, 125);
+    doc.text(data.address || "", 60, 125);
+    doc.text(":العنوان", 160, 125);
+    
+    doc.text("Téléphone :", 20, 130);
+    doc.text(data.phone || "", 60, 130);
+    doc.text(":الهاتف", 160, 130);
+    
+    doc.text("Nature de congé (1) :", 20, 135);
+    
     const leaveTypeOptions = {
       administrative: "إدارية / Administrative",
       marriage: "زواج / Mariage",
@@ -102,122 +170,54 @@ const VacationRequest = () => {
       exceptional: "استثنائية / Exceptionnel"
     };
     
-    const startDateFormatted = format(data.startDate, "yyyy-MM-dd");
-    const endDateFormatted = format(data.endDate, "yyyy-MM-dd");
+    doc.text(leaveTypeOptions[data.leaveType as keyof typeof leaveTypeOptions] || data.leaveType, 70, 135);
+    doc.text(":(1) نوع الإجازة", 160, 135);
     
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html lang="fr" dir="rtl">
-      <head>
-      <meta charset="UTF-8" />
-      <title>Demande de congé / طلب إجازة</title>
-      <style>
-        body { font-family: Arial, sans-serif; direction: rtl; line-height: 1.6; }
-        h1 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        td, th { border: 1px solid #333; padding: 8px; vertical-align: top; }
-        .section-title { background-color: #eee; font-weight: bold; text-align: center; }
-        .fr { font-style: italic; direction: ltr; text-align: left; }
-      </style>
-      </head>
-      <body>
-
-      <h1>Demande de congé <br> طلب إجازة</h1>
-
-      <table>
-        <tr>
-          <td>Nom & Prénom :<br><span class="fr">Nom & Prénom :</span></td>
-          <td>${data.fullName}</td>
-        </tr>
-        <tr>
-          <td>Matricule :<br><span class="fr">Matricule :</span></td>
-          <td>${data.matricule}</td>
-        </tr>
-        <tr>
-          <td>Echelle :<br><span class="fr">Echelle :</span></td>
-          <td>${data.echelle || ""}</td>
-        </tr>
-        <tr>
-          <td>Grade :<br><span class="fr">Grade :</span></td>
-          <td>${data.grade || ""}</td>
-        </tr>
-        <tr>
-          <td>Fonction :<br><span class="fr">Fonction :</span></td>
-          <td>${data.fonction || ""}</td>
-        </tr>
-        <tr>
-          <td>Direction :<br><span class="fr">Direction :</span></td>
-          <td>${data.direction || ""}</td>
-        </tr>
-        <tr>
-          <td>Adresse :<br><span class="fr">Adresse :</span></td>
-          <td>${data.address || ""}</td>
-        </tr>
-        <tr>
-          <td>Téléphone :<br><span class="fr">Téléphone :</span></td>
-          <td>${data.phone || ""}</td>
-        </tr>
-        <tr>
-          <td>Nature de congé :<br><span class="fr">Nature de congé :</span></td>
-          <td>${leaveTypeOptions[data.leaveType as keyof typeof leaveTypeOptions] || data.leaveType}</td>
-        </tr>
-        <tr>
-          <td>Durée :<br><span class="fr">Durée :</span></td>
-          <td>${data.duration}</td>
-        </tr>
-        <tr>
-          <td>Du :<br><span class="fr">Du :</span></td>
-          <td>${startDateFormatted}</td>
-        </tr>
-        <tr>
-          <td>Au :<br><span class="fr">Au :</span></td>
-          <td>${endDateFormatted}</td>
-        </tr>
-        <tr>
-          <td>Avec :<br><span class="fr">Avec :</span></td>
-          <td>${data.with || ""}</td>
-        </tr>
-        <tr>
-          <td>Intérim (Nom et Fonction) :<br><span class="fr">Intérim (Nom et Fonction) :</span></td>
-          <td>${data.interim || ""}</td>
-        </tr>
-      </table>
-
-      <p><strong>Signature de l'intéressé / إمضاء المعني(ة) بالأمر :</strong> ......................................</p>
-
-      <p><strong>Avis du Chef Immédiat / رأي الرئيس المباشر :</strong> ......................................</p>
-
-      <p><strong>Avis du Directeur / رأي المدير :</strong> ......................................</p>
-
-      <hr>
-
-      <p><strong>Très important / هام جدا :</strong></p>
-      <ul>
-        <li>Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir obtenu sa décision de congé, sinon il sera considéré en abandon de poste.<br><span class="fr">لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة وإلا اعتبر في وضعية تخلي عن العمل.</span></li>
-        <li>La demande doit être déposée 8 jours avant la date demandée.<br><span class="fr">يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب.</span></li>
-        <li>Nature de congé : Administratif - Mariage - Naissance - Exceptionnel.<br><span class="fr">نوع الإجازة : إدارية - زواج - ازدياد - استثنائية.</span></li>
-        <li>Si l'intéressé projette de quitter le territoire marocain, il doit le mentionner.<br><span class="fr">إذا كان المعني يرغب في مغادرة التراب الوطني فعليه ذكر ذلك.</span></li>
-      </ul>
-      </body>
-      </html>
-    `;
+    doc.text("Durée :", 20, 140);
+    doc.text(data.duration, 60, 140);
+    doc.text(":المدة", 160, 140);
     
-    // Create a new blob with the HTML content
-    const blob = new Blob([htmlContent], { type: 'text/html' });
+    doc.text("Du :", 20, 145);
+    doc.text(format(data.startDate, "yyyy-MM-dd"), 60, 145);
+    doc.text(":من", 160, 145);
     
-    // Create a URL for the blob
-    const url = URL.createObjectURL(blob);
+    doc.text("Au :", 20, 150);
+    doc.text(format(data.endDate, "yyyy-MM-dd"), 60, 150);
+    doc.text(":إلى", 160, 150);
     
-    // Create a temporary link to download the file
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `vacation_request_${startDateFormatted}.html`;
-    document.body.appendChild(link);
-    link.click();
+    doc.text("Avec (3) :", 20, 155);
+    doc.text(data.with || "", 60, 155);
+    doc.text(":(3) مع", 160, 155);
     
-    // Clean up
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    doc.text("Intérim (Nom et Fonction) :", 20, 160);
+    doc.text(data.interim || "", 80, 160);
+    doc.text(":(الإنابة (الاسم والوظيفة", 160, 160);
+    
+    // Signature sections
+    doc.text("Signature de l'intéressé", 30, 175);
+    doc.text("إمضاء المعني(ة) بالأمر", 30, 180);
+    
+    doc.text("Avis du Chef Immédiat", 85, 175);
+    doc.text("رأي الرئيس المباشر", 85, 180);
+    
+    doc.text("Avis du Directeur", 150, 175);
+    doc.text("رأي المدير", 150, 180);
+    
+    // Important notes
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("Très important :", 20, 200);
+    doc.text("هام جدا :", 150, 200);
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text("1. Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir obtenu sa décision de congé, sinon il sera considéré en abandon de poste.", 20, 205, { maxWidth: 170 });
+    doc.text("2. La demande doit être déposée 8 jours avant la date demandée.", 20, 215);
+    doc.text("3. Nature de congé : Administratif - Mariage - Naissance - Exceptionnel.", 20, 220);
+    doc.text("4. Si l'intéressé projette de quitter le territoire marocain, il doit le mentionner.", 20, 225);
+    
+    // Save the PDF
+    doc.save(`demande_conge_${data.fullName.replace(/\s+/g, '_')}.pdf`);
   };
 
   return (
@@ -465,7 +465,7 @@ const VacationRequest = () => {
                                 ) : (
                                   <span>{t('selectDate')}</span>
                                 )}
-                                <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -478,6 +478,7 @@ const VacationRequest = () => {
                                 date < new Date(new Date().setHours(0, 0, 0, 0))
                               }
                               initialFocus
+                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
@@ -507,7 +508,7 @@ const VacationRequest = () => {
                                 ) : (
                                   <span>{t('selectDate')}</span>
                                 )}
-                                <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -523,6 +524,7 @@ const VacationRequest = () => {
                                 );
                               }}
                               initialFocus
+                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
