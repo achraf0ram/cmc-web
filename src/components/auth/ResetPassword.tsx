@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2, Lock, ArrowLeft } from "lucide-react";
@@ -33,7 +32,7 @@ export const ResetPassword = () => {
     e.preventDefault();
     setErrorMessage("");
     
-    if (!email || !password || !passwordConfirmation || !token) {
+    if (!email || !password || !passwordConfirmation) {
       setErrorMessage("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
@@ -46,7 +45,8 @@ export const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      const success = await resetPassword(email, password, passwordConfirmation, token);
+      // Note: We're only passing email as required by the updated interface
+      const success = await resetPassword(email);
       if (success) {
         setIsResetSuccessful(true);
         toast({

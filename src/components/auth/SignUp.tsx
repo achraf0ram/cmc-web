@@ -22,12 +22,21 @@ export const SignUp = () => {
     setIsLoading(true);
 
     try {
-      await register(name,email,password,password_confirmation);
-      toast({
-        title: "تم إنشاء الحساب بنجاح",
-        description: "مرحباً بك في منصة CMC",
-      });
-      navigate("/");
+      // Make sure password_confirmation is not being passed to register
+      const success = await register(name, email, password);
+      if (success) {
+        toast({
+          title: "تم إنشاء الحساب بنجاح",
+          description: "مرحباً بك في منصة CMC",
+        });
+        navigate("/");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "خطأ في إنشاء الحساب",
+          description: "حدث خطأ أثناء محاولة إنشاء الحساب. يرجى المحاولة مرة أخرى",
+        });
+      }
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message ||
