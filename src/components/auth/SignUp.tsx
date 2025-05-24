@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, User, Lock, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 export const SignUp = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
@@ -26,25 +29,25 @@ export const SignUp = () => {
       const success = await register(name, email, password);
       if (success) {
         toast({
-          title: "تم إنشاء الحساب بنجاح",
-          description: "مرحباً بك في منصة CMC",
+          title: t('success'),
+          description: t('successfullySubmitted'),
         });
         navigate("/");
       } else {
         toast({
           variant: "destructive",
-          title: "خطأ في إنشاء الحساب",
-          description: "حدث خطأ أثناء محاولة إنشاء الحساب. يرجى المحاولة مرة أخرى",
+          title: t('errorUpdatingProfile'),
+          description: t('errorTryAgain'),
         });
       }
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message ||
-        "حدث خطأ أثناء محاولة إنشاء الحساب. يرجى المحاولة مرة أخرى";
+        t('errorTryAgain');
 
       toast({
         variant: "destructive",
-        title: "خطأ في إنشاء الحساب",
+        title: t('errorUpdatingProfile'),
         description: errorMessage,
       });
     } finally {
@@ -62,19 +65,19 @@ export const SignUp = () => {
             className='mx-auto h-16 w-auto mb-4'
           />
           <h2 className='text-2xl font-bold text-[#0FA0CE]'>CMC</h2>
-          <p className='text-gray-600 mt-2'>منصة إدارة طلبات الموارد البشرية</p>
+          <p className='text-gray-600 mt-2'>{t('hrPlatformDescription')}</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
           className='space-y-4'>
           <div className='space-y-2'>
-            <Label htmlFor='name'>الاسم الكامل</Label>
+            <Label htmlFor='name'>{t('fullName')}</Label>
             <div className='relative'>
               <Input
                 id='name'
                 type='text'
-                placeholder='أدخل الاسم الكامل'
+                placeholder={t('enterFullName')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className='pl-10 pr-4'
@@ -86,12 +89,12 @@ export const SignUp = () => {
           </div>
 
           <div className='space-y-2'>
-            <Label htmlFor='email'>البريد الإلكتروني</Label>
+            <Label htmlFor='email'>{t('email')}</Label>
             <div className='relative'>
               <Input
                 id='email'
                 type='email'
-                placeholder='أدخل البريد الإلكتروني'
+                placeholder={t('enterEmail')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className='pl-10 pr-4'
@@ -103,12 +106,12 @@ export const SignUp = () => {
           </div>
 
           <div className='space-y-2'>
-            <Label htmlFor='password'>كلمة المرور</Label>
+            <Label htmlFor='password'>{t('password')}</Label>
             <div className='relative'>
               <Input
                 id='password'
                 type='password'
-                placeholder='أدخل كلمة المرور'
+                placeholder={t('enterPassword')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className='pl-10 pr-4'
@@ -121,12 +124,12 @@ export const SignUp = () => {
           </div>
 
           <div className='space-y-2'>
-            <Label htmlFor='passwordConfirmation'>تأكيد كلمة المرور</Label>
+            <Label htmlFor='passwordConfirmation'>{t('confirmPasswordLabel')}</Label>
             <div className='relative'>
               <Input
                 id='password_confirmation'
                 type='password'
-                placeholder='أدخل تأكيد كلمة المرور'
+                placeholder={t('enterPasswordConfirmation')}
                 value={password_confirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
                 className='pl-10 pr-4'
@@ -145,20 +148,20 @@ export const SignUp = () => {
             {isLoading ? (
               <>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                جاري إنشاء الحساب...
+                {t('creatingAccount')}
               </>
             ) : (
-              "إنشاء حساب"
+              t('createAccount')
             )}
           </Button>
 
           <div className='text-center mt-4 text-sm'>
-            لديك حساب بالفعل؟{" "}
+            {t('alreadyHaveAccount')}{" "}
             <Button
               variant='link'
               className='p-0 text-[#0EA5E9]'
               onClick={() => navigate("/login")}>
-              تسجيل الدخول
+              {t('signIn')}
             </Button>
           </div>
         </form>

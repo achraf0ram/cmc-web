@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { LanguageProvider } from "./contexts/LanguageContext";
+import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { MainLayout } from "./layouts/MainLayout";
 import Index from "./pages/Index";
@@ -22,9 +22,10 @@ const queryClient = new QueryClient();
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">Chargement...</div>;
+    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
   }
 
   if (!isAuthenticated) {
@@ -38,9 +39,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Public route component (accessible only when not logged in)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useLanguage();
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">Chargement...</div>;
+    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
   }
 
   if (isAuthenticated) {

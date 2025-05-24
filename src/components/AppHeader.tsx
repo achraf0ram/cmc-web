@@ -28,9 +28,8 @@ export const AppHeader = () => {
           <Search className="absolute right-5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
             placeholder={t('search')}
-            className=" pl-4 pr-10 bg-slate-50 border-slate-200"
-            /> 
-        
+            className="pl-4 pr-10 bg-slate-50 border-slate-200"
+          /> 
         </div>
       </div>
       
@@ -45,26 +44,26 @@ export const AppHeader = () => {
               </Badge>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
+          <DropdownMenuContent align="end" className="w-80 bg-white">
             <div className="p-4 border-b">
               <h4 className="font-semibold">{t('notifications')}</h4>
             </div>
             <DropdownMenuItem className="p-4 cursor-pointer hover:bg-slate-50">
               <div className="flex flex-col gap-1">
-                <span className="font-medium">تم الموافقة على طلب الإجازة</span>
-                <span className="text-xs text-muted-foreground">منذ ساعتين</span>
+                <span className="font-medium">{t('approvedLeaveRequest')}</span>
+                <span className="text-xs text-muted-foreground">{t('hoursAgo').replace('{hours}', '2')}</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem className="p-4 cursor-pointer hover:bg-slate-50">
               <div className="flex flex-col gap-1">
-                <span className="font-medium">تم إصدار شهادة العمل</span>
-                <span className="text-xs text-muted-foreground">منذ 3 ساعات</span>
+                <span className="font-medium">{t('workCertificateIssued')}</span>
+                <span className="text-xs text-muted-foreground">{t('hoursAgo').replace('{hours}', '3')}</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem className="p-4 cursor-pointer hover:bg-slate-50">
               <div className="flex flex-col gap-1">
-                <span className="font-medium">تذكير: تحديث البيانات الشخصية</span>
-                <span className="text-xs text-muted-foreground">منذ يوم</span>
+                <span className="font-medium">{t('updatePersonalDataReminder')}</span>
+                <span className="text-xs text-muted-foreground">{t('dayAgo').replace('{days}', '1')}</span>
               </div>
             </DropdownMenuItem>
             <div className="p-2 text-center border-t">

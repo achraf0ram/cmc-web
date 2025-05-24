@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 // Define available languages
@@ -193,7 +192,6 @@ const translations: Translations = {
     fr: 'Restant',
     ar: 'متبقي',
   },
-  // Work certificate translations
   workCertificateTitle: {
     fr: 'Demande de certificat de travail',
     ar: 'طلب شهادة عمل',
@@ -242,7 +240,6 @@ const translations: Translations = {
     fr: 'Sélectionner le fichier de signature',
     ar: 'اختر ملف التوقيع',
   },
-  // New settings page translations
   profileTab: {
     fr: 'Profil',
     ar: 'الملف الشخصي',
@@ -310,6 +307,138 @@ const translations: Translations = {
   changePassword: {
     fr: 'Changer le mot de passe',
     ar: 'تغيير كلمة المرور',
+  },
+  loading: {
+    fr: 'Chargement...',
+    ar: 'جاري التحميل...',
+  },
+  loginTitle: {
+    fr: 'Connexion',
+    ar: 'تسجيل الدخول',
+  },
+  signupTitle: {
+    fr: 'Créer un compte',
+    ar: 'إنشاء حساب',
+  },
+  password: {
+    fr: 'Mot de passe',
+    ar: 'كلمة المرور',
+  },
+  enterEmail: {
+    fr: 'Entrez votre email',
+    ar: 'أدخل بريدك الإلكتروني',
+  },
+  enterPassword: {
+    fr: 'Entrez votre mot de passe',
+    ar: 'أدخل كلمة المرور',
+  },
+  confirmPasswordLabel: {
+    fr: 'Confirmer le mot de passe',
+    ar: 'تأكيد كلمة المرور',
+  },
+  enterPasswordConfirmation: {
+    fr: 'Entrez la confirmation du mot de passe',
+    ar: 'أدخل تأكيد كلمة المرور',
+  },
+  signingIn: {
+    fr: 'Connexion...',
+    ar: 'جاري تسجيل الدخول...',
+  },
+  creatingAccount: {
+    fr: 'Création du compte...',
+    ar: 'جاري إنشاء الحساب...',
+  },
+  alreadyHaveAccount: {
+    fr: 'Vous avez déjà un compte ?',
+    ar: 'لديك حساب بالفعل؟',
+  },
+  dontHaveAccount: {
+    fr: 'Vous n\'avez pas de compte ?',
+    ar: 'ليس لديك حساب؟',
+  },
+  createAccount: {
+    fr: 'Créer un compte',
+    ar: 'إنشاء حساب',
+  },
+  hrPlatformDescription: {
+    fr: 'Plateforme de gestion des demandes de ressources humaines',
+    ar: 'منصة إدارة طلبات الموارد البشرية',
+  },
+  approvedLeaveRequest: {
+    fr: 'Demande de congé approuvée',
+    ar: 'تم الموافقة على طلب الإجازة',
+  },
+  workCertificateIssued: {
+    fr: 'Certificat de travail émis',
+    ar: 'تم إصدار شهادة العمل',
+  },
+  updatePersonalDataReminder: {
+    fr: 'Rappel: mettre à jour les données personnelles',
+    ar: 'تذكير: تحديث البيانات الشخصية',
+  },
+  hoursAgo: {
+    fr: 'il y a {hours} heures',
+    ar: 'منذ {hours} ساعات',
+  },
+  dayAgo: {
+    fr: 'il y a {days} jour(s)',
+    ar: 'منذ {days} أيام',
+  },
+  backToHome: {
+    fr: 'Retour à l\'accueil',
+    ar: 'العودة للرئيسية',
+  },
+  pageNotFoundTitle: {
+    fr: '404 - Page non trouvée',
+    ar: '404 - الصفحة غير موجودة',
+  },
+  pageNotFoundMessage: {
+    fr: 'Désolé, la page que vous recherchez est introuvable',
+    ar: 'عذراً، الصفحة التي تبحث عنها غير موجودة',
+  },
+  profileUpdated: {
+    fr: 'Profil mis à jour',
+    ar: 'تم تحديث الملف الشخصي',
+  },
+  profileUpdatedSuccess: {
+    fr: 'Vos informations ont été mises à jour avec succès',
+    ar: 'تم تحديث معلوماتك بنجاح',
+  },
+  errorUpdatingProfile: {
+    fr: 'Erreur lors de la mise à jour du profil',
+    ar: 'خطأ في تحديث الملف الشخصي',
+  },
+  errorTryAgain: {
+    fr: 'Une erreur s\'est produite. Veuillez réessayer.',
+    ar: 'حدث خطأ. يرجى المحاولة مرة أخرى.',
+  },
+  notificationsUpdated: {
+    fr: 'Notifications mises à jour',
+    ar: 'تم تحديث الإشعارات',
+  },
+  settingsSavedSuccess: {
+    fr: 'Vos paramètres ont été sauvegardés avec succès',
+    ar: 'تم حفظ إعداداتك بنجاح',
+  },
+  passwordChanged: {
+    fr: 'Mot de passe modifié',
+    ar: 'تم تغيير كلمة المرور',
+  },
+  passwordChangedSuccess: {
+    fr: 'Votre mot de passe a été modifié avec succès',
+    ar: 'تم تغيير كلمة المرور بنجاح',
+  },
+  yourProfile: {
+    fr: 'Votre profil',
+    ar: 'ملفك الشخصي',
+  },
+  googleAccountEmail: {
+    fr: 'Email du compte Google (non modifiable)',
+    ar: 'بريد حساب جوجل (غير قابل للتعديل)',
+  },
+  googleAccountPassword: {
+    fr: 'Vous utilisez un compte Google. Le mot de passe ne peut pas être modifié ici.',
+    ar: 'أنت تستخدم حساب جوجل. لا يمكن تغيير كلمة المرور هنا.',
   },
 };
 
