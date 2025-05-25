@@ -1,5 +1,5 @@
 
-import { Search, Bell } from "lucide-react";
+import { Search, Bell, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,14 @@ import {
 export const AppHeader = () => {
   const { t } = useLanguage();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  
+  const handleAIClick = () => {
+    toast({
+      title: t('aiAssistant'),
+      description: t('askAI'),
+    });
+  };
   
   return (
     <header className={cn(
@@ -34,7 +43,18 @@ export const AppHeader = () => {
       </div>
       
       <div className="flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleAIClick}
+          className="flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+        >
+          <Bot size={16} />
+          {!isMobile && <span>{t('ai')}</span>}
+        </Button>
+        
         <LanguageSwitcher />
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">

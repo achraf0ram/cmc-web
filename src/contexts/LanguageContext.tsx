@@ -20,6 +20,22 @@ interface LanguageContextType {
 
 // Default translations
 const translations: Translations = {
+  ai: {
+    fr: 'IA',
+    ar: 'ذكاء اصطناعي',
+  },
+  aiAssistant: {
+    fr: 'Assistant IA',
+    ar: 'مساعد ذكي',
+  },
+  aiChat: {
+    fr: 'Chat IA',
+    ar: 'محادثة ذكية',
+  },
+  askAI: {
+    fr: 'Demander à l\'IA',
+    ar: 'اسأل الذكاء الاصطناعي',
+  },
   dashboard: {
     fr: 'Tableau de bord',
     ar: 'لوحة التحكم',
@@ -439,6 +455,26 @@ const translations: Translations = {
   googleAccountPassword: {
     fr: 'Vous utilisez un compte Google. Le mot de passe ne peut pas être modifié ici.',
     ar: 'أنت تستخدم حساب جوجل. لا يمكن تغيير كلمة المرور هنا.',
+  },
+  resetPassword: {
+    fr: 'Réinitialiser le mot de passe',
+    ar: 'إعادة تعيين كلمة المرور',
+  },
+  resetPasswordDescription: {
+    fr: 'Entrez votre email pour recevoir un lien de réinitialisation',
+    ar: 'أدخل بريدك الإلكتروني لتلقي رابط إعادة التعيين',
+  },
+  sendResetLink: {
+    fr: 'Envoyer le lien',
+    ar: 'إرسال الرابط',
+  },
+  backToLogin: {
+    fr: 'Retour à la connexion',
+    ar: 'العودة لتسجيل الدخول',
+  },
+  user: {
+    fr: 'Utilisateur',
+    ar: 'المستخدم',
   },
 };
 
