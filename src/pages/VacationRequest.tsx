@@ -1,8 +1,14 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import jsPDF from "jspdf";
+import { format } from "date-fns";
+import { ar, fr } from "date-fns/locale";
+import { CalendarIcon, FileImage, CheckCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -11,14 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle, CalendarIcon, Download } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -31,53 +30,45 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { ar, fr } from "date-fns/locale";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import jsPDF from "jspdf";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
-  fullName: z.string().min(3, {
-    message: "يرجى إدخال الاسم الكامل",
-  }),
-  matricule: z.string().min(1, {
-    message: "يرجى إدخال رقم التسجيل",
-  }),
+  fullName: z.string().min(3, { message: "يرجى إدخال الاسم الكامل" }),
+  matricule: z.string().min(1, { message: "يرجى إدخال الرقم المالي" }),
   echelle: z.string().optional(),
+  echelon: z.string().optional(),
   grade: z.string().optional(),
   fonction: z.string().optional(),
   direction: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
-  leaveType: z.string().min(1, {
-    message: "يرجى اختيار نوع الإجازة",
-  }),
-  duration: z.string().min(1, {
-    message: "يرجى تحديد المدة",
-  }),
-  startDate: z.date({
-    required_error: "يرجى تحديد تاريخ البداية",
-  }),
-  endDate: z.date({
-    required_error: "يرجى تحديد تاريخ النهاية",
-  }),
+  leaveType: z.string().min(1, { message: "يرجى اختيار نوع الإجازة" }),
+  duration: z.string().min(1, { message: "يرجى تحديد المدة" }),
+  startDate: z.date({ required_error: "يرجى تحديد تاريخ البداية" }),
+  endDate: z.date({ required_error: "يرجى تحديد تاريخ النهاية" }),
   with: z.string().optional(),
   interim: z.string().optional(),
   additionalInfo: z.string().optional(),
+  leaveMorocco: z.string().optional(),
+  reason: z.string().min(5, { message: "يرجى توضيح سبب الإجازة" }).optional(),
+  signature: z.instanceof(File).optional(),
 });
 
 const VacationRequest = () => {
-  const { t, language } = useLanguage();
-  const { user } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const { language, t } = useLanguage();
   const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: user?.fullName || "",
+      fullName: "",
       matricule: "",
       echelle: "",
+      echelon: "",
       grade: "",
       fonction: "",
       direction: "",
@@ -85,144 +76,150 @@ const VacationRequest = () => {
       phone: "",
       leaveType: "",
       duration: "",
+      startDate: undefined,
+      endDate: undefined,
       with: "",
       interim: "",
       additionalInfo: "",
+      leaveMorocco: "",
+      reason: "",
+      signature: undefined,
     },
   });
 
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue("signature", file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSignaturePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     setIsSubmitted(true);
     generatePDF(values);
   }
 
   const generatePDF = (data: z.infer<typeof formSchema>) => {
-    const doc = new jsPDF('p', 'mm', 'a4');
+    const doc = new jsPDF("p", "mm", "a4");
+
     const currentDate = format(new Date(), "dd/MM/yyyy");
-    
-    // Add the OFPPT logo
-    doc.addImage(logoPath, 'PNG', 20, 10, 50, 20);
-    
-    // Add reference and date
-    doc.setFont("helvetica", "normal");
+
+    doc.setFont("Helvetica");
     doc.setFontSize(11);
+
+    doc.addImage(logoPath, "PNG", 10, 10, 40, 20);
+
     doc.text("Réf : OFP/DR……/CMC…../N°", 20, 40);
     doc.text("/2025", 75, 40);
     doc.text("Date :", 20, 45);
     doc.text(currentDate, 35, 45);
-    
-    // Title
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("Demande de congé", 80, 60);
-    doc.text("طلب إجازة", 95, 65);
-    
-    // Personal information
+
+    doc.setFontSize(14);
+    doc.setFont("Helvetica", "bold");
+    doc.text("Demande de congé", 90, 60);
+    doc.text("طلب إجازة", 115, 65);
+
+    doc.setFont("Helvetica", "normal");
     doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    
-    doc.text("Nom & Prénom :", 20, 75);
-    doc.text(data.fullName, 60, 75);
-    doc.text(":الاسم الكامل", 160, 75);
-    
-    doc.text("Matricule :", 20, 80);
-    doc.text(data.matricule, 60, 80);
-    doc.text(":الرقم الوظيفي", 160, 80);
-    
-    doc.text("Echelle :", 20, 85);
-    doc.text(data.echelle || "", 60, 85);
-    doc.text("Echelon :", 100, 85);
-    doc.text(":السلم", 160, 85);
-    
-    doc.text("Grade :", 20, 90);
-    doc.text(data.grade || "", 60, 90);
-    doc.text(":الدرجة", 160, 90);
-    
-    doc.text("Fonction :", 20, 95);
-    doc.text(data.fonction || "", 60, 95);
-    doc.text(":الوظيفة", 160, 95);
-    
-    // Affectation section
-    doc.setFont("helvetica", "bold");
-    doc.text("Affectation", 90, 105);
-    doc.text("التعيين", 100, 110);
-    doc.setFont("helvetica", "normal");
-    
-    doc.text("Direction :", 20, 120);
-    doc.text(data.direction || "", 60, 120);
-    doc.text(":المديرية", 160, 120);
-    
-    doc.text("Adresse :", 20, 125);
-    doc.text(data.address || "", 60, 125);
-    doc.text(":العنوان", 160, 125);
-    
-    doc.text("Téléphone :", 20, 130);
-    doc.text(data.phone || "", 60, 130);
-    doc.text(":الهاتف", 160, 130);
-    
-    doc.text("Nature de congé (1) :", 20, 135);
-    
+
+    const drawLine = (y: number) => doc.line(20, y, 190, y);
+
+    const row = (labelFr: string, value: string | undefined, labelAr: string, y: number) => {
+      doc.text(`${labelFr} :`, 20, y);
+      doc.text(`${value || ""}`, 60, y);
+      doc.text(`${labelAr} :`, 190, y, { align: "right" });
+    };
+
+    row("Nom & Prénom", data.fullName, "الاسم الكامل", 80);
+    row("Matricule", data.matricule, "الرقم المالي", 87);
+    row("Echelle", data.echelle, "السلم", 94);
+    row("Echelon", data.echelon, "الرتبة", 101);
+    row("Grade", data.grade, "الدرجة", 108);
+    row("Fonction", data.fonction, "الوظيفة", 115);
+
+    doc.setFont("Helvetica", "bold");
+    doc.text("Affectation", 90, 125);
+    doc.text("التعيين", 115, 130);
+    doc.setFont("Helvetica", "normal");
+
+    row("Direction", data.direction, "المديرية", 140);
+    row("Adresse", data.address, "العنوان", 147);
+    row("Téléphone", data.phone, "الهاتف", 154);
+
     const leaveTypeOptions = {
       administrative: "إدارية / Administrative",
       marriage: "زواج / Mariage",
       birth: "ازدياد / Naissance",
-      exceptional: "استثنائية / Exceptionnel"
+      exceptional: "استثنائية / Exceptionnel",
     };
-    
-    doc.text(leaveTypeOptions[data.leaveType as keyof typeof leaveTypeOptions] || data.leaveType, 70, 135);
-    doc.text(":(1) نوع الإجازة", 160, 135);
-    
-    doc.text("Durée :", 20, 140);
-    doc.text(data.duration, 60, 140);
-    doc.text(":المدة", 160, 140);
-    
-    doc.text("Du :", 20, 145);
-    doc.text(format(data.startDate, "yyyy-MM-dd"), 60, 145);
-    doc.text(":من", 160, 145);
-    
-    doc.text("Au :", 20, 150);
-    doc.text(format(data.endDate, "yyyy-MM-dd"), 60, 150);
-    doc.text(":إلى", 160, 150);
-    
-    doc.text("Avec (3) :", 20, 155);
-    doc.text(data.with || "", 60, 155);
-    doc.text(":(3) مع", 160, 155);
-    
-    doc.text("Intérim (Nom et Fonction) :", 20, 160);
-    doc.text(data.interim || "", 80, 160);
-    doc.text(":(الإنابة (الاسم والوظيفة", 160, 160);
-    
-    // Signature sections
-    doc.text("Signature de l'intéressé", 30, 175);
-    doc.text("إمضاء المعني(ة) بالأمر", 30, 180);
-    
-    doc.text("Avis du Chef Immédiat", 85, 175);
-    doc.text("رأي الرئيس المباشر", 85, 180);
-    
-    doc.text("Avis du Directeur", 150, 175);
-    doc.text("رأي المدير", 150, 180);
-    
-    // Important notes
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("Très important :", 20, 200);
-    doc.text("هام جدا :", 150, 200);
-    
+
+    row("Nature de congé (2)", leaveTypeOptions[data.leaveType as keyof typeof leaveTypeOptions] || data.leaveType, "نوع الإجازة (2)", 161);
+    row("Durée", data.duration, "المدة", 168);
+    row("Du", format(data.startDate, "yyyy-MM-dd"), "ابتداء من", 175);
+    row("Au", format(data.endDate, "yyyy-MM-dd"), "إلى", 182);
+    row("Avec (3)", data.with, "مع (3)", 189);
+    row("Intérim", data.interim, "النيابة (الاسم والوظيفة)", 196);
+
+    doc.text("Signature de l'intéressé", 30, 215);
+    doc.text("إمضاء المعني(ة) بالأمر", 30, 220);
+
+    doc.text("Avis du Chef Immédiat", 85, 215);
+    doc.text("رأي الرئيس المباشر", 85, 220);
+
+    doc.text("Avis du Directeur", 150, 215);
+    doc.text("رأي المدير", 150, 220);
+
+    if (signaturePreview) {
+      doc.addImage(signaturePreview, "PNG", 25, 225, 40, 20);
+    }
+
+    doc.setFontSize(9);
+    doc.setFont("Helvetica", "bold");
+    doc.text("Très important :", 20, 250);
+    doc.text("هام جدا :", 190, 250, { align: "right" });
+
     doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text("1. Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir obtenu sa décision de congé, sinon il sera considéré en abandon de poste.", 20, 205, { maxWidth: 170 });
-    doc.text("2. La demande doit être déposée 8 jours avant la date demandée.", 20, 215);
-    doc.text("3. Nature de congé : Administratif - Mariage - Naissance - Exceptionnel.", 20, 220);
-    doc.text("4. Si l'intéressé projette de quitter le territoire marocain, il doit le mentionner.", 20, 225);
-    
-    // Save the PDF
-    doc.save(`demande_conge_${data.fullName.replace(/\s+/g, '_')}.pdf`);
+    doc.setFont("Helvetica", "normal");
+
+    const notes = [
+      "Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir",
+      "obtenu sa décision de congé le cas échéant il sera considéré en",
+      "abandon de poste.",
+      "(1) La demande doit être déposée 8 jours avant la date demandée",
+      "(2) Nature de congé : Administratif - Mariage - Naissance - Exceptionnel",
+      '(3) Si l\'intéressé projette de quitter le territoire Marocain il faut qu\'il',
+      'le mentionne "Quitter le territoire Marocain"',
+    ];
+
+    const notesAr = [
+      "لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة و إلا اعتبر في",
+      "وضعية تخلي عن العمل.",
+      "(1) يجب تقديم الطلب قبل 8 أيام من التاريخ المطلوب",
+      "(2) نوع الإجازة : إدارية - زواج - ازدياد - استثنائية",
+      '(3) إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة',
+      '"مغادرة التراب الوطني"',
+    ];
+
+    let startY = 255;
+    notes.forEach((line, i) => {
+      doc.text(line, 20, startY);
+      if (i < notesAr.length) {
+        doc.text(notesAr[i], 190, startY, { align: "right" });
+      }
+      startY += 5;
+    });
+
+    doc.save(`demande_conge_${data.fullName.replace(/\s+/g, "_")}.pdf`);
   };
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">{t('vacationRequestTitle')}</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("vacationRequestTitle")}</h1>
 
       {isSubmitted ? (
         <Card className="border-green-200 bg-green-50">
@@ -237,15 +234,15 @@ const VacationRequest = () => {
                 </h2>
                 <p className="text-muted-foreground">
                   {t('requestReviewMessage')}
+                  <br />
                   {t('followUpMessage')}
                 </p>
-                <div className="flex flex-col gap-3 mt-4">
-                  <Button 
-                    onClick={() => setIsSubmitted(false)}
-                  >
-                    {t('newRequest')}
-                  </Button>
-                </div>
+                <Button 
+                  className="mt-4" 
+                  onClick={() => setIsSubmitted(false)}
+                >
+                  {t('newRequest')}
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -253,7 +250,7 @@ const VacationRequest = () => {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>{t('vacationRequestInfo')}</CardTitle>
+            <CardTitle>{t('requestInfo')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -266,16 +263,13 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('fullName')}*</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={t('fullNamePlaceholder')}
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="matricule"
@@ -283,10 +277,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('matricule')}*</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={t('matriculePlaceholder')}
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -294,7 +285,7 @@ const VacationRequest = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="echelle"
@@ -302,16 +293,27 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('echelle')}</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={t('echellePlaceholder')}
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
+                  <FormField
+                    control={form.control}
+                    name="echelon"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('echelon')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="grade"
@@ -319,10 +321,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('grade')}</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={t('gradePlaceholder')}
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -330,41 +329,33 @@ const VacationRequest = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="fonction"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('fonction')}</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder={t('fonctionPlaceholder')}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="direction"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('direction')}</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder={t('directionPlaceholder')}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="fonction"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('fonction')}</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="direction"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('direction')}</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
@@ -374,16 +365,13 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('address')}</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={t('addressPlaceholder')}
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="phone"
@@ -391,41 +379,41 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('phone')}</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={t('phonePlaceholder')}
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={form.control}
                   name="leaveType"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('leaveType')}*</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder={t('selectLeaveType')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="administrative">{t('administrative')}</SelectItem>
-                          <SelectItem value="marriage">{t('marriage')}</SelectItem>
-                          <SelectItem value="birth">{t('birth')}</SelectItem>
-                          <SelectItem value="exceptional">{t('exceptional')}</SelectItem>
+                          <SelectItem value="administrative">{t('administrativeLeave')}</SelectItem>
+                          <SelectItem value="marriage">{t('marriageLeave')}</SelectItem>
+                          <SelectItem value="birth">{t('birthLeave')}</SelectItem>
+                          <SelectItem value="exceptional">{t('exceptionalLeave')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="duration"
@@ -433,16 +421,13 @@ const VacationRequest = () => {
                     <FormItem>
                       <FormLabel>{t('duration')}*</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder={t('durationPlaceholder')}
-                          {...field}
-                        />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -465,7 +450,7 @@ const VacationRequest = () => {
                                 ) : (
                                   <span>{t('selectDate')}</span>
                                 )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -478,7 +463,6 @@ const VacationRequest = () => {
                                 date < new Date(new Date().setHours(0, 0, 0, 0))
                               }
                               initialFocus
-                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
@@ -486,7 +470,7 @@ const VacationRequest = () => {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="endDate"
@@ -508,7 +492,7 @@ const VacationRequest = () => {
                                 ) : (
                                   <span>{t('selectDate')}</span>
                                 )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                <CalendarIcon className="mr-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -524,7 +508,6 @@ const VacationRequest = () => {
                                 );
                               }}
                               initialFocus
-                              className={cn("p-3 pointer-events-auto")}
                             />
                           </PopoverContent>
                         </Popover>
@@ -533,7 +516,7 @@ const VacationRequest = () => {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -542,16 +525,13 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('with')}</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={t('withPlaceholder')}
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="interim"
@@ -559,29 +539,69 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('interim')}</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={t('interimPlaceholder')}
-                            {...field}
-                          />
+                          <Input {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={form.control}
-                  name="additionalInfo"
+                  name="reason"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('additionalInfo')}</FormLabel>
+                      <FormLabel>{t('reason')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder={t('additionalInfoPlaceholder')}
+                          placeholder={t('vacationReasonPlaceholder')}
                           className="resize-none"
                           {...field}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="signature"
+                  render={({ field: { value, ...fieldProps } }) => (
+                    <FormItem>
+                      <FormLabel>{t('signatureUpload')}</FormLabel>
+                      <FormControl>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-4">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleSignatureChange}
+                              className="hidden"
+                              id="signature-upload"
+                              {...fieldProps}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById("signature-upload")?.click()}
+                              className="w-full"
+                            >
+                              <FileImage className="mr-2 h-4 w-4" />
+                              {t('signatureUploadButton')}
+                            </Button>
+                          </div>
+                          {signaturePreview && (
+                            <div className="border rounded-md p-2">
+                              <img
+                                src={signaturePreview}
+                                alt={t('signature')}
+                                className="max-h-32 mx-auto"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
