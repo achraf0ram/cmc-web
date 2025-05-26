@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -89,80 +88,91 @@ const MissionOrder = () => {
     const currentDate = format(new Date(), "dd/MM/yyyy");
     
     // Add the OFPPT logo
-    doc.addImage(logoPath, 'PNG', 20, 10, 50, 20);
+    try {
+      doc.addImage(logoPath, 'PNG', 20, 10, 50, 25);
+    } catch (error) {
+      console.log("Could not load logo:", error);
+    }
     
     // Add headers and reference number
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.text("N/Réf : OFP/DR Casa Settat/", 20, 40);
-    doc.text("/N°", 70, 40);
-    doc.text("…/2025", 75, 40);
-    doc.text(`Casablanca, le ${currentDate}`, 145, 40);
+    doc.text("N/Réf : OFP/DR Casa Settat/", 20, 45);
+    doc.text("/N°", 70, 45);
+    doc.text("…/2025", 75, 45);
+    doc.text(`Casablanca, le ${currentDate}`, 145, 45);
     
     // Add the title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text("ORDRE DE MISSION", 80, 55);
-    doc.text("OFFICE DE LA FORMATION PROFESSIONNELLE", 50, 62);
-    doc.text("ET DE LA PROMOTION DU TRAVAIL", 70, 69);
+    doc.text("ORDRE DE MISSION", 80, 60);
+    doc.text("أمر مهمة", 105, 65);
     
-    doc.text("D E S I G N E", 90, 80);
+    doc.setFontSize(12);
+    doc.text("OFFICE DE LA FORMATION PROFESSIONNELLE", 50, 72);
+    doc.text("ET DE LA PROMOTION DU TRAVAIL", 70, 77);
+    doc.text("مكتب التكوين المهني وإنعاش الشغل", 70, 82);
+    
+    doc.text("D E S I G N E", 90, 90);
+    doc.text("ي ك ل ف", 100, 95);
     
     // Create table for mission details
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     
     // Table header and borders
-    doc.rect(20, 85, 170, 100); // Main rectangle
+    doc.rect(20, 100, 170, 100); // Main rectangle
     
     // Row 1
-    doc.line(20, 95, 190, 95); // Horizontal line after row 1
-    doc.line(130, 85, 130, 95); // Vertical line in row 1
-    doc.text("Monsieur/Madame :", 25, 90);
-    doc.text(data.fullName, 70, 90);
-    doc.text("Matricule :", 135, 90);
-    doc.text(data.matricule, 155, 90);
+    doc.line(20, 110, 190, 110);
+    doc.line(130, 100, 130, 110);
+    doc.text("Monsieur/Madame :", 25, 105);
+    doc.text("السيد/السيدة :", 25, 108);
+    doc.text(data.fullName, 70, 105);
+    doc.text("Matricule :", 135, 105);
+    doc.text("الرقم :", 135, 108);
+    doc.text(data.matricule, 155, 105);
     
     // Row 2
-    doc.line(20, 105, 190, 105); // Horizontal line after row 2
-    doc.text("De se rendre à", 25, 100);
-    doc.text(":", 60, 100);
-    doc.text(data.destination, 70, 100);
+    doc.line(20, 120, 190, 120);
+    doc.text("De se rendre à", 25, 115);
+    doc.text(":", 60, 115);
+    doc.text(data.destination, 70, 115);
     
     // Row 3
-    doc.line(20, 115, 190, 115); // Horizontal line after row 3
-    doc.text("Pour accomplir la mission suivante :", 25, 110);
-    doc.text(data.purpose, 90, 110);
+    doc.line(20, 130, 190, 130);
+    doc.text("Pour accomplir la mission suivante :", 25, 125);
+    doc.text(data.purpose, 90, 125);
     
     // Row 4
-    doc.line(20, 125, 190, 125); // Horizontal line after row 4
-    doc.line(130, 115, 130, 125); // Vertical line in row 4
-    doc.text("Conducteur :", 25, 120);
-    doc.text(data.driver || "", 70, 120);
-    doc.text("Matricule :", 135, 120);
-    doc.text(data.driverMatricule || "", 155, 120);
+    doc.line(20, 140, 190, 140);
+    doc.line(130, 130, 130, 140);
+    doc.text("Conducteur :", 25, 135);
+    doc.text(data.driver || "", 70, 135);
+    doc.text("Matricule :", 135, 135);
+    doc.text(data.driverMatricule || "", 155, 135);
     
     // Row 5
-    doc.line(20, 135, 190, 135); // Horizontal line after row 5
-    doc.line(130, 125, 130, 135); // Vertical line in row 5
-    doc.text("Date de départ", 25, 130);
-    doc.text(":", 60, 130);
-    doc.text(format(data.startDate, "yyyy-MM-dd"), 70, 130);
-    doc.text("Heure :", 135, 130);
-    doc.text(data.startTime || "", 155, 130);
+    doc.line(20, 150, 190, 150);
+    doc.line(130, 140, 130, 150);
+    doc.text("Date de départ", 25, 145);
+    doc.text(":", 60, 145);
+    doc.text(format(data.startDate, "yyyy-MM-dd"), 70, 145);
+    doc.text("Heure :", 135, 145);
+    doc.text(data.startTime || "", 155, 145);
     
     // Row 6
-    doc.line(20, 145, 190, 145); // Horizontal line after row 6
-    doc.line(130, 135, 130, 145); // Vertical line in row 6
-    doc.text("Date de retour", 25, 140);
-    doc.text(":", 60, 140);
-    doc.text(format(data.endDate, "yyyy-MM-dd"), 70, 140);
-    doc.text("Heure :", 135, 140);
-    doc.text(data.endTime || "", 155, 140);
+    doc.line(20, 160, 190, 160);
+    doc.line(130, 150, 130, 160);
+    doc.text("Date de retour", 25, 155);
+    doc.text(":", 60, 155);
+    doc.text(format(data.endDate, "yyyy-MM-dd"), 70, 155);
+    doc.text("Heure :", 135, 155);
+    doc.text(data.endTime || "", 155, 155);
     
     // Row 7
-    doc.text("L'intéressé(e) utilisera :", 25, 150);
-    doc.text(data.transportMethod || "", 70, 150);
+    doc.text("L'intéressé(e) utilisera :", 25, 165);
+    doc.text(data.transportMethod || "", 70, 165);
     
     // Add the section for destination entity
     doc.setFontSize(10);
@@ -170,32 +180,32 @@ const MissionOrder = () => {
     
     // Add grey background for the header of this section
     doc.setFillColor(220, 220, 220);
-    doc.rect(20, 195, 170, 10, "F");
-    doc.text("Cadre réservé à l'entité de destinations", 70, 201);
+    doc.rect(20, 200, 170, 10, "F");
+    doc.text("Cadre réservé à l'entité de destinations", 70, 206);
     
     // Create 2-column table below
-    doc.rect(20, 205, 170, 40); // Main rectangle
-    doc.line(105, 205, 105, 245); // Vertical line dividing the columns
+    doc.rect(20, 210, 170, 40); // Main rectangle
+    doc.line(105, 210, 105, 250); // Vertical line dividing the columns
     
     // Headers for each column
-    doc.text("Visa d'arrivée", 55, 211);
-    doc.text("Visa de départ", 140, 211);
+    doc.text("Visa d'arrivée", 55, 216);
+    doc.text("Visa de départ", 140, 216);
     
     // Dividing lines to separate headers from content
-    doc.line(20, 215, 190, 215);
+    doc.line(20, 220, 190, 220);
     
     // Content rows
     doc.setFont("helvetica", "normal");
-    doc.text("Date et Heure d'arrivée :", 25, 222);
-    doc.text("Date et Heure de départ :", 110, 222);
+    doc.text("Date et Heure d'arrivée :", 25, 227);
+    doc.text("Date et Heure de départ :", 110, 227);
     
-    doc.text("Cachet et signature :", 25, 235);
-    doc.text("Cachet et signature :", 110, 235);
+    doc.text("Cachet et signature :", 25, 240);
+    doc.text("Cachet et signature :", 110, 240);
     
     // Add the note at the bottom
     doc.setFontSize(9);
     doc.setFont("helvetica", "italic");
-    doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, 255);
+    doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, 260);
     
     // Save the PDF
     doc.save(`ordre_mission_${data.fullName.replace(/\s+/g, '_')}.pdf`);

@@ -40,7 +40,7 @@ const WorkCertificate = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [signatureData, setSignatureData] = useState<string | null>(null);
-  const logoPath = "/client/public/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
+  const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,45 +73,83 @@ const WorkCertificate = () => {
     const doc = new jsPDF("p", "mm", "a4");
     const currentDate = format(new Date(), "dd/MM/yyyy");
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text("N/Réf. : OFP/DR CASA SETTAT/DAAL/SRRH /N°", 20, 40);
-    doc.text(`Casablanca, le ${currentDate}`, 140, 40);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("ATTESTATION DE TRAVAIL", 75, 60);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text("Nous soussignés, Directeur Régional Casablanca-Settat de l’Office de la", 20, 70);
-    doc.text("Formation Professionnelle et de la Promotion du Travail (OFPPT), attestons", 20, 75);
-    doc.text("que :", 20, 80);
-
-    doc.text(`Monsieur : ${data.fullName}`, 20, 90);
-    doc.text(`Matricule : ${data.matricule}`, 20, 100);
-    doc.text(`Grade : ${data.grade || ""}`, 20, 110);
-    doc.text(`Est employé au sein de notre organisme depuis le : ${data.hireDate || ""}`, 20, 120);
-    doc.text(`En qualité de : ${data.function || ""}`, 20, 130);
-
-    doc.text("La présente attestation est délivrée à l’intéressé pour servir et valoir ce que de droit.", 20, 160);
-
-    if (signatureData?.startsWith("data:image")) {
-      const format = signatureData.includes("image/jpeg") ? "JPEG" : "PNG";
-      doc.text("Signature :", 20, 180);
-      doc.addImage(signatureData, format, 40, 170, 50, 20);
+    // Add logo at the top
+    try {
+      doc.addImage(logoPath, 'PNG', 20, 10, 50, 25);
+    } catch (error) {
+      console.log("Could not load logo:", error);
     }
 
-    doc.setFontSize(9);
-    doc.text("Direction Régionale CASABLANCA –SETTAT", 20, 230);
-    doc.text("50, rue Caporal Driss Chbakou", 20, 234);
-    doc.text("Ain Bordja-Casablanca", 20, 238);
-    doc.text("Tél :05 22 60 00 82 - Fax :05 22 6039 65", 20, 242);
+    // Header with reference
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text("N/Réf. : OFP/DR CASA SETTAT/DAAL/SRRH /N°", 20, 50);
+    doc.text(`Casablanca, le ${currentDate}`, 140, 50);
 
-    doc.text("المديرية الجهوية لجهة الدارالبيضاء – سطات", 140, 230, { align: "left" });
-    doc.text("50 زنقة الكابورال إدريس اشباكو", 140, 234, { align: "left" });
-    doc.text("عين البرجة - الدار البيضاء", 140, 238, { align: "left" });
-    doc.text("الهاتف : 05 22 60 00 82 - الفاكس : 05 22 6039 65", 140, 242, { align: "left" });
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("ATTESTATION DE TRAVAIL", 75, 70);
+    
+    // Arabic title
+    doc.setFontSize(14);
+    doc.text("شهادة عمل", 110, 75);
+
+    // Content
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text("Nous soussignés, Directeur Régional Casablanca-Settat de l'Office de la", 20, 85);
+    doc.text("Formation Professionnelle et de la Promotion du Travail (OFPPT), attestons", 20, 90);
+    doc.text("que :", 20, 95);
+
+    // Arabic translation
+    doc.text("نحن الموقعون أسفله، المدير الجهوي للدار البيضاء-سطات لمكتب", 20, 100);
+    doc.text("التكوين المهني وإنعاش الشغل، نشهد أن:", 20, 105);
+
+    // Employee details
+    doc.text(`Monsieur : ${data.fullName}`, 20, 115);
+    doc.text(`السيد : ${data.fullName}`, 20, 120);
+    
+    doc.text(`Matricule : ${data.matricule}`, 20, 130);
+    doc.text(`الرقم التسجيلي : ${data.matricule}`, 20, 135);
+    
+    if (data.grade) {
+      doc.text(`Grade : ${data.grade}`, 20, 145);
+      doc.text(`الدرجة : ${data.grade}`, 20, 150);
+    }
+    
+    if (data.hireDate) {
+      doc.text(`Est employé au sein de notre organisme depuis le : ${data.hireDate}`, 20, 160);
+      doc.text(`يعمل لدى مؤسستنا منذ : ${data.hireDate}`, 20, 165);
+    }
+    
+    if (data.function) {
+      doc.text(`En qualité de : ${data.function}`, 20, 175);
+      doc.text(`بصفة : ${data.function}`, 20, 180);
+    }
+
+    // Purpose
+    doc.text("La présente attestation est délivrée à l'intéressé pour servir et valoir ce que de droit.", 20, 195);
+    doc.text("هذه الشهادة تسلم للمعني بالأمر لتخدمه فيما يهمه الأمر.", 20, 200);
+
+    // Signature
+    if (signatureData?.startsWith("data:image")) {
+      const format = signatureData.includes("image/jpeg") ? "JPEG" : "PNG";
+      doc.text("Signature / التوقيع :", 20, 215);
+      doc.addImage(signatureData, format, 40, 210, 50, 20);
+    }
+
+    // Footer
+    doc.setFontSize(9);
+    doc.text("Direction Régionale CASABLANCA –SETTAT", 20, 250);
+    doc.text("50, rue Caporal Driss Chbakou", 20, 254);
+    doc.text("Ain Bordja-Casablanca", 20, 258);
+    doc.text("Tél :05 22 60 00 82 - Fax :05 22 6039 65", 20, 262);
+
+    doc.text("المديرية الجهوية لجهة الدارالبيضاء – سطات", 140, 250);
+    doc.text("50 زنقة الكابورال إدريس اشباكو", 140, 254);
+    doc.text("عين البرجة - الدار البيضاء", 140, 258);
+    doc.text("الهاتف : 05 22 60 00 82 - الفاكس : 05 22 6039 65", 140, 262);
 
     doc.save("attestation_de_travail.pdf");
   };

@@ -112,26 +112,33 @@ const VacationRequest = () => {
     doc.setFont("Helvetica");
     doc.setFontSize(11);
 
-    doc.addImage(logoPath, "PNG", 10, 10, 40, 20);
+    // Add logo at the top
+    try {
+      doc.addImage(logoPath, "PNG", 10, 10, 50, 25);
+    } catch (error) {
+      console.log("Could not load logo:", error);
+    }
 
-    doc.text("Réf : OFP/DR……/CMC…../N°", 20, 40);
-    doc.text("/2025", 75, 40);
-    doc.text("Date :", 20, 45);
-    doc.text(currentDate, 35, 45);
+    // Header
+    doc.text("Réf : OFP/DR……/CMC…../N°", 20, 45);
+    doc.text("/2025", 75, 45);
+    doc.text("Date :", 20, 50);
+    doc.text(currentDate, 35, 50);
 
+    // Title
     doc.setFontSize(14);
     doc.setFont("Helvetica", "bold");
-    doc.text("Demande de congé", 90, 60);
-    doc.text("طلب إجازة", 115, 65);
+    doc.text("Demande de congé", 90, 65);
+    doc.text("طلب إجازة", 115, 70);
 
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(11);
 
-    const drawLine = (y: number) => doc.line(20, y, 190, y);
-
+    // Employee information with proper Arabic support
     const row = (labelFr: string, value: string | undefined, labelAr: string, y: number) => {
       doc.text(`${labelFr} :`, 20, y);
       doc.text(`${value || ""}`, 60, y);
+      // For Arabic text, we'll use a simpler approach that works better with jsPDF
       doc.text(`${labelAr} :`, 190, y, { align: "right" });
     };
 
