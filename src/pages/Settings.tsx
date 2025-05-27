@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,9 +23,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "lucide-react";
 
 const profileFormSchema = z.object({
-  fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  phone: z.string().min(10, { message: "Phone number must be at least 10 characters" }).optional(),
+  fullName: z.string().min(2, { message: "الاسم يجب أن يكون على الأقل حرفين" }),
+  email: z.string().email({ message: "يرجى إدخال بريد إلكتروني صحيح" }),
+  phone: z.string().min(10, { message: "رقم الهاتف يجب أن يكون على الأقل 10 أرقام" }).optional(),
 });
 
 const notificationsFormSchema = z.object({
@@ -36,11 +35,11 @@ const notificationsFormSchema = z.object({
 });
 
 const passwordFormSchema = z.object({
-  currentPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  newPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  currentPassword: z.string().min(8, { message: "كلمة المرور يجب أن تكون على الأقل 8 أحرف" }),
+  newPassword: z.string().min(8, { message: "كلمة المرور يجب أن تكون على الأقل 8 أحرف" }),
+  confirmPassword: z.string().min(8, { message: "كلمة المرور يجب أن تكون على الأقل 8 أحرف" }),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
+  message: "كلمات المرور غير متطابقة",
   path: ["confirmPassword"],
 });
 
@@ -48,14 +47,14 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isUpdating, setIsUpdating] = useState(false);
   const { t } = useLanguage();
-  const { user, updateUser } = useAuth();
+  const { user, profile, updateUser } = useAuth();
   
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      fullName: user?.fullName || user?.name || "",
+      fullName: profile?.full_name || "",
       email: user?.email || "",
-      phone: user?.phone || "",
+      phone: profile?.phone || "",
     },
   });
 
@@ -80,31 +79,28 @@ const Settings = () => {
   async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
     try {
       setIsUpdating(true);
-      console.log("Updating profile with:", values);
+      console.log("تحديث الملف الشخصي بـ:", values);
       
-      // If updateUser is available in your AuthContext, use it to update the user profile
       if (updateUser && user) {
         const success = await updateUser({
-          ...user,
-          fullName: values.fullName,
-          email: values.email,
-          phone: values.phone || ""
+          full_name: values.fullName,
+          phone: values.phone || "",
         });
         
         if (success) {
           toast({
-            title: t('profileUpdated'),
-            description: t('profileUpdatedSuccess'),
+            title: "تم تحديث الملف الشخصي",
+            description: "تم حفظ التغييرات بنجاح",
           });
         } else {
-          throw new Error("Failed to update profile");
+          throw new Error("فشل في تحديث الملف الشخصي");
         }
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("خطأ في تحديث الملف الشخصي:", error);
       toast({
-        title: t('errorUpdatingProfile'),
-        description: t('errorTryAgain'),
+        title: "خطأ في تحديث الملف الشخصي",
+        description: "حدث خطأ، يرجى المحاولة مرة أخرى",
         variant: "destructive"
       });
     } finally {
@@ -115,16 +111,16 @@ const Settings = () => {
   function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
     console.log(values);
     toast({
-      title: t('notificationsUpdated'),
-      description: t('settingsSavedSuccess'),
+      title: "تم تحديث الإشعارات",
+      description: "تم حفظ التغييرات بنجاح",
     });
   }
 
   function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
     console.log(values);
     toast({
-      title: t('passwordChanged'),
-      description: t('passwordChangedSuccess'),
+      title: "تم تغيير كلمة المرور",
+      description: "تم حفظ التغييرات بنجاح",
     });
     passwordForm.reset({
       currentPassword: "",
@@ -135,32 +131,28 @@ const Settings = () => {
 
   return (
     <div className="container mx-auto py-4 max-w-3xl">
-      <h1 className="text-2xl font-bold mb-5">{t('settings')}</h1>
+      <h1 className="text-2xl font-bold mb-5">الإعدادات</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="space-x-5 grid-cols-1 md:grid-cols-3 mb-3">
-          <TabsTrigger value="profile">{t('profileTab')}</TabsTrigger>
-          <TabsTrigger value="notifications">{t('notificationsTab')}</TabsTrigger>
-          <TabsTrigger value="password">{t('passwordTab')}</TabsTrigger>
+          <TabsTrigger value="profile">الملف الشخصي</TabsTrigger>
+          <TabsTrigger value="notifications">الإشعارات</TabsTrigger>
+          <TabsTrigger value="password">كلمة المرور</TabsTrigger>
         </TabsList>
         
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>{t('profileSettings')}</CardTitle>
+              <CardTitle>إعدادات الملف الشخصي</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center mb-6">
                 <Avatar className="h-24 w-24 mb-4">
-                  {user?.photoURL ? (
-                    <AvatarImage src={user.photoURL} alt={user.fullName || user.name || "User"} />
-                  ) : (
-                    <AvatarFallback className="text-4xl">
-                      <User />
-                    </AvatarFallback>
-                  )}
+                  <AvatarFallback className="text-4xl">
+                    <User />
+                  </AvatarFallback>
                 </Avatar>
-                <h2 className="text-xl font-medium">{user?.fullName || user?.name || t('yourProfile')}</h2>
+                <h2 className="text-xl font-medium">{profile?.full_name || "ملفك الشخصي"}</h2>
               </div>
               
               <Form {...profileForm}>
@@ -171,7 +163,7 @@ const Settings = () => {
                       name="fullName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('name')}</FormLabel>
+                          <FormLabel>الاسم الكامل</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
@@ -185,15 +177,13 @@ const Settings = () => {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t('email')}</FormLabel>
+                          <FormLabel>البريد الإلكتروني</FormLabel>
                           <FormControl>
-                            <Input {...field} disabled={user?.provider === 'google'} />
+                            <Input {...field} disabled />
                           </FormControl>
-                          {user?.provider === 'google' && (
-                            <FormDescription>
-                              {t('googleAccountEmail')}
-                            </FormDescription>
-                          )}
+                          <FormDescription>
+                            البريد الإلكتروني لا يمكن تغييره
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -205,7 +195,7 @@ const Settings = () => {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('phone')}</FormLabel>
+                        <FormLabel>رقم الهاتف</FormLabel>
                         <FormControl>
                           <Input {...field} />
                         </FormControl>
@@ -216,7 +206,7 @@ const Settings = () => {
                   
                   <div className="flex justify-end">
                     <Button type="submit" disabled={isUpdating}>
-                      {isUpdating ? t('saving') : t('saveChanges')}
+                      {isUpdating ? "جاري الحفظ..." : "حفظ التغييرات"}
                     </Button>
                   </div>
                 </form>
@@ -228,7 +218,7 @@ const Settings = () => {
         <TabsContent value="notifications">
           <Card>
             <CardHeader>
-              <CardTitle>{t('notificationSettings')}</CardTitle>
+              <CardTitle>إعدادات الإشعارات</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...notificationsForm}>
@@ -240,7 +230,7 @@ const Settings = () => {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">{t('emailNotifications')}</FormLabel>
+                            <FormLabel className="text-base">الإشعارات عبر البريد الإلكتروني</FormLabel>
                             <FormDescription>
                               {t('emailNotificationsDesc')}
                             </FormDescription>
@@ -261,7 +251,7 @@ const Settings = () => {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">{t('newRequests')}</FormLabel>
+                            <FormLabel className="text-base">الإشعارات عن طلبات جديدة</FormLabel>
                             <FormDescription>
                               {t('newRequestsDesc')}
                             </FormDescription>
@@ -282,7 +272,7 @@ const Settings = () => {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">{t('requestUpdates')}</FormLabel>
+                            <FormLabel className="text-base">الإشعارات عن تحديثات طلبات</FormLabel>
                             <FormDescription>
                               {t('requestUpdatesDesc')}
                             </FormDescription>
@@ -310,7 +300,7 @@ const Settings = () => {
         <TabsContent value="password">
           <Card>
             <CardHeader>
-              <CardTitle>{t('passwordSettings')}</CardTitle>
+              <CardTitle>إعدادات كلمة المرور</CardTitle>
             </CardHeader>
             <CardContent>
               {user?.provider === 'google' ? (

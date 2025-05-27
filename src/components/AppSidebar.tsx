@@ -1,173 +1,141 @@
 
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  FileText,
-  ClipboardCheck,
-  Calendar,
-  Home,
-  Settings,
-  User,
-  LogOut,
-  ChevronRight,
-  ChevronLeft,
-  Menu,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  Home, 
+  FileText, 
+  Plane, 
+  Calendar,
+  Settings,
+  LogOut,
+  User
+} from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
 
 export const AppSidebar = () => {
-  const [collapsed, setCollapsed] = useState(true);
-  const { t, language } = useLanguage();
-  const isMobile = useIsMobile();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { logout, user } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
-  
-  // Get display name - prioritize fullName if available, otherwise fall back to name
-  const displayName = user?.fullName || user?.name || t("user");
+  const { t, language } = useLanguage();
+  const { logout, profile } = useAuth();
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   const menuItems = [
-    { icon: Home, name: 'home', path: "/" },
-    { icon: FileText, name: 'workCertificate', path: "/work-certificate" },
-    { icon: ClipboardCheck, name: 'missionOrder', path: "/mission-order" },
-    { icon: Calendar, name: 'vacationRequest', path: "/vacation-request" },
-    { icon: Settings, name: 'settings', path: "/settings" },
+    {
+      title: t('dashboard'),
+      href: "/",
+      icon: Home,
+    },
+    {
+      title: t('workCertificate'),
+      href: "/work-certificate",
+      icon: FileText,
+    },
+    {
+      title: t('missionOrder'),
+      href: "/mission-order", 
+      icon: Plane,
+    },
+    {
+      title: t('vacationRequest'),
+      href: "/vacation-request",
+      icon: Calendar,
+    },
+    {
+      title: t('settings'),
+      href: "/settings",
+      icon: Settings,
+    },
   ];
 
-  const handleSignOut = () => {
-    logout();
-    navigate("/login", { replace: true });
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "تم تسجيل الخروج",
+        description: "تم تسجيل خروجك بنجاح",
+      });
+      navigate("/login");
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تسجيل الخروج",
+        variant: "destructive"
+      });
+    }
   };
 
-  const chevronIcon = language === 'ar' ? 
-  (collapsed ? 
-    <ChevronLeft size={18} /> : 
-    <ChevronRight size={18} />) :
-  (collapsed ? 
-    <ChevronRight size={18} /> : 
-    <ChevronLeft size={18} />);
-
-  // Mobile toggle button that appears at the top of the screen
-  const MobileToggle = () => (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setIsMobileOpen(!isMobileOpen)}  // Toggle mobile sidebar visibility
-      className={cn(
-        "fixed top-4 z-40 hover:bg-[#D3E4FD] text-[#0EA5E9]",
-        language === 'ar' ? 'right-4' : 'left-4'
-      )}
-    >
-      {/* Change icon to X when sidebar is open */}
-      {isMobileOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
-    </Button>
-  );
-
   return (
-    <>
-      {isMobile && <MobileToggle />}
-      <div
-        className={cn(
-          "fixed md:static h-screen bg-white shadow-md flex flex-col transition-all duration-300 z-40",
-          collapsed ? "w-20" : "w-64",
-          isMobile
-            ? isMobileOpen
-              ? "translate-x-0"
-              : language === "ar"
-              ? "translate-x-full"
-              : "-translate-x-full"
-            : "",
-          language === "ar" ? "right-0" : "left-0"
-        )}>
-        {/* Header */}
-        <div className='flex justify-between items-center p-4 border-b h-20'>
-          {!collapsed && (
-            <div className='flex items-center gap-2'>
-              <img
-                src='/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png'
-                alt='CMC'
-                className='h-10 w-auto'
-              />
-              <span className='text-[#0FA0CE] font-bold text-xl'>CMC</span>
-            </div>
-          )}
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => {
-              if (isMobile) {
-                setIsMobileOpen(false);
-              } else {
-                setCollapsed(!collapsed);
-              }
-            }}
-            className='hover:bg-[#D3E4FD] text-[#0EA5E9]'>
-            {chevronIcon}
-          </Button>
-        </div>
-
-        {/* Navigation */}
-        <div className='flex-1 py-4 flex flex-col gap-2'>
-          {menuItems.map((item) => (
-            <Link
-              to={item.path}
-              key={item.path}
-              onClick={() => isMobile && setIsMobileOpen(false)} // Close mobile sidebar when clicking on a menu item
-            >
-              <Button
-                variant='ghost'
-                className={cn(
-                  "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
-                  "hover:bg-[#D3E4FD] hover:text-[#0EA5E9]"
-                )}>
-                <item.icon size={20} />
-                {!collapsed && <span>{t(item.name)}</span>}
-              </Button>
-            </Link>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <div className='border-t py-4 flex flex-col gap-2'>
-          <div
-            className={cn(
-              "flex items-center gap-3 px-4 py-2",
-              collapsed && "justify-center"
-            )}>
-            <div className='w-8 h-8 rounded-full bg-[#D3E4FD] flex items-center justify-center'>
-              <User
-                size={16}
-                className='text-[#0EA5E9]'
-              />
-            </div>
-            {!collapsed && (
-              <div className='text-sm'>{displayName}</div>
-            )}
+    <div className={cn(
+      "flex h-full w-64 flex-col bg-white border-r",
+      isMobile && "fixed inset-y-0 z-50 w-64",
+      language === 'ar' ? "right-0" : "left-0"
+    )}>
+      <div className="flex h-20 items-center justify-center border-b px-6">
+        <div className="flex items-center gap-3">
+          <img 
+            src="/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png" 
+            alt="CMC" 
+            className="h-10 w-auto" 
+          />
+          <div className="text-right">
+            <h2 className="text-xl font-bold text-[#0FA0CE]">CMC</h2>
+            <p className="text-xs text-gray-600">منصة الموارد البشرية</p>
           </div>
-          <Button
-            variant='ghost'
-            className={cn(
-              "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
-              "hover:bg-[#FDE1D3] hover:text-red-500 text-muted-foreground",
-              collapsed && "justify-center"
-            )}
-            onClick={handleSignOut}>
-            <LogOut size={18} />
-            {!collapsed && <span>{t("logout")}</span>}
-          </Button>
         </div>
       </div>
-      {/* Overlay for mobile */}
-      {isMobile && isMobileOpen && (
-        <div
-          className='fixed inset-0 bg-black/20 z-30'
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
-    </>
+
+      <ScrollArea className="flex-1 px-3 py-4">
+        <nav className="space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.href;
+            
+            return (
+              <Button
+                key={item.href}
+                variant={isActive ? "secondary" : "ghost"}
+                className={cn(
+                  "w-full justify-start gap-3 h-11",
+                  language === 'ar' && "flex-row-reverse"
+                )}
+                onClick={() => navigate(item.href)}
+              >
+                <Icon size={18} />
+                {item.title}
+              </Button>
+            );
+          })}
+        </nav>
+      </ScrollArea>
+
+      <div className="border-t p-4">
+        {profile && (
+          <div className="flex items-center gap-3 mb-3 p-2 bg-slate-50 rounded-lg">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0FA0CE] text-white text-sm">
+              <User size={16} />
+            </div>
+            <div className="flex-1 text-right">
+              <p className="text-sm font-medium">{profile.full_name}</p>
+              <p className="text-xs text-gray-500">{profile.email}</p>
+            </div>
+          </div>
+        )}
+        
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-3 h-11 text-red-600 border-red-200 hover:bg-red-50"
+          onClick={handleLogout}
+        >
+          <LogOut size={18} />
+          تسجيل الخروج
+        </Button>
+      </div>
+    </div>
   );
 };
