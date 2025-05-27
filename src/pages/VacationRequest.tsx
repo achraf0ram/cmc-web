@@ -106,7 +106,6 @@ const VacationRequest = () => {
 
   const generatePDF = (data: z.infer<typeof formSchema>) => {
     const doc = new jsPDF("p", "mm", "a4");
-
     const currentDate = format(new Date(), "dd/MM/yyyy");
 
     doc.setFont("Helvetica");
@@ -125,100 +124,121 @@ const VacationRequest = () => {
     doc.text("Date :", 20, 50);
     doc.text(currentDate, 35, 50);
 
-    // Title
+    // Title - French and Arabic
     doc.setFontSize(14);
     doc.setFont("Helvetica", "bold");
-    doc.text("Demande de congé", 90, 65);
-    doc.text("طلب إجازة", 115, 70);
+    doc.text("Demande de congé", 70, 65);
+    const arabicTitle = "طلب إجازة";
+    doc.text(arabicTitle, 130, 70, { align: "center" });
 
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(11);
 
-    // Employee information with proper Arabic support
-    const row = (labelFr: string, value: string | undefined, labelAr: string, y: number) => {
+    // Helper function to add bilingual rows
+    const addBilingualRow = (labelFr: string, value: string | undefined, labelAr: string, y: number) => {
+      // French on left
       doc.text(`${labelFr} :`, 20, y);
       doc.text(`${value || ""}`, 60, y);
-      // For Arabic text, we'll use a simpler approach that works better with jsPDF
-      doc.text(`${labelAr} :`, 190, y, { align: "right" });
+      
+      // Arabic on right - using right alignment
+      const arabicLabel = `${labelAr} :`;
+      doc.text(arabicLabel, 190, y, { align: "right" });
     };
 
-    row("Nom & Prénom", data.fullName, "الاسم الكامل", 80);
-    row("Matricule", data.matricule, "الرقم المالي", 87);
-    row("Echelle", data.echelle, "السلم", 94);
-    row("Echelon", data.echelon, "الرتبة", 101);
-    row("Grade", data.grade, "الدرجة", 108);
-    row("Fonction", data.fonction, "الوظيفة", 115);
+    // Employee information
+    addBilingualRow("Nom & Prénom", data.fullName, "الاسم الكامل", 80);
+    addBilingualRow("Matricule", data.matricule, "الرقم المالي", 87);
+    addBilingualRow("Echelle", data.echelle, "السلم", 94);
+    addBilingualRow("Echelon", data.echelon, "الرتبة", 101);
+    addBilingualRow("Grade", data.grade, "الدرجة", 108);
+    addBilingualRow("Fonction", data.fonction, "الوظيفة", 115);
 
+    // Section header for assignment
     doc.setFont("Helvetica", "bold");
-    doc.text("Affectation", 90, 125);
-    doc.text("التعيين", 115, 130);
+    doc.text("Affectation", 70, 125);
+    const arabicAffectation = "التعيين";
+    doc.text(arabicAffectation, 130, 130, { align: "center" });
     doc.setFont("Helvetica", "normal");
 
-    row("Direction", data.direction, "المديرية", 140);
-    row("Adresse", data.address, "العنوان", 147);
-    row("Téléphone", data.phone, "الهاتف", 154);
+    addBilingualRow("Direction", data.direction, "المديرية", 140);
+    addBilingualRow("Adresse", data.address, "العنوان", 147);
+    addBilingualRow("Téléphone", data.phone, "الهاتف", 154);
 
-    const leaveTypeOptions = {
-      administrative: "إدارية / Administrative",
-      marriage: "زواج / Mariage",
-      birth: "ازدياد / Naissance",
-      exceptional: "استثنائية / Exceptionnel",
+    // Leave type mapping with proper Arabic
+    const leaveTypeMapping = {
+      administrative: { fr: "Administrative", ar: "إدارية" },
+      marriage: { fr: "Mariage", ar: "زواج" },
+      birth: { fr: "Naissance", ar: "ازدياد" },
+      exceptional: { fr: "Exceptionnel", ar: "استثنائية" },
     };
+    
+    const selectedLeaveType = leaveTypeMapping[data.leaveType as keyof typeof leaveTypeMapping];
+    const leaveTypeText = selectedLeaveType ? `${selectedLeaveType.fr} / ${selectedLeaveType.ar}` : data.leaveType;
+    
+    addBilingualRow("Nature de congé (2)", leaveTypeText, "نوع الإجازة (2)", 161);
+    addBilingualRow("Durée", data.duration, "المدة", 168);
+    addBilingualRow("Du", format(data.startDate, "yyyy-MM-dd"), "ابتداء من", 175);
+    addBilingualRow("Au", format(data.endDate, "yyyy-MM-dd"), "إلى", 182);
+    addBilingualRow("Avec (3)", data.with, "مع (3)", 189);
+    addBilingualRow("Intérim", data.interim, "النيابة (الاسم والوظيفة)", 196);
 
-    row("Nature de congé (2)", leaveTypeOptions[data.leaveType as keyof typeof leaveTypeOptions] || data.leaveType, "نوع الإجازة (2)", 161);
-    row("Durée", data.duration, "المدة", 168);
-    row("Du", format(data.startDate, "yyyy-MM-dd"), "ابتداء من", 175);
-    row("Au", format(data.endDate, "yyyy-MM-dd"), "إلى", 182);
-    row("Avec (3)", data.with, "مع (3)", 189);
-    row("Intérim", data.interim, "النيابة (الاسم والوظيفة)", 196);
-
+    // Signature section headers
     doc.text("Signature de l'intéressé", 30, 215);
-    doc.text("إمضاء المعني(ة) بالأمر", 30, 220);
+    const arabicSignatureLabel = "إمضاء المعني(ة) بالأمر";
+    doc.text(arabicSignatureLabel, 30, 220);
 
     doc.text("Avis du Chef Immédiat", 85, 215);
-    doc.text("رأي الرئيس المباشر", 85, 220);
+    const arabicChefLabel = "رأي الرئيس المباشر";
+    doc.text(arabicChefLabel, 85, 220);
 
     doc.text("Avis du Directeur", 150, 215);
-    doc.text("رأي المدير", 150, 220);
+    const arabicDirectorLabel = "رأي المدير";
+    doc.text(arabicDirectorLabel, 150, 220);
 
+    // Add signature if available
     if (signaturePreview) {
       doc.addImage(signaturePreview, "PNG", 25, 225, 40, 20);
     }
 
+    // Footer notes - bilingual
     doc.setFontSize(9);
     doc.setFont("Helvetica", "bold");
     doc.text("Très important :", 20, 250);
-    doc.text("هام جدا :", 190, 250, { align: "right" });
+    const arabicImportant = "هام جدا :";
+    doc.text(arabicImportant, 190, 250, { align: "right" });
 
     doc.setFontSize(8);
     doc.setFont("Helvetica", "normal");
 
-    const notes = [
+    // French notes on left
+    const frenchNotes = [
       "Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir",
       "obtenu sa décision de congé le cas échéant il sera considéré en",
       "abandon de poste.",
       "(1) La demande doit être déposée 8 jours avant la date demandée",
       "(2) Nature de congé : Administratif - Mariage - Naissance - Exceptionnel",
-      '(3) Si l\'intéressé projette de quitter le territoire Marocain il faut qu\'il',
-      'le mentionne "Quitter le territoire Marocain"',
+      "(3) Si l'intéressé projette de quitter le territoire Marocain il faut qu'il",
+      "le mentionne \"Quitter le territoire Marocain\"",
     ];
 
-    const notesAr = [
+    // Arabic notes on right
+    const arabicNotes = [
       "لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة و إلا اعتبر في",
       "وضعية تخلي عن العمل.",
+      "",
       "(1) يجب تقديم الطلب قبل 8 أيام من التاريخ المطلوب",
       "(2) نوع الإجازة : إدارية - زواج - ازدياد - استثنائية",
-      '(3) إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة',
-      '"مغادرة التراب الوطني"',
+      "(3) إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة",
+      "\"مغادرة التراب الوطني\"",
     ];
 
     let startY = 255;
-    notes.forEach((line, i) => {
-      doc.text(line, 20, startY);
-      if (i < notesAr.length) {
-        doc.text(notesAr[i], 190, startY, { align: "right" });
+    frenchNotes.forEach((line, i) => {
+      if (line) doc.text(line, 20, startY);
+      if (i < arabicNotes.length && arabicNotes[i]) {
+        doc.text(arabicNotes[i], 190, startY, { align: "right" });
       }
-      startY += 5;
+      startY += 4;
     });
 
     doc.save(`demande_conge_${data.fullName.replace(/\s+/g, "_")}.pdf`);

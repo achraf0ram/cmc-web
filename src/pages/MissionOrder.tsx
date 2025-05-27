@@ -102,19 +102,22 @@ const MissionOrder = () => {
     doc.text("…/2025", 75, 45);
     doc.text(`Casablanca, le ${currentDate}`, 145, 45);
     
-    // Add the title
+    // Add the title in French and Arabic
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.text("ORDRE DE MISSION", 80, 60);
-    doc.text("أمر مهمة", 105, 65);
+    const arabicTitle = "أمر مهمة";
+    doc.text(arabicTitle, 105, 65, { align: "center" });
     
     doc.setFontSize(12);
     doc.text("OFFICE DE LA FORMATION PROFESSIONNELLE", 50, 72);
     doc.text("ET DE LA PROMOTION DU TRAVAIL", 70, 77);
-    doc.text("مكتب التكوين المهني وإنعاش الشغل", 70, 82);
+    const arabicOrganization1 = "مكتب التكوين المهني وإنعاش الشغل";
+    doc.text(arabicOrganization1, 105, 82, { align: "center" });
     
     doc.text("D E S I G N E", 90, 90);
-    doc.text("ي ك ل ف", 100, 95);
+    const arabicDesigne = "ي ك ل ف";
+    doc.text(arabicDesigne, 100, 95, { align: "center" });
     
     // Create table for mission details
     doc.setFontSize(10);
@@ -123,28 +126,30 @@ const MissionOrder = () => {
     // Table header and borders
     doc.rect(20, 100, 170, 100); // Main rectangle
     
-    // Row 1
+    // Row 1 - Name and Matricule
     doc.line(20, 110, 190, 110);
     doc.line(130, 100, 130, 110);
     doc.text("Monsieur/Madame :", 25, 105);
-    doc.text("السيد/السيدة :", 25, 108);
+    const arabicMrMs = "السيد/السيدة :";
+    doc.text(arabicMrMs, 25, 108);
     doc.text(data.fullName, 70, 105);
     doc.text("Matricule :", 135, 105);
-    doc.text("الرقم :", 135, 108);
+    const arabicMatricule = "الرقم :";
+    doc.text(arabicMatricule, 135, 108);
     doc.text(data.matricule, 155, 105);
     
-    // Row 2
+    // Row 2 - Destination
     doc.line(20, 120, 190, 120);
     doc.text("De se rendre à", 25, 115);
     doc.text(":", 60, 115);
     doc.text(data.destination, 70, 115);
     
-    // Row 3
+    // Row 3 - Purpose
     doc.line(20, 130, 190, 130);
     doc.text("Pour accomplir la mission suivante :", 25, 125);
     doc.text(data.purpose, 90, 125);
     
-    // Row 4
+    // Row 4 - Driver information
     doc.line(20, 140, 190, 140);
     doc.line(130, 130, 130, 140);
     doc.text("Conducteur :", 25, 135);
@@ -152,7 +157,7 @@ const MissionOrder = () => {
     doc.text("Matricule :", 135, 135);
     doc.text(data.driverMatricule || "", 155, 135);
     
-    // Row 5
+    // Row 5 - Start date and time
     doc.line(20, 150, 190, 150);
     doc.line(130, 140, 130, 150);
     doc.text("Date de départ", 25, 145);
@@ -161,7 +166,7 @@ const MissionOrder = () => {
     doc.text("Heure :", 135, 145);
     doc.text(data.startTime || "", 155, 145);
     
-    // Row 6
+    // Row 6 - End date and time
     doc.line(20, 160, 190, 160);
     doc.line(130, 150, 130, 160);
     doc.text("Date de retour", 25, 155);
@@ -170,42 +175,61 @@ const MissionOrder = () => {
     doc.text("Heure :", 135, 155);
     doc.text(data.endTime || "", 155, 155);
     
-    // Row 7
+    // Row 7 - Transport method
     doc.text("L'intéressé(e) utilisera :", 25, 165);
     doc.text(data.transportMethod || "", 70, 165);
     
-    // Add the section for destination entity
+    // Add the section for destination entity with Arabic translation
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     
     // Add grey background for the header of this section
     doc.setFillColor(220, 220, 220);
     doc.rect(20, 200, 170, 10, "F");
-    doc.text("Cadre réservé à l'entité de destinations", 70, 206);
+    doc.text("Cadre réservé à l'entité de destinations", 50, 206);
+    const arabicEntityHeader = "إطار محجوز لكيان الوجهات";
+    doc.text(arabicEntityHeader, 140, 206);
     
     // Create 2-column table below
     doc.rect(20, 210, 170, 40); // Main rectangle
     doc.line(105, 210, 105, 250); // Vertical line dividing the columns
     
-    // Headers for each column
-    doc.text("Visa d'arrivée", 55, 216);
-    doc.text("Visa de départ", 140, 216);
+    // Headers for each column with Arabic translations
+    doc.text("Visa d'arrivée", 45, 216);
+    const arabicArrival = "تأشيرة الوصول";
+    doc.text(arabicArrival, 65, 220, { align: "center" });
+    
+    doc.text("Visa de départ", 130, 216);
+    const arabicDeparture = "تأشيرة المغادرة";
+    doc.text(arabicDeparture, 150, 220, { align: "center" });
     
     // Dividing lines to separate headers from content
-    doc.line(20, 220, 190, 220);
+    doc.line(20, 225, 190, 225);
     
-    // Content rows
+    // Content rows with Arabic labels
     doc.setFont("helvetica", "normal");
-    doc.text("Date et Heure d'arrivée :", 25, 227);
-    doc.text("Date et Heure de départ :", 110, 227);
+    doc.text("Date et Heure d'arrivée :", 25, 232);
+    const arabicArrivalDateTime = "تاريخ ووقت الوصول :";
+    doc.text(arabicArrivalDateTime, 25, 236);
     
-    doc.text("Cachet et signature :", 25, 240);
-    doc.text("Cachet et signature :", 110, 240);
+    doc.text("Date et Heure de départ :", 110, 232);
+    const arabicDepartureDateTime = "تاريخ ووقت المغادرة :";
+    doc.text(arabicDepartureDateTime, 110, 236);
     
-    // Add the note at the bottom
+    doc.text("Cachet et signature :", 25, 245);
+    const arabicStampSignature1 = "الختم والتوقيع :";
+    doc.text(arabicStampSignature1, 25, 248);
+    
+    doc.text("Cachet et signature :", 110, 245);
+    const arabicStampSignature2 = "الختم والتوقيع :";
+    doc.text(arabicStampSignature2, 110, 248);
+    
+    // Add the note at the bottom with Arabic translation
     doc.setFontSize(9);
     doc.setFont("helvetica", "italic");
-    doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, 260);
+    doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 20, 260);
+    const arabicNote = "ملاحظة : تأشيرة المغادرة إجبارية للمهام التي تتجاوز يوما واحدا.";
+    doc.text(arabicNote, 190, 265, { align: "right" });
     
     // Save the PDF
     doc.save(`ordre_mission_${data.fullName.replace(/\s+/g, '_')}.pdf`);
