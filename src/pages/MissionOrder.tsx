@@ -58,13 +58,13 @@ const formSchema = z.object({
 const MissionOrder = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { language, t } = useLanguage();
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: user?.fullName || "",
+      fullName: profile?.full_name || "",
       matricule: "",
       destination: "",
       purpose: "",

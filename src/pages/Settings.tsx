@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -303,7 +304,7 @@ const Settings = () => {
               <CardTitle>إعدادات كلمة المرور</CardTitle>
             </CardHeader>
             <CardContent>
-              {user?.provider === 'google' ? (
+              {user?.app_metadata?.provider === 'google' ? (
                 <div className="p-4 text-center">
                   <p>{t('googleAccountPassword')}</p>
                 </div>
