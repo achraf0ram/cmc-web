@@ -19,10 +19,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (fullName: string, email: string, password: string) => Promise<boolean>;
+  signup: (fullName: string, email: string, password: string, phone?: string) => Promise<boolean>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   updateUser: (userData: Partial<UserProfile>) => Promise<boolean>;
 }
 
@@ -35,7 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // إعداد مستمع تغيير حالة المصادقة
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session);
@@ -43,7 +42,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // جلب الملف الشخصي للمستخدم
           setTimeout(async () => {
             await fetchUserProfile(session.user.id);
           }, 0);
@@ -55,7 +53,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // التحقق من الجلسة الحالية
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -99,19 +96,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('خطأ في تسجيل الدخول:', error);
-        return false;
+        throw error;
       }
 
       return true;
     } catch (error) {
       console.error('خطأ في تسجيل الدخول:', error);
-      return false;
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signup = async (fullName: string, email: string, password: string): Promise<boolean> => {
+  const signup = async (fullName: string, email: string, password: string, phone?: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase.auth.signUp({
@@ -120,19 +117,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         options: {
           data: {
             full_name: fullName,
+            phone: phone || '',
           },
         },
       });
 
       if (error) {
         console.error('خطأ في إنشاء الحساب:', error);
-        return false;
+        throw error;
       }
 
       return true;
     } catch (error) {
       console.error('خطأ في إنشاء الحساب:', error);
-      return false;
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -158,20 +156,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('خطأ في إعادة تعيين كلمة المرور:', error);
-        return false;
+        throw error;
       }
 
       return true;
     } catch (error) {
       console.error('خطأ في إعادة تعيين كلمة المرور:', error);
-      return false;
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
-    return signup(name, email, password);
+  const register = async (name: string, email: string, password: string, phone?: string): Promise<boolean> => {
+    return signup(name, email, password, phone);
   };
 
   const updateUser = async (userData: Partial<UserProfile>): Promise<boolean> => {
@@ -192,7 +190,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      // إعادة جلب الملف الشخصي المحدث
       await fetchUserProfile(user.id);
       return true;
     } catch (error) {

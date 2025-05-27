@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, User, Lock, Mail } from "lucide-react";
+import { Loader2, User, Lock, Mail, Phone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -17,37 +17,48 @@ export const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [password_confirmation, setPasswordConfirmation] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (password !== password_confirmation) {
+      toast({
+        variant: "destructive",
+        title: "خطأ في كلمة المرور",
+        description: "كلمات المرور غير متطابقة",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Make sure password_confirmation is not being passed to register
       const success = await register(name, email, password);
       if (success) {
         toast({
-          title: t('success'),
-          description: t('successfullySubmitted'),
+          title: "تم إنشاء الحساب بنجاح",
+          description: "تم إرسال رابط التفعيل إلى بريدك الإلكتروني",
         });
-        navigate("/");
+        navigate("/login");
       } else {
         toast({
           variant: "destructive",
-          title: t('errorUpdatingProfile'),
-          description: t('errorTryAgain'),
+          title: "خطأ في إنشاء الحساب",
+          description: "حدث خطأ أثناء إنشاء الحساب، يرجى المحاولة مرة أخرى",
         });
       }
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        t('errorTryAgain');
+      console.error("خطأ في إنشاء الحساب:", error);
+      const errorMessage = 
+        error.message === "User already registered" ? "المستخدم مسجل بالفعل" :
+        error.message || "حدث خطأ، يرجى المحاولة مرة أخرى";
 
       toast({
         variant: "destructive",
-        title: t('errorUpdatingProfile'),
+        title: "خطأ في إنشاء الحساب",
         description: errorMessage,
       });
     } finally {
@@ -68,9 +79,7 @@ export const SignUp = () => {
           <p className='text-gray-600 mt-2'>{t('hrPlatformDescription')}</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className='space-y-4'>
+        <form onSubmit={handleSubmit} className='space-y-4'>
           <div className='space-y-2'>
             <Label htmlFor='name'>{t('fullName')}</Label>
             <div className='relative'>
@@ -102,6 +111,22 @@ export const SignUp = () => {
                 dir='rtl'
               />
               <Mail className='absolute left-3 top-3 h-4 w-4 text-muted-foreground' />
+            </div>
+          </div>
+
+          <div className='space-y-2'>
+            <Label htmlFor='phone'>رقم الهاتف</Label>
+            <div className='relative'>
+              <Input
+                id='phone'
+                type='tel'
+                placeholder='أدخل رقم الهاتف'
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className='pl-10 pr-4'
+                dir='rtl'
+              />
+              <Phone className='absolute left-3 top-3 h-4 w-4 text-muted-foreground' />
             </div>
           </div>
 
