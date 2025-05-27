@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    hmr: {
+      clientPort: 8080,
+    },
   },
   plugins: [
     // Use React plugin with Babel instead of SWC
@@ -24,6 +27,10 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  define: {
+    // Ensure WebSocket token is properly defined
+    __WS_TOKEN__: JSON.stringify(process.env.WS_TOKEN || ''),
   },
   // Remove esbuild jsxInject configuration as we're using automatic JSX runtime
   esbuild: {
