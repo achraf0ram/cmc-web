@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -23,7 +24,7 @@ export const AppSidebar = () => {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { logout, user } = useAuth();
+  const { logout, user, profile } = useAuth();
   const navigate = useNavigate();
   
 
@@ -142,7 +143,7 @@ export const AppSidebar = () => {
               />
             </div>
             {!collapsed && (
-              <div className='text-sm'>{user?.name || "user"}</div>
+              <div className='text-sm'>{profile?.full_name || user?.email || "مستخدم"}</div>
             )}
           </div>
           <Button

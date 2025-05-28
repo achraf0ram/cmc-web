@@ -1,10 +1,11 @@
+
 import React from "react";
 import jsPDF from "jspdf";
 import { AmiriFont } from "../fonts/AmiriFont";
 // @ts-ignore
 import * as reshaper from "arabic-persian-reshaper";
 const reshape = reshaper.reshape;
-// أو قد يكون reshaper.default.reshape اعتمادًا على المكتبة
+// @ts-ignore
 import bidi from "bidi-js";
 
 const ArabicPdfGenerator: React.FC = () => {
