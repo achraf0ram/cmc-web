@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +36,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AmiriFont } from "../fonts/AmiriFont";
+
+// Import Arabic reshaping libraries
 // @ts-ignore
 import * as reshaper from "arabic-persian-reshaper";
 const reshape = reshaper.reshape;
@@ -60,13 +63,15 @@ const formSchema = z.object({
   signature: z.instanceof(File).optional(),
 });
 
+type FormData = z.infer<typeof formSchema>;
+
 const VacationRequest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const { language, t } = useLanguage();
   const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -88,49 +93,84 @@ const VacationRequest = () => {
     },
   });
 
-  // Translation function for French to Arabic
+  // Enhanced translation function for French to Arabic
   const translateToArabic = (frenchText: string): string => {
+    if (!frenchText || frenchText.trim() === "") return "";
+    
     const translations: Record<string, string> = {
-      // Personal info translations
+      // Leave types
       "Administratif": "إدارية",
       "Mariage": "زواج", 
       "Naissance": "ازدياد",
       "Exceptionnel": "استثنائية",
+      
+      // Duration units
+      "jour": "يوم",
       "jours": "أيام",
+      "semaine": "أسبوع",
       "semaines": "أسابيع",
-      "mois": "شهور",
-      // Common words
+      "mois": "شهر",
+      
+      // Family relations
       "avec": "مع",
       "sans": "بدون",
       "famille": "عائلة",
       "époux": "زوج",
       "épouse": "زوجة",
       "enfant": "طفل",
+      "enfants": "أطفال",
       "parent": "والد",
-      "urgence": "طارئ",
-      "maladie": "مرض",
-      "personnel": "شخصي",
-      "voyage": "سفر",
-      // Directions and functions
-      "Direction": "مديرية",
-      "Service": "مصلحة",
-      "Bureau": "مكتب",
-      "Responsable": "مسؤول",
+      "parents": "والدين",
+      
+      // Work positions
+      "Directeur": "مدير",
       "Chef": "رئيس",
+      "Responsable": "مسؤول",
       "Adjoint": "مساعد",
       "Secrétaire": "كاتب",
       "Comptable": "محاسب",
       "Informaticien": "مختص في المعلوميات",
+      "Technicien": "تقني",
+      "Ingénieur": "مهندس",
+      
+      // Departments
+      "Direction": "مديرية",
+      "Service": "مصلحة",
+      "Bureau": "مكتب",
+      "Département": "قسم",
+      
+      // Common words
+      "urgence": "طارئ",
+      "maladie": "مرض",
+      "personnel": "شخصي",
+      "voyage": "سفر",
+      "formation": "تكوين",
+      "repos": "راحة",
     };
 
-    // Simple word-by-word translation
     let arabicText = frenchText;
+    
+    // Apply word-by-word translation
     Object.entries(translations).forEach(([french, arabic]) => {
       const regex = new RegExp(`\\b${french}\\b`, 'gi');
       arabicText = arabicText.replace(regex, arabic);
     });
 
-    return arabicText || frenchText;
+    return arabicText !== frenchText ? arabicText : frenchText;
+  };
+
+  // Function to properly format Arabic text for PDF
+  const formatArabicForPDF = (text: string): string => {
+    if (!text || text.trim() === "") return "";
+    
+    try {
+      const arabicText = translateToArabic(text);
+      const shaped = reshape(arabicText);
+      return bidi.from_string(shaped).toString();
+    } catch (error) {
+      console.warn("Error formatting Arabic text:", error);
+      return text;
+    }
   };
 
   const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,131 +185,131 @@ const VacationRequest = () => {
     }
   };
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = (values: FormData) => {
     setIsSubmitted(true);
     generatePDF(values);
-  }
+  };
 
-  const generatePDF = (data: z.infer<typeof formSchema>) => {
+  const generatePDF = (data: FormData) => {
     const doc = new jsPDF("p", "mm", "a4");
     const currentDate = format(new Date(), "dd/MM/yyyy");
 
-    // Add Amiri font for Arabic
-    doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
-    doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+    try {
+      // Add Amiri font for Arabic
+      doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
+      doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+    } catch (error) {
+      console.warn("Could not load Amiri font:", error);
+    }
 
     // Set default font
     doc.setFont("Helvetica");
     doc.setFontSize(11);
 
-    // Add logo at the top
+    // Add logo
     try {
       doc.addImage(logoPath, "PNG", 10, 10, 50, 25);
     } catch (error) {
       console.log("Could not load logo:", error);
     }
 
-    // Header
+    // Header information
     doc.text("Réf : OFP/DR……/CMC…../N°", 20, 45);
     doc.text("/2025", 75, 45);
     doc.text("Date :", 20, 50);
     doc.text(currentDate, 35, 50);
 
-    // Title - French and Arabic
+    // Title in French and Arabic
     doc.setFontSize(14);
     doc.setFont("Helvetica", "bold");
     doc.text("Demande de congé", 70, 65);
     
-    // Arabic title (properly shaped and bidi processed)
-    doc.setFont("Amiri");
-    const arabicTitle = "طلب إجازة";
-    const shapedTitle = reshape(arabicTitle);
-    const bidiTitle = bidi.from_string(shapedTitle).toString();
-    doc.text(bidiTitle, 130, 65, { align: "right" });
+    // Arabic title
+    try {
+      doc.setFont("Amiri");
+      const arabicTitle = formatArabicForPDF("طلب إجازة");
+      doc.text(arabicTitle, 130, 65, { align: "right" });
+    } catch (error) {
+      console.warn("Error adding Arabic title:", error);
+    }
     
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(11);
 
-    // Employee information with French input and Arabic translation
-    doc.text("Nom & Prénom :", 20, 80);
-    doc.text(data.fullName, 60, 80);
-    doc.setFont("Amiri");
-    const translatedName = translateToArabic(data.fullName);
-    const shapedName = reshape(translatedName);
-    const bidiName = bidi.from_string(shapedName).toString();
-    doc.text(bidiName, 190, 80, { align: "right" });
-    doc.setFont("Helvetica", "normal");
+    let yPosition = 80;
 
-    doc.text("Matricule :", 20, 87);
-    doc.text(data.matricule, 60, 87);
-    doc.setFont("Amiri");
-    doc.text(": الرقم المالي", 190, 87, { align: "right" });
-    doc.setFont("Helvetica", "normal");
+    // Helper function to add bilingual field
+    const addBilingualField = (frenchLabel: string, arabicLabel: string, value: string, yPos: number) => {
+      // French side
+      doc.setFont("Helvetica", "normal");
+      doc.text(`${frenchLabel} :`, 20, yPos);
+      doc.text(value, 60, yPos);
+      
+      // Arabic side
+      try {
+        doc.setFont("Amiri");
+        const formattedArabicValue = formatArabicForPDF(value);
+        doc.text(formattedArabicValue, 150, yPos, { align: "right" });
+        doc.text(`: ${arabicLabel}`, 190, yPos, { align: "right" });
+      } catch (error) {
+        console.warn("Error adding Arabic text:", error);
+      }
+      
+      doc.setFont("Helvetica", "normal");
+    };
 
-    doc.text("Echelle :", 20, 94);
-    doc.text(data.echelle || "", 60, 94);
-    doc.setFont("Amiri");
-    const translatedEchelle = translateToArabic(data.echelle || "");
-    const shapedEchelle = reshape(translatedEchelle);
-    const bidiEchelle = bidi.from_string(shapedEchelle).toString();
-    doc.text(bidiEchelle, 150, 94, { align: "right" });
-    doc.text(": السلم", 190, 94, { align: "right" });
-    doc.setFont("Helvetica", "normal");
-
-    doc.text("Grade :", 20, 101);
-    doc.text(data.grade || "", 60, 101);
-    doc.setFont("Amiri");
-    const translatedGrade = translateToArabic(data.grade || "");
-    const shapedGrade = reshape(translatedGrade);
-    const bidiGrade = bidi.from_string(shapedGrade).toString();
-    doc.text(bidiGrade, 150, 101, { align: "right" });
-    doc.text(": الدرجة", 190, 101, { align: "right" });
-    doc.setFont("Helvetica", "normal");
-
-    doc.text("Fonction :", 20, 108);
-    doc.text(data.fonction || "", 60, 108);
-    doc.setFont("Amiri");
-    const translatedFonction = translateToArabic(data.fonction || "");
-    const shapedFonction = reshape(translatedFonction);
-    const bidiFonction = bidi.from_string(shapedFonction).toString();
-    doc.text(bidiFonction, 150, 108, { align: "right" });
-    doc.text(": الوظيفة", 190, 108, { align: "right" });
-    doc.setFont("Helvetica", "normal");
+    // Employee information
+    addBilingualField("Nom & Prénom", "الاسم الكامل", data.fullName, yPosition);
+    yPosition += 7;
+    
+    addBilingualField("Matricule", "الرقم المالي", data.matricule, yPosition);
+    yPosition += 7;
+    
+    if (data.echelle) {
+      addBilingualField("Echelle", "السلم", data.echelle, yPosition);
+      yPosition += 7;
+    }
+    
+    if (data.grade) {
+      addBilingualField("Grade", "الدرجة", data.grade, yPosition);
+      yPosition += 7;
+    }
+    
+    if (data.fonction) {
+      addBilingualField("Fonction", "الوظيفة", data.fonction, yPosition);
+      yPosition += 7;
+    }
 
     // Affectation section
+    yPosition += 5;
     doc.setFont("Helvetica", "bold");
-    doc.text("Affectation", 70, 120);
-    doc.setFont("Amiri");
-    doc.text("التعيين", 130, 120, { align: "right" });
+    doc.text("Affectation", 70, yPosition);
+    try {
+      doc.setFont("Amiri");
+      doc.text("التعيين", 130, yPosition, { align: "right" });
+    } catch (error) {
+      console.warn("Error adding Arabic section title:", error);
+    }
     doc.setFont("Helvetica", "normal");
+    yPosition += 10;
 
-    doc.text("Direction :", 20, 130);
-    doc.text(data.direction || "", 60, 130);
-    doc.setFont("Amiri");
-    const translatedDirection = translateToArabic(data.direction || "");
-    const shapedDirection = reshape(translatedDirection);
-    const bidiDirection = bidi.from_string(shapedDirection).toString();
-    doc.text(bidiDirection, 150, 130, { align: "right" });
-    doc.text(": المديرية", 190, 130, { align: "right" });
-    doc.setFont("Helvetica", "normal");
+    if (data.direction) {
+      addBilingualField("Direction", "المديرية", data.direction, yPosition);
+      yPosition += 7;
+    }
+    
+    if (data.address) {
+      addBilingualField("Adresse", "العنوان", data.address, yPosition);
+      yPosition += 7;
+    }
+    
+    if (data.phone) {
+      addBilingualField("Téléphone", "الهاتف", data.phone, yPosition);
+      yPosition += 7;
+    }
 
-    doc.text("Adresse :", 20, 137);
-    doc.text(data.address || "", 60, 137);
-    doc.setFont("Amiri");
-    const translatedAddress = translateToArabic(data.address || "");
-    const shapedAddress = reshape(translatedAddress);
-    const bidiAddress = bidi.from_string(shapedAddress).toString();
-    doc.text(bidiAddress, 150, 137, { align: "right" });
-    doc.text(": العنوان", 190, 137, { align: "right" });
-    doc.setFont("Helvetica", "normal");
-
-    doc.text("Téléphone :", 20, 144);
-    doc.text(data.phone || "", 60, 144);
-    doc.setFont("Amiri");
-    doc.text(": الهاتف", 190, 144, { align: "right" });
-    doc.setFont("Helvetica", "normal");
-
-    // Leave details with translations
+    // Leave details
+    yPosition += 5;
     const leaveTypeMap: Record<string, { fr: string; ar: string }> = {
       administrative: { fr: "Administratif", ar: "إدارية" },
       marriage: { fr: "Mariage", ar: "زواج" },
@@ -277,97 +317,92 @@ const VacationRequest = () => {
       exceptional: { fr: "Exceptionnel", ar: "استثنائية" },
     };
 
-    const leaveType = leaveTypeMap[data.leaveType] || { fr: data.leaveType, ar: translateToArabic(data.leaveType) };
+    const leaveType = leaveTypeMap[data.leaveType] || { 
+      fr: data.leaveType, 
+      ar: translateToArabic(data.leaveType) 
+    };
 
-    doc.text("Nature de congé (2) :", 20, 151);
-    doc.text(leaveType.fr, 60, 151);
-    doc.setFont("Amiri");
-    const shapedLeaveType = reshape(leaveType.ar);
-    const bidiLeaveType = bidi.from_string(shapedLeaveType).toString();
-    doc.text(bidiLeaveType, 150, 151, { align: "right" });
-    doc.text("(2) : نوع الإجازة", 190, 151, { align: "right" });
-    doc.setFont("Helvetica", "normal");
+    addBilingualField("Nature de congé", "نوع الإجازة", leaveType.fr, yPosition);
+    yPosition += 7;
+    
+    addBilingualField("Durée", "المدة", data.duration, yPosition);
+    yPosition += 7;
+    
+    addBilingualField("Du", "ابتداء من", format(data.startDate, "dd/MM/yyyy"), yPosition);
+    yPosition += 7;
+    
+    addBilingualField("Au", "إلى", format(data.endDate, "dd/MM/yyyy"), yPosition);
+    yPosition += 7;
 
-    doc.text("Durée :", 20, 158);
-    doc.text(data.duration, 60, 158);
-    doc.setFont("Amiri");
-    const translatedDuration = translateToArabic(data.duration);
-    const shapedDuration = reshape(translatedDuration);
-    const bidiDuration = bidi.from_string(shapedDuration).toString();
-    doc.text(bidiDuration, 150, 158, { align: "right" });
-    doc.text(": المدة", 190, 158, { align: "right" });
-    doc.setFont("Helvetica", "normal");
+    if (data.with) {
+      addBilingualField("Avec", "مع", data.with, yPosition);
+      yPosition += 7;
+    }
 
-    doc.text("Du :", 20, 165);
-    doc.text(format(data.startDate, "dd/MM/yyyy"), 60, 165);
-    doc.setFont("Amiri");
-    doc.text(": ابتداء من", 190, 165, { align: "right" });
-    doc.setFont("Helvetica", "normal");
-
-    doc.text("Au :", 20, 172);
-    doc.text(format(data.endDate, "dd/MM/yyyy"), 60, 172);
-    doc.setFont("Amiri");
-    doc.text(": إلى", 190, 172, { align: "right" });
-    doc.setFont("Helvetica", "normal");
-
-    doc.text("Avec (3) :", 20, 179);
-    doc.text(data.with || "", 60, 179);
-    doc.setFont("Amiri");
-    const translatedWith = translateToArabic(data.with || "");
-    const shapedWith = reshape(translatedWith);
-    const bidiWith = bidi.from_string(shapedWith).toString();
-    doc.text(bidiWith, 150, 179, { align: "right" });
-    doc.text("(3) : مع", 190, 179, { align: "right" });
-    doc.setFont("Helvetica", "normal");
-
-    doc.text("Intérim (Nom et Fonction) :", 20, 186);
-    doc.text(data.interim || "", 60, 186);
-    doc.setFont("Amiri");
-    const translatedInterim = translateToArabic(data.interim || "");
-    const shapedInterim = reshape(translatedInterim);
-    const bidiInterim = bidi.from_string(shapedInterim).toString();
-    doc.text(bidiInterim, 150, 186, { align: "right" });
-    doc.text(": النيابة (الاسم والوظيفة)", 190, 186, { align: "right" });
-    doc.setFont("Helvetica", "normal");
+    if (data.interim) {
+      addBilingualField("Intérim", "النيابة", data.interim, yPosition);
+      yPosition += 7;
+    }
 
     // Leave Morocco checkbox
     if (data.leaveMorocco) {
-      doc.text("Quitter le territoire Marocain", 20, 193);
-      doc.setFont("Amiri");
-      doc.text("مغادرة التراب الوطني", 190, 193, { align: "right" });
-      doc.setFont("Helvetica", "normal");
+      yPosition += 5;
+      doc.text("☑ Quitter le territoire Marocain", 20, yPosition);
+      try {
+        doc.setFont("Amiri");
+        const arabicCheckbox = formatArabicForPDF("☑ مغادرة التراب الوطني");
+        doc.text(arabicCheckbox, 190, yPosition, { align: "right" });
+        doc.setFont("Helvetica", "normal");
+      } catch (error) {
+        console.warn("Error adding Arabic checkbox:", error);
+      }
+      yPosition += 7;
     }
 
     // Signature sections
-    doc.text("Signature de l'intéressé", 30, 210);
-    doc.setFont("Amiri");
-    doc.text("توقيع المعني بالأمر", 30, 215, { align: "left" });
-    doc.setFont("Helvetica", "normal");
-
-    doc.text("Avis du Chef Immédiat", 85, 210);
-    doc.setFont("Amiri");
-    doc.text("رأي الرئيس المباشر", 85, 215, { align: "left" });
-    doc.setFont("Helvetica", "normal");
-
-    doc.text("Avis du Directeur", 150, 210);
-    doc.setFont("Amiri");
-    doc.text("رأي المدير", 150, 215, { align: "left" });
-    doc.setFont("Helvetica", "normal");
+    yPosition += 15;
+    const signatureY = yPosition;
+    
+    doc.text("Signature de l'intéressé", 30, signatureY);
+    doc.text("Avis du Chef Immédiat", 85, signatureY);
+    doc.text("Avis du Directeur", 150, signatureY);
+    
+    try {
+      doc.setFont("Amiri");
+      doc.text("توقيع المعني بالأمر", 30, signatureY + 5, { align: "left" });
+      doc.text("رأي الرئيس المباشر", 85, signatureY + 5, { align: "left" });
+      doc.text("رأي المدير", 150, signatureY + 5, { align: "left" });
+      doc.setFont("Helvetica", "normal");
+    } catch (error) {
+      console.warn("Error adding Arabic signature labels:", error);
+    }
 
     // Add signature if available
     if (signaturePreview) {
-      doc.addImage(signaturePreview, "PNG", 25, 220, 40, 20);
+      try {
+        doc.addImage(signaturePreview, "PNG", 25, signatureY + 10, 40, 20);
+      } catch (error) {
+        console.warn("Error adding signature image:", error);
+      }
     }
 
     // Footer notes
+    yPosition += 40;
     doc.setFontSize(9);
     doc.setFont("Helvetica", "bold");
-    doc.text("Très important :", 20, 250);
-    doc.setFont("Amiri");
-    doc.text("هام جدا :", 190, 250, { align: "right" });
+    doc.text("Très important :", 20, yPosition);
+    
+    try {
+      doc.setFont("Amiri");
+      doc.text("هام جدا :", 190, yPosition, { align: "right" });
+    } catch (error) {
+      console.warn("Error adding Arabic footer title:", error);
+    }
 
     doc.setFontSize(8);
     doc.setFont("Helvetica", "normal");
+    yPosition += 5;
+
     const frenchNotes = [
       "Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir",
       "obtenu sa décision de congé le cas échéant il sera considéré en",
@@ -387,20 +422,28 @@ const VacationRequest = () => {
       "بإضافة \"مغادرة التراب الوطني\".",
     ];
 
-    let yPos = 255;
     frenchNotes.forEach((note, i) => {
       doc.setFont("Helvetica", "normal");
-      doc.text(note, 20, yPos);
+      doc.text(note, 20, yPosition);
+      
       if (i < arabicNotes.length) {
-        doc.setFont("Amiri", "normal");
-        const shapedNote = reshape(arabicNotes[i]);
-        const bidiNote = bidi.from_string(shapedNote).toString();
-        doc.text(bidiNote, 190, yPos, { align: "right" });
+        try {
+          doc.setFont("Amiri", "normal");
+          const formattedNote = formatArabicForPDF(arabicNotes[i]);
+          doc.text(formattedNote, 190, yPosition, { align: "right" });
+        } catch (error) {
+          console.warn("Error adding Arabic note:", error);
+        }
       }
-      yPos += 5;
+      yPosition += 5;
     });
 
-    doc.save(`demande_conge_${data.fullName.replace(/\s+/g, "_")}.pdf`);
+    // Save PDF
+    try {
+      doc.save(`demande_conge_${data.fullName.replace(/\s+/g, "_")}.pdf`);
+    } catch (error) {
+      console.error("Error saving PDF:", error);
+    }
   };
 
   return (
@@ -449,7 +492,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('fullName')}*</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder="مثال: أحمد محمد / Ahmed Mohammed" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -463,7 +506,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('matricule')}*</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder="رقمك المالي" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -479,7 +522,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('echelle')}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder="مثال: 10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -493,7 +536,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('grade')}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder="مثال: 3" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -507,7 +550,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('fonction')}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder="مثال: Ingénieur / Technicien" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -522,7 +565,7 @@ const VacationRequest = () => {
                     <FormItem>
                       <FormLabel>{t('direction')}</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} placeholder="مثال: Direction des Ressources Humaines" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -537,7 +580,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('address')}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder="عنوانك الكامل" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -551,7 +594,7 @@ const VacationRequest = () => {
                       <FormItem>
                         <FormLabel>{t('phone')}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} placeholder="0612345678" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -593,7 +636,7 @@ const VacationRequest = () => {
                     <FormItem>
                       <FormLabel>{t('duration')}*</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} placeholder="مثال: 15 jours / 2 semaines" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -696,7 +739,7 @@ const VacationRequest = () => {
                     <FormItem>
                       <FormLabel>{t('with')}</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} placeholder="مثال: famille / époux / épouse" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -710,7 +753,7 @@ const VacationRequest = () => {
                     <FormItem>
                       <FormLabel>{t('interim')}</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} placeholder="اسم ووظيفة من سيحل محلك" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -476,6 +476,82 @@ const translations: Translations = {
     fr: 'Utilisateur',
     ar: 'المستخدم',
   },
+  vacationRequestTitle: {
+    fr: 'Demande de congé',
+    ar: 'طلب إجازة',
+  },
+  matricule: {
+    fr: 'Matricule',
+    ar: 'الرقم المالي',
+  },
+  echelle: {
+    fr: 'Echelle',
+    ar: 'السلم',
+  },
+  grade: {
+    fr: 'Grade', 
+    ar: 'الدرجة',
+  },
+  fonction: {
+    fr: 'Fonction',
+    ar: 'الوظيفة',
+  },
+  direction: {
+    fr: 'Direction',
+    ar: 'المديرية',
+  },
+  address: {
+    fr: 'Adresse',
+    ar: 'العنوان',
+  },
+  leaveType: {
+    fr: 'Type de congé',
+    ar: 'نوع الإجازة',
+  },
+  selectLeaveType: {
+    fr: 'Sélectionner le type de congé',
+    ar: 'اختر نوع الإجازة',
+  },
+  administrativeLeave: {
+    fr: 'Congé administratif',
+    ar: 'إجازة إدارية',
+  },
+  marriageLeave: {
+    fr: 'Congé de mariage',
+    ar: 'إجازة زواج',
+  },
+  birthLeave: {
+    fr: 'Congé de naissance',
+    ar: 'إجازة ازدياد',
+  },
+  exceptionalLeave: {
+    fr: 'Congé exceptionnel',
+    ar: 'إجازة استثنائية',
+  },
+  duration: {
+    fr: 'Durée',
+    ar: 'المدة',
+  },
+  selectDate: {
+    fr: 'Sélectionner une date',
+    ar: 'اختر تاريخ',
+  },
+  with: {
+    fr: 'Avec',
+    ar: 'مع',
+  },
+  interim: {
+    fr: 'Intérim (Nom et Fonction)',
+    ar: 'النيابة (الاسم والوظيفة)',
+  },
+  leaveMorocco: {
+    fr: 'Quitter le territoire Marocain',
+    ar: 'مغادرة التراب الوطني',
+  },
+  signature: {
+    fr: 'Signature',
+    ar: 'التوقيع',
+  },
 };
 
 // Create context
