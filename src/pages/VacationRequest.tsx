@@ -34,6 +34,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+// تعريف الأنواع
+type LeaveType = 'administrative' | 'marriage' | 'birth' | 'exceptional';
+
+interface LeaveTypeMapping {
+  [key: string]: {
+    fr: string;
+    ar: string;
+  };
+}
+
+// تعريف الثوابت
+const LEAVE_TYPES: LeaveTypeMapping = {
+  administrative: { fr: "Administrative", ar: "إجازة إدارية" },
+  marriage: { fr: "Mariage", ar: "إجازة زواج" },
+  birth: { fr: "Naissance", ar: "إجازة ولادة" },
+  exceptional: { fr: "Exceptionnel", ar: "إجازة استثنائية" },
+};
+
+// تعريف مخطط النموذج
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "يرجى إدخال الاسم الكامل" }),
   matricule: z.string().min(1, { message: "يرجى إدخال الرقم المالي" }),
@@ -99,53 +118,61 @@ const VacationRequest = () => {
     }
   };
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitted(true);
-    generatePDF(values);
-  }
-
   const generatePDF = (data: z.infer<typeof formSchema>) => {
     const doc = new jsPDF("p", "mm", "a4");
+    
+    // إضافة الخط العربي
+    doc.addFont("/fonts/Amiri-Regular.ttf", "Amiri", "normal");
+    doc.addFont("/fonts/Amiri-Bold.ttf", "Amiri", "bold");
+
     const currentDate = format(new Date(), "dd/MM/yyyy");
 
-    doc.setFont("Helvetica");
+    // إعداد الخطوط
+    doc.setFont("Helvetica", "normal");
     doc.setFontSize(11);
 
-    // Add logo at the top
+    // إضافة الشعار
     try {
       doc.addImage(logoPath, "PNG", 10, 10, 50, 25);
     } catch (error) {
       console.log("Could not load logo:", error);
     }
 
-    // Header
+    // ترويسة المستند
     doc.text("Réf : OFP/DR……/CMC…../N°", 20, 45);
     doc.text("/2025", 75, 45);
     doc.text("Date :", 20, 50);
     doc.text(currentDate, 35, 50);
 
-    // Title - French and Arabic
+    // العنوان
     doc.setFontSize(14);
     doc.setFont("Helvetica", "bold");
     doc.text("Demande de congé", 70, 65);
+    
+    // العنوان بالعربية
+    doc.setFont("Amiri", "bold");
+    doc.setFontSize(14);
     const arabicTitle = "طلب إجازة";
     doc.text(arabicTitle, 130, 70, { align: "center" });
 
+    // إعادة تعيين الخط للعودة إلى النص العادي
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(11);
 
-    // Helper function to add bilingual rows
+    // دالة مساعدة لإضافة الصفوف ثنائية اللغة
     const addBilingualRow = (labelFr: string, value: string | undefined, labelAr: string, y: number) => {
-      // French on left
+      // النص الفرنسي
+      doc.setFont("Helvetica", "normal");
       doc.text(`${labelFr} :`, 20, y);
       doc.text(`${value || ""}`, 60, y);
       
-      // Arabic on right - using right alignment
+      // النص العربي
+      doc.setFont("Amiri", "normal");
       const arabicLabel = `${labelAr} :`;
       doc.text(arabicLabel, 190, y, { align: "right" });
     };
 
-    // Employee information
+    // معلومات الموظف
     addBilingualRow("Nom & Prénom", data.fullName, "الاسم الكامل", 80);
     addBilingualRow("Matricule", data.matricule, "الرقم المالي", 87);
     addBilingualRow("Echelle", data.echelle, "السلم", 94);
@@ -153,64 +180,53 @@ const VacationRequest = () => {
     addBilingualRow("Grade", data.grade, "الدرجة", 108);
     addBilingualRow("Fonction", data.fonction, "الوظيفة", 115);
 
-    // Section header for assignment
+    // عنوان القسم
     doc.setFont("Helvetica", "bold");
     doc.text("Affectation", 70, 125);
+    doc.setFont("Amiri", "bold");
     const arabicAffectation = "التعيين";
     doc.text(arabicAffectation, 130, 130, { align: "center" });
-    doc.setFont("Helvetica", "normal");
 
+    // معلومات التعيين
+    doc.setFont("Helvetica", "normal");
     addBilingualRow("Direction", data.direction, "المديرية", 140);
     addBilingualRow("Adresse", data.address, "العنوان", 147);
     addBilingualRow("Téléphone", data.phone, "الهاتف", 154);
 
-    // Leave type mapping with proper Arabic
-    const leaveTypeMapping = {
-      administrative: { fr: "Administrative", ar: "إدارية" },
-      marriage: { fr: "Mariage", ar: "زواج" },
-      birth: { fr: "Naissance", ar: "ازدياد" },
-      exceptional: { fr: "Exceptionnel", ar: "استثنائية" },
-    };
-    
-    const selectedLeaveType = leaveTypeMapping[data.leaveType as keyof typeof leaveTypeMapping];
+    // نوع الإجازة
+    const selectedLeaveType = LEAVE_TYPES[data.leaveType as LeaveType];
     const leaveTypeText = selectedLeaveType ? `${selectedLeaveType.fr} / ${selectedLeaveType.ar}` : data.leaveType;
     
-    addBilingualRow("Nature de congé (2)", leaveTypeText, "نوع الإجازة (2)", 161);
+    addBilingualRow("Nature de congé", leaveTypeText, "نوع الإجازة", 161);
     addBilingualRow("Durée", data.duration, "المدة", 168);
     addBilingualRow("Du", format(data.startDate, "yyyy-MM-dd"), "ابتداء من", 175);
     addBilingualRow("Au", format(data.endDate, "yyyy-MM-dd"), "إلى", 182);
-    addBilingualRow("Avec (3)", data.with, "مع (3)", 189);
-    addBilingualRow("Intérim", data.interim, "النيابة (الاسم والوظيفة)", 196);
+    addBilingualRow("Avec", data.with, "مع", 189);
+    addBilingualRow("Intérim", data.interim, "النيابة", 196);
 
-    // Signature section headers
+    // قسم التوقيع
+    doc.setFont("Helvetica", "normal");
     doc.text("Signature de l'intéressé", 30, 215);
+    doc.setFont("Amiri", "normal");
     const arabicSignatureLabel = "إمضاء المعني(ة) بالأمر";
     doc.text(arabicSignatureLabel, 30, 220);
 
-    doc.text("Avis du Chef Immédiat", 85, 215);
-    const arabicChefLabel = "رأي الرئيس المباشر";
-    doc.text(arabicChefLabel, 85, 220);
-
-    doc.text("Avis du Directeur", 150, 215);
-    const arabicDirectorLabel = "رأي المدير";
-    doc.text(arabicDirectorLabel, 150, 220);
-
-    // Add signature if available
+    // إضافة التوقيع إذا كان متوفراً
     if (signaturePreview) {
       doc.addImage(signaturePreview, "PNG", 25, 225, 40, 20);
     }
 
-    // Footer notes - bilingual
+    // ملاحظات هامة
     doc.setFontSize(9);
     doc.setFont("Helvetica", "bold");
     doc.text("Très important :", 20, 250);
+    doc.setFont("Amiri", "bold");
     const arabicImportant = "هام جدا :";
     doc.text(arabicImportant, 190, 250, { align: "right" });
 
+    // ملاحظات بالفرنسية والعربية
     doc.setFontSize(8);
     doc.setFont("Helvetica", "normal");
-
-    // French notes on left
     const frenchNotes = [
       "Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir",
       "obtenu sa décision de congé le cas échéant il sera considéré en",
@@ -221,7 +237,7 @@ const VacationRequest = () => {
       "le mentionne \"Quitter le territoire Marocain\"",
     ];
 
-    // Arabic notes on right
+    doc.setFont("Amiri", "normal");
     const arabicNotes = [
       "لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة و إلا اعتبر في",
       "وضعية تخلي عن العمل.",
@@ -234,15 +250,25 @@ const VacationRequest = () => {
 
     let startY = 255;
     frenchNotes.forEach((line, i) => {
-      if (line) doc.text(line, 20, startY);
+      if (line) {
+        doc.setFont("Helvetica", "normal");
+        doc.text(line, 20, startY);
+      }
       if (i < arabicNotes.length && arabicNotes[i]) {
+        doc.setFont("Amiri", "normal");
         doc.text(arabicNotes[i], 190, startY, { align: "right" });
       }
       startY += 4;
     });
 
+    // حفظ الملف
     doc.save(`demande_conge_${data.fullName.replace(/\s+/g, "_")}.pdf`);
   };
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitted(true);
+    generatePDF(values);
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -615,8 +641,8 @@ const VacationRequest = () => {
                               onClick={() => document.getElementById("signature-upload")?.click()}
                               className="w-full"
                             >
-                              <FileImage className="mr-2 h-4 w-4" />
-                              {t('signatureUploadButton')}
+                                  <FileImage className="mr-2 h-4 w-4" />
+                                  {t('signatureUploadButton')}
                             </Button>
                           </div>
                           {signaturePreview && (
