@@ -9,6 +9,7 @@ import { CalendarIcon, FileImage, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -33,6 +34,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { AmiriFont } from "../fonts/AmiriFont";
+// @ts-ignore
+import * as reshaper from "arabic-persian-reshaper";
+const reshape = reshaper.reshape;
+// @ts-ignore
+import bidi from "bidi-js";
 
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "يرجى إدخال الاسم الكامل" }),
@@ -81,6 +88,51 @@ const VacationRequest = () => {
     },
   });
 
+  // Translation function for French to Arabic
+  const translateToArabic = (frenchText: string): string => {
+    const translations: Record<string, string> = {
+      // Personal info translations
+      "Administratif": "إدارية",
+      "Mariage": "زواج", 
+      "Naissance": "ازدياد",
+      "Exceptionnel": "استثنائية",
+      "jours": "أيام",
+      "semaines": "أسابيع",
+      "mois": "شهور",
+      // Common words
+      "avec": "مع",
+      "sans": "بدون",
+      "famille": "عائلة",
+      "époux": "زوج",
+      "épouse": "زوجة",
+      "enfant": "طفل",
+      "parent": "والد",
+      "urgence": "طارئ",
+      "maladie": "مرض",
+      "personnel": "شخصي",
+      "voyage": "سفر",
+      // Directions and functions
+      "Direction": "مديرية",
+      "Service": "مصلحة",
+      "Bureau": "مكتب",
+      "Responsable": "مسؤول",
+      "Chef": "رئيس",
+      "Adjoint": "مساعد",
+      "Secrétaire": "كاتب",
+      "Comptable": "محاسب",
+      "Informaticien": "مختص في المعلوميات",
+    };
+
+    // Simple word-by-word translation
+    let arabicText = frenchText;
+    Object.entries(translations).forEach(([french, arabic]) => {
+      const regex = new RegExp(`\\b${french}\\b`, 'gi');
+      arabicText = arabicText.replace(regex, arabic);
+    });
+
+    return arabicText || frenchText;
+  };
+
   const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -102,9 +154,11 @@ const VacationRequest = () => {
     const doc = new jsPDF("p", "mm", "a4");
     const currentDate = format(new Date(), "dd/MM/yyyy");
 
-    // Set Arabic font
-    doc.addFont("https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic&display=swap", "Arabic", "normal");
-    
+    // Add Amiri font for Arabic
+    doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
+    doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+
+    // Set default font
     doc.setFont("Helvetica");
     doc.setFontSize(11);
 
@@ -125,68 +179,97 @@ const VacationRequest = () => {
     doc.setFontSize(14);
     doc.setFont("Helvetica", "bold");
     doc.text("Demande de congé", 70, 65);
-    doc.setFont("Arabic", "normal");
-    doc.text("طلب إجازة", 130, 65, { align: "right" });
+    
+    // Arabic title (properly shaped and bidi processed)
+    doc.setFont("Amiri");
+    const arabicTitle = "طلب إجازة";
+    const shapedTitle = reshape(arabicTitle);
+    const bidiTitle = bidi.from_string(shapedTitle).toString();
+    doc.text(bidiTitle, 130, 65, { align: "right" });
+    
     doc.setFont("Helvetica", "normal");
-
-    // Employee information table
     doc.setFontSize(11);
+
+    // Employee information with French input and Arabic translation
     doc.text("Nom & Prénom :", 20, 80);
     doc.text(data.fullName, 60, 80);
-    doc.setFont("Arabic", "normal");
-    doc.text(": الاسم الكامل", 190, 80, { align: "right" });
+    doc.setFont("Amiri");
+    const translatedName = translateToArabic(data.fullName);
+    const shapedName = reshape(translatedName);
+    const bidiName = bidi.from_string(shapedName).toString();
+    doc.text(bidiName, 190, 80, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Matricule :", 20, 87);
     doc.text(data.matricule, 60, 87);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
     doc.text(": الرقم المالي", 190, 87, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Echelle :", 20, 94);
     doc.text(data.echelle || "", 60, 94);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
+    const translatedEchelle = translateToArabic(data.echelle || "");
+    const shapedEchelle = reshape(translatedEchelle);
+    const bidiEchelle = bidi.from_string(shapedEchelle).toString();
+    doc.text(bidiEchelle, 150, 94, { align: "right" });
     doc.text(": السلم", 190, 94, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Grade :", 20, 101);
     doc.text(data.grade || "", 60, 101);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
+    const translatedGrade = translateToArabic(data.grade || "");
+    const shapedGrade = reshape(translatedGrade);
+    const bidiGrade = bidi.from_string(shapedGrade).toString();
+    doc.text(bidiGrade, 150, 101, { align: "right" });
     doc.text(": الدرجة", 190, 101, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Fonction :", 20, 108);
     doc.text(data.fonction || "", 60, 108);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
+    const translatedFonction = translateToArabic(data.fonction || "");
+    const shapedFonction = reshape(translatedFonction);
+    const bidiFonction = bidi.from_string(shapedFonction).toString();
+    doc.text(bidiFonction, 150, 108, { align: "right" });
     doc.text(": الوظيفة", 190, 108, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     // Affectation section
     doc.setFont("Helvetica", "bold");
     doc.text("Affectation", 70, 120);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
     doc.text("التعيين", 130, 120, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Direction :", 20, 130);
     doc.text(data.direction || "", 60, 130);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
+    const translatedDirection = translateToArabic(data.direction || "");
+    const shapedDirection = reshape(translatedDirection);
+    const bidiDirection = bidi.from_string(shapedDirection).toString();
+    doc.text(bidiDirection, 150, 130, { align: "right" });
     doc.text(": المديرية", 190, 130, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Adresse :", 20, 137);
     doc.text(data.address || "", 60, 137);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
+    const translatedAddress = translateToArabic(data.address || "");
+    const shapedAddress = reshape(translatedAddress);
+    const bidiAddress = bidi.from_string(shapedAddress).toString();
+    doc.text(bidiAddress, 150, 137, { align: "right" });
     doc.text(": العنوان", 190, 137, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Téléphone :", 20, 144);
     doc.text(data.phone || "", 60, 144);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
     doc.text(": الهاتف", 190, 144, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
-    // Leave details
+    // Leave details with translations
     const leaveTypeMap: Record<string, { fr: string; ar: string }> = {
       administrative: { fr: "Administratif", ar: "إدارية" },
       marriage: { fr: "Mariage", ar: "زواج" },
@@ -194,65 +277,80 @@ const VacationRequest = () => {
       exceptional: { fr: "Exceptionnel", ar: "استثنائية" },
     };
 
-    const leaveType = leaveTypeMap[data.leaveType] || { fr: data.leaveType, ar: data.leaveType };
+    const leaveType = leaveTypeMap[data.leaveType] || { fr: data.leaveType, ar: translateToArabic(data.leaveType) };
 
     doc.text("Nature de congé (2) :", 20, 151);
-    doc.text(`${leaveType.fr}`, 60, 151);
-    doc.setFont("Arabic", "normal");
-    doc.text(`: نوع الإجازة (2) ${leaveType.ar}`, 190, 151, { align: "right" });
+    doc.text(leaveType.fr, 60, 151);
+    doc.setFont("Amiri");
+    const shapedLeaveType = reshape(leaveType.ar);
+    const bidiLeaveType = bidi.from_string(shapedLeaveType).toString();
+    doc.text(bidiLeaveType, 150, 151, { align: "right" });
+    doc.text("(2) : نوع الإجازة", 190, 151, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Durée :", 20, 158);
     doc.text(data.duration, 60, 158);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
+    const translatedDuration = translateToArabic(data.duration);
+    const shapedDuration = reshape(translatedDuration);
+    const bidiDuration = bidi.from_string(shapedDuration).toString();
+    doc.text(bidiDuration, 150, 158, { align: "right" });
     doc.text(": المدة", 190, 158, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Du :", 20, 165);
     doc.text(format(data.startDate, "dd/MM/yyyy"), 60, 165);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
     doc.text(": ابتداء من", 190, 165, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Au :", 20, 172);
     doc.text(format(data.endDate, "dd/MM/yyyy"), 60, 172);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
     doc.text(": إلى", 190, 172, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Avec (3) :", 20, 179);
     doc.text(data.with || "", 60, 179);
-    doc.setFont("Arabic", "normal");
-    doc.text(": مع (3)", 190, 179, { align: "right" });
+    doc.setFont("Amiri");
+    const translatedWith = translateToArabic(data.with || "");
+    const shapedWith = reshape(translatedWith);
+    const bidiWith = bidi.from_string(shapedWith).toString();
+    doc.text(bidiWith, 150, 179, { align: "right" });
+    doc.text("(3) : مع", 190, 179, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Intérim (Nom et Fonction) :", 20, 186);
     doc.text(data.interim || "", 60, 186);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
+    const translatedInterim = translateToArabic(data.interim || "");
+    const shapedInterim = reshape(translatedInterim);
+    const bidiInterim = bidi.from_string(shapedInterim).toString();
+    doc.text(bidiInterim, 150, 186, { align: "right" });
     doc.text(": النيابة (الاسم والوظيفة)", 190, 186, { align: "right" });
     doc.setFont("Helvetica", "normal");
 
     // Leave Morocco checkbox
     if (data.leaveMorocco) {
       doc.text("Quitter le territoire Marocain", 20, 193);
-      doc.setFont("Arabic", "normal");
+      doc.setFont("Amiri");
       doc.text("مغادرة التراب الوطني", 190, 193, { align: "right" });
       doc.setFont("Helvetica", "normal");
     }
 
     // Signature sections
     doc.text("Signature de l'intéressé", 30, 210);
-    doc.setFont("Arabic", "normal");
-    doc.text("المضاء المعني (3) بالأمر", 30, 215, { align: "left" });
+    doc.setFont("Amiri");
+    doc.text("توقيع المعني بالأمر", 30, 215, { align: "left" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Avis du Chef Immédiat", 85, 210);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
     doc.text("رأي الرئيس المباشر", 85, 215, { align: "left" });
     doc.setFont("Helvetica", "normal");
 
     doc.text("Avis du Directeur", 150, 210);
-    doc.setFont("Arabic", "normal");
+    doc.setFont("Amiri");
     doc.text("رأي المدير", 150, 215, { align: "left" });
     doc.setFont("Helvetica", "normal");
 
@@ -265,7 +363,7 @@ const VacationRequest = () => {
     doc.setFontSize(9);
     doc.setFont("Helvetica", "bold");
     doc.text("Très important :", 20, 250);
-    doc.setFont("Arabic", "bold");
+    doc.setFont("Amiri");
     doc.text("هام جدا :", 190, 250, { align: "right" });
 
     doc.setFontSize(8);
@@ -280,13 +378,12 @@ const VacationRequest = () => {
       "le mentionne \"Quitter le territoire Marocain\".",
     ];
 
-    doc.setFont("Arabic", "normal");
     const arabicNotes = [
       "لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة و إلا أعتبر في",
-      "وضعية تعني عن العمل.",
-      "(1) يجب تقديم الطلبية لهم قبل القارئ والسلوب.",
-      "(2) نوع الإجازة : إدارية - زواج - نزدية - استثنائية.",
-      "(3) إذا كان السعي بالأمر يرغب في مخدرة التراب الوطني فعلها أن يحدد ذلك",
+      "وضعية تغيب عن العمل.",
+      "(1) يجب تقديم الطلب ثمانية أيام قبل التاريخ المطلوب.",
+      "(2) نوع الإجازة : إدارية - زواج - ازدياد - استثنائية.",
+      "(3) إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك",
       "بإضافة \"مغادرة التراب الوطني\".",
     ];
 
@@ -295,8 +392,10 @@ const VacationRequest = () => {
       doc.setFont("Helvetica", "normal");
       doc.text(note, 20, yPos);
       if (i < arabicNotes.length) {
-        doc.setFont("Arabic", "normal");
-        doc.text(arabicNotes[i], 190, yPos, { align: "right" });
+        doc.setFont("Amiri", "normal");
+        const shapedNote = reshape(arabicNotes[i]);
+        const bidiNote = bidi.from_string(shapedNote).toString();
+        doc.text(bidiNote, 190, yPos, { align: "right" });
       }
       yPos += 5;
     });
