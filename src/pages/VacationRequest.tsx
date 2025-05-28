@@ -35,6 +35,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { AmiriFont } from "@/fonts/AmiriFont";
+// @ts-ignore
+import * as reshaper from "arabic-persian-reshaper";
+// @ts-ignore
+import bidi from "bidi-js";
 
 // تعريف الأنواع
 type LeaveType = 'administrative' | 'marriage' | 'birth' | 'exceptional';
@@ -115,11 +120,28 @@ const VacationRequest = () => {
     }
   };
 
+  // دالة لمعالجة النص العربي
+  const processArabicText = (text: string): string => {
+    if (!text) return "";
+    try {
+      const reshaped = reshaper.reshape(text);
+      const bidiText = bidi.from_string(reshaped, { dir: 'rtl' });
+      return bidiText.toString();
+    } catch (error) {
+      console.error("Error processing Arabic text:", error);
+      return text;
+    }
+  };
+
   const generatePDF = (data: z.infer<typeof formSchema>) => {
     const doc = new jsPDF("p", "mm", "a4");
     
     const currentDate = format(new Date(), "dd/MM/yyyy");
     const refNumber = data.refNumber || "OFP/DR……/CMC…../N°";
+
+    // إضافة خط عربي
+    doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
+    doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
 
     // إعداد الخطوط
     doc.setFont("Helvetica", "normal");
@@ -140,7 +162,11 @@ const VacationRequest = () => {
     doc.setFontSize(16);
     doc.setFont("Helvetica", "bold");
     doc.text("Demande de congé", 105, 70, { align: "center" });
-    doc.text("طلب إجازة", 105, 78, { align: "center" });
+    
+    // العنوان العربي
+    doc.setFont("Amiri", "normal");
+    const arabicTitle = processArabicText("طلب إجازة");
+    doc.text(arabicTitle, 105, 78, { align: "center" });
 
     // إعادة تعيين الخط للنص العادي
     doc.setFont("Helvetica", "normal");
@@ -149,11 +175,14 @@ const VacationRequest = () => {
     // دالة مساعدة لإضافة الصفوف
     const addRow = (labelFr: string, value: string | undefined, labelAr: string, y: number) => {
       // النص الفرنسي
+      doc.setFont("Helvetica", "normal");
       doc.text(`${labelFr} :`, 20, y);
       doc.text(`${value || "........................"}`, 70, y);
       
       // النص العربي
-      doc.text(`${labelAr} :`, 190, y, { align: "right" });
+      doc.setFont("Amiri", "normal");
+      const processedArabicLabel = processArabicText(`${labelAr} :`);
+      doc.text(processedArabicLabel, 190, y, { align: "right" });
     };
 
     let currentY = 95;
@@ -175,7 +204,9 @@ const VacationRequest = () => {
     // عنوان قسم التعيين
     doc.setFont("Helvetica", "bold");
     doc.text("Affectation", 105, currentY, { align: "center" });
-    doc.text("التعيين", 105, currentY + 7, { align: "center" });
+    doc.setFont("Amiri", "normal");
+    const affectationArabic = processArabicText("التعيين");
+    doc.text(affectationArabic, 105, currentY + 7, { align: "center" });
     doc.setFont("Helvetica", "normal");
     currentY += 20;
 
@@ -208,8 +239,11 @@ const VacationRequest = () => {
     const signatureY = currentY;
     
     // توقيع المعني بالأمر
+    doc.setFont("Helvetica", "normal");
     doc.text("Signature de l'intéressé", 30, signatureY);
-    doc.text("إمضاء المعني(ة) بالأمر", 30, signatureY + 7);
+    doc.setFont("Amiri", "normal");
+    const signatureArabic = processArabicText("إمضاء المعني(ة) بالأمر");
+    doc.text(signatureArabic, 30, signatureY + 7);
     
     // إضافة التوقيع إذا كان متوفراً
     if (signaturePreview) {
@@ -217,19 +251,27 @@ const VacationRequest = () => {
     }
     
     // رأي الرئيس المباشر
+    doc.setFont("Helvetica", "normal");
     doc.text("Avis du Chef Immédiat", 105, signatureY, { align: "center" });
-    doc.text("رأي الرئيس المباشر", 105, signatureY + 7, { align: "center" });
+    doc.setFont("Amiri", "normal");
+    const chiefOpinionArabic = processArabicText("رأي الرئيس المباشر");
+    doc.text(chiefOpinionArabic, 105, signatureY + 7, { align: "center" });
     
     // رأي المدير
+    doc.setFont("Helvetica", "normal");
     doc.text("Avis du Directeur", 175, signatureY, { align: "center" });
-    doc.text("رأي المدير", 175, signatureY + 7, { align: "center" });
+    doc.setFont("Amiri", "normal");
+    const directorOpinionArabic = processArabicText("رأي المدير");
+    doc.text(directorOpinionArabic, 175, signatureY + 7, { align: "center" });
 
     // ملاحظات هامة
     const notesY = signatureY + 50;
     doc.setFontSize(10);
     doc.setFont("Helvetica", "bold");
     doc.text("Très important :", 20, notesY);
-    doc.text("شيء مهم جداً :", 190, notesY, { align: "right" });
+    doc.setFont("Amiri", "normal");
+    const importantArabic = processArabicText("شيء مهم جداً :");
+    doc.text(importantArabic, 190, notesY, { align: "right" });
 
     // ملاحظات تفصيلية
     doc.setFontSize(9);
@@ -257,10 +299,13 @@ const VacationRequest = () => {
     let startY = notesY + 7;
     frenchNotes.forEach((line, i) => {
       if (line) {
+        doc.setFont("Helvetica", "normal");
         doc.text(line, 20, startY);
       }
       if (i < arabicNotes.length && arabicNotes[i]) {
-        doc.text(arabicNotes[i], 190, startY, { align: "right" });
+        doc.setFont("Amiri", "normal");
+        const processedNote = processArabicText(arabicNotes[i]);
+        doc.text(processedNote, 190, startY, { align: "right" });
       }
       startY += 4;
     });
