@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, User, Lock } from "lucide-react";
@@ -27,19 +28,30 @@ export const SignIn = () => {
           description: "مرحباً بك في منصة CMC",
         });
         navigate("/");
+      }
+    } catch (error: any) {
+      console.error('خطأ في تسجيل الدخول:', error);
+      
+      // Handle specific error cases
+      if (error?.code === 'email_not_confirmed') {
+        toast({
+          variant: "destructive",
+          title: "البريد الإلكتروني غير مؤكد",
+          description: "يرجى التحقق من بريدك الإلكتروني والنقر على رابط التأكيد لتفعيل حسابك",
+        });
+      } else if (error?.message?.includes('Invalid login credentials')) {
+        toast({
+          variant: "destructive",
+          title: "خطأ في بيانات تسجيل الدخول",
+          description: "يرجى التحقق من البريد الإلكتروني وكلمة المرور",
+        });
       } else {
         toast({
           variant: "destructive",
           title: "خطأ في تسجيل الدخول",
-          description: "يرجى التحقق من بريدك الإلكتروني وكلمة المرور",
+          description: "حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى",
         });
       }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "خطأ في تسجيل الدخول",
-        description: "حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى",
-      });
     } finally {
       setIsLoading(false);
     }
@@ -108,15 +120,27 @@ export const SignIn = () => {
             )}
           </Button>
           
-          <div className="text-center mt-4 text-sm">
-            ليس لديك حساب؟{" "}
-            <Button
-              variant="link"
-              className="p-0 text-[#0EA5E9]"
-              onClick={() => navigate("/register")}
-            >
-              إنشاء حساب جديد
-            </Button>
+          <div className="text-center mt-4 space-y-2">
+            <div className="text-sm">
+              <Button
+                variant="link"
+                className="p-0 text-[#0EA5E9]"
+                onClick={() => navigate("/forgot-password")}
+                type="button"
+              >
+                نسيت كلمة المرور؟
+              </Button>
+            </div>
+            <div className="text-sm">
+              ليس لديك حساب؟{" "}
+              <Button
+                variant="link"
+                className="p-0 text-[#0EA5E9]"
+                onClick={() => navigate("/register")}
+              >
+                إنشاء حساب جديد
+              </Button>
+            </div>
           </div>
         </form>
       </div>
