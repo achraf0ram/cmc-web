@@ -1,5 +1,5 @@
 
-import { Search, Bell, Bot } from "lucide-react";
+import { Search, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,6 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,14 +17,6 @@ import {
 export const AppHeader = () => {
   const { t } = useLanguage();
   const isMobile = useIsMobile();
-  const { toast } = useToast();
-  
-  const handleAIClick = () => {
-    toast({
-      title: t('aiAssistant'),
-      description: t('askAI'),
-    });
-  };
   
   return (
     <header className={cn(
@@ -37,24 +28,14 @@ export const AppHeader = () => {
           <Search className="absolute right-5 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
             placeholder={t('search')}
-            className="pl-4 pr-10 bg-slate-50 border-slate-200"
-          /> 
+            className=" pl-4 pr-10 bg-slate-50 border-slate-200"
+            /> 
+        
         </div>
       </div>
       
       <div className="flex items-center gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleAIClick}
-          className="flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-        >
-          <Bot size={16} />
-          {!isMobile && <span>{t('ai')}</span>}
-        </Button>
-        
         <LanguageSwitcher />
-        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
@@ -64,26 +45,26 @@ export const AppHeader = () => {
               </Badge>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80 bg-white">
+          <DropdownMenuContent align="end" className="w-80">
             <div className="p-4 border-b">
               <h4 className="font-semibold">{t('notifications')}</h4>
             </div>
             <DropdownMenuItem className="p-4 cursor-pointer hover:bg-slate-50">
               <div className="flex flex-col gap-1">
-                <span className="font-medium">{t('approvedLeaveRequest')}</span>
-                <span className="text-xs text-muted-foreground">{t('hoursAgo').replace('{hours}', '2')}</span>
+                <span className="font-medium">تم الموافقة على طلب الإجازة</span>
+                <span className="text-xs text-muted-foreground">منذ ساعتين</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem className="p-4 cursor-pointer hover:bg-slate-50">
               <div className="flex flex-col gap-1">
-                <span className="font-medium">{t('workCertificateIssued')}</span>
-                <span className="text-xs text-muted-foreground">{t('hoursAgo').replace('{hours}', '3')}</span>
+                <span className="font-medium">تم إصدار شهادة العمل</span>
+                <span className="text-xs text-muted-foreground">منذ 3 ساعات</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem className="p-4 cursor-pointer hover:bg-slate-50">
               <div className="flex flex-col gap-1">
-                <span className="font-medium">{t('updatePersonalDataReminder')}</span>
-                <span className="text-xs text-muted-foreground">{t('dayAgo').replace('{days}', '1')}</span>
+                <span className="font-medium">تذكير: تحديث البيانات الشخصية</span>
+                <span className="text-xs text-muted-foreground">منذ يوم</span>
               </div>
             </DropdownMenuItem>
             <div className="p-2 text-center border-t">
