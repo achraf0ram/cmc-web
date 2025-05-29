@@ -257,7 +257,7 @@ const VacationRequest = () => {
     let currentY = 80;
     const lineHeight = 8;
     
-    // معلومات شخصية
+    // معلومات شخصية - ترتيب جديد حسب الصورة
     doc.setFontSize(11);
     
     // الاسم الكامل
@@ -335,12 +335,12 @@ const VacationRequest = () => {
     currentY += lineHeight;
     
     // نوع الإجازة
-    const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : data.leaveType;
-    const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : translateToArabic(data.leaveType);
+    const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : (data.leaveType || '…………………………………');
+    const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : (translateToArabic(data.leaveType) || '…………………………………');
     doc.setFont("helvetica", "normal");
-    doc.text(`Nature de congé (2) : ${leaveTypeToDisplay || '…………………………………'}`, 20, currentY);
+    doc.text(`Nature de congé (2) : ${leaveTypeToDisplay}`, 20, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`نوع الإجازة (2) : ${arabicLeaveTypeToDisplay || '…………………………………'}`, 190, currentY, { align: "right" });
+    doc.text(`نوع الإجازة (2) : ${arabicLeaveTypeToDisplay}`, 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // المدة
