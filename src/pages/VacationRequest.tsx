@@ -271,58 +271,62 @@ const VacationRequest = () => {
     doc.setFont("helvetica", "bold");
     doc.text("Nom & Prénom", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 75, currentY);
+    doc.text(": ………………………………………………………", 75, currentY);
     doc.text(data.fullName || '', 80, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: الاسم الكامل`, 190, currentY, { align: "right" });
+    doc.text("الاسم الكامل :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // الرقم المالي
     doc.setFont("helvetica", "bold");
     doc.text("Matricule", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 60, currentY);
+    doc.text(": ………………………………………………………", 60, currentY);
     doc.text(data.matricule || '', 65, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: الرقم المالي`, 190, currentY, { align: "right" });
+    doc.text("الرقم المالي :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // السلم والرتبة في نفس السطر - ترتيب صحيح حسب الصورة
     doc.setFont("helvetica", "bold");
     doc.text("Echelle", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………`, 50, currentY);
+    doc.text(": ………………………", 50, currentY);
     doc.text(data.echelle || '', 55, currentY);
     
+    // الرتبة بجانب السلم مع ترقيم صحيح
+    doc.setFont("Amiri", "normal");
+    doc.text("الرتبة :", 100, currentY);
+    doc.text(data.echelle || '', 85, currentY);
+    
     doc.setFont("helvetica", "bold");
-    doc.text("Echelon:", 100, currentY);
+    doc.text("Echelon", 120, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`………………………`, 130, currentY);
-    doc.text(data.echelon || '', 135, currentY);
+    doc.text(": ………………………", 150, currentY);
+    doc.text(data.echelon || '', 155, currentY);
     
     doc.setFont("Amiri", "normal");
-    doc.text(`: الرتبة`, 190, currentY, { align: "right" });
-    doc.text(`: السلم`, 130, currentY, { align: "right" });
+    doc.text("السلم :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // الدرجة
     doc.setFont("helvetica", "bold");
     doc.text("Grade", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 50, currentY);
+    doc.text(": ………………………………………………………", 50, currentY);
     doc.text(data.grade || '', 55, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: الدرجة`, 190, currentY, { align: "right" });
+    doc.text("الدرجة :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // الوظيفة
     doc.setFont("helvetica", "bold");
     doc.text("Fonction", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 60, currentY);
+    doc.text(": ………………………………………………………", 60, currentY);
     doc.text(data.fonction || '', 65, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: الوظيفة`, 190, currentY, { align: "right" });
+    doc.text("الوظيفة :", 190, currentY, { align: "right" });
     currentY += lineHeight + 5;
     
     // قسم التعيين
@@ -339,101 +343,103 @@ const VacationRequest = () => {
     doc.setFont("helvetica", "bold");
     doc.text("Direction", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 60, currentY);
+    doc.text(": ………………………………………………………", 60, currentY);
     doc.text(data.direction || '', 65, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: المديرية`, 190, currentY, { align: "right" });
+    doc.text("المديرية :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // العنوان
     doc.setFont("helvetica", "bold");
     doc.text("Adresse", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 55, currentY);
+    doc.text(": ………………………………………………………", 55, currentY);
     doc.text(data.address || '', 60, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: العنوان`, 190, currentY, { align: "right" });
+    doc.text("العنوان :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // الهاتف
     doc.setFont("helvetica", "bold");
     doc.text("Téléphone", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 65, currentY);
+    doc.text(": ………………………………………………………", 65, currentY);
     doc.text(data.phone || '', 70, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: الهاتف`, 190, currentY, { align: "right" });
+    doc.text("الهاتف :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // نوع الإجازة
     const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : (data.leaveType || '………………………………………………………');
-    const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : (translateToArabic(data.leaveType) || '………………………………………………………');
     doc.setFont("helvetica", "bold");
     doc.text("Nature de congé (2)", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 90, currentY);
+    doc.text(": ………………………………………………………", 90, currentY);
     doc.text(leaveTypeToDisplay, 95, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: نوع الإجازة (2)`, 190, currentY, { align: "right" });
+    doc.text("نوع الإجازة (2) :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // المدة
     const durationText = data.duration || '………………………………………………………';
-    const arabicDurationText = data.arabicDuration || translateToArabic(data.duration) || '………………………………………………………';
     doc.setFont("helvetica", "bold");
     doc.text("Durée", 20, currentY);
     doc.setFont("helvetica", "normal");
-    doc.text(`: ………………………………………………………`, 45, currentY);
+    doc.text(": ………………………………………………………", 45, currentY);
     doc.text(durationText, 50, currentY);
     doc.setFont("Amiri", "normal");
-    doc.text(`: المدة`, 190, currentY, { align: "right" });
+    doc.text("المدة :", 190, currentY, { align: "right" });
     currentY += lineHeight;
     
-    // التواريخ في نفس السطر - حسب الصورة
+    // التواريخ في نفس السطر - تصحيح الترتيب والتنسيق
     if (data.startDate && data.endDate) {
       doc.setFont("helvetica", "bold");
       doc.text("Du", 20, currentY);
       doc.setFont("helvetica", "normal");
-      doc.text(`: ………………………`, 30, currentY);
+      doc.text(": ………………………", 30, currentY);
       doc.text(format(data.startDate, "dd/MM/yyyy"), 35, currentY);
       
-      doc.setFont("helvetica", "bold");
-      doc.text("Au", 90, currentY);
-      doc.setFont("helvetica", "normal");
-      doc.text(`: ………………………`, 100, currentY);
-      doc.text(format(data.endDate, "dd/MM/yyyy"), 105, currentY);
-      
+      // تصحيح موضع النص العربي للتاريخ الأول
       doc.setFont("Amiri", "normal");
-      doc.text(`: إلى`, 190, currentY, { align: "right" });
-      doc.text(`: ابتداء من`, 130, currentY, { align: "right" });
+      doc.text("ابتداء من :", 85, currentY);
+      doc.text(format(data.startDate, "dd/MM/yyyy"), 65, currentY);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("Au", 110, currentY);
+      doc.setFont("helvetica", "normal");
+      doc.text(": ………………………", 120, currentY);
+      doc.text(format(data.endDate, "dd/MM/yyyy"), 125, currentY);
+      
+      // تصحيح موضع النص العربي للتاريخ الثاني
+      doc.setFont("Amiri", "normal");
+      doc.text("إلى :", 190, currentY, { align: "right" });
+      doc.text(format(data.endDate, "dd/MM/yyyy"), 175, currentY, { align: "right" });
       currentY += lineHeight;
     }
     
     // مع (العائلة)
     if (data.with || data.arabicWith) {
       const withText = data.with || '………………………………………………………';
-      const arabicWithText = data.arabicWith || '………………………………………………………';
       doc.setFont("helvetica", "bold");
       doc.text("Avec (3)", 20, currentY);
       doc.setFont("helvetica", "normal");
-      doc.text(`: ………………………………………………………`, 50, currentY);
+      doc.text(": ………………………………………………………", 50, currentY);
       doc.text(withText, 55, currentY);
       doc.setFont("Amiri", "normal");
-      doc.text(`: مع (3)`, 190, currentY, { align: "right" });
+      doc.text("مع (3) :", 190, currentY, { align: "right" });
       currentY += lineHeight;
     }
     
     // النيابة
     if (data.interim || data.arabicInterim) {
       const interimText = data.interim || '………………………………………………………';
-      const arabicInterimText = data.arabicInterim || '………………………………………………………';
       doc.setFont("helvetica", "bold");
       doc.text("Intérim (Nom et Fonction)", 20, currentY);
       doc.setFont("helvetica", "normal");
-      doc.text(`: ………………………………………………………`, 110, currentY);
+      doc.text(": ………………………………………………………", 110, currentY);
       doc.text(interimText, 115, currentY);
       doc.setFont("Amiri", "normal");
-      doc.text(`: النيابة (الاسم والوظيفة)`, 190, currentY, { align: "right" });
+      doc.text("النيابة (الاسم والوظيفة) :", 190, currentY, { align: "right" });
       currentY += lineHeight;
     }
     
