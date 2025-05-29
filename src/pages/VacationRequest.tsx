@@ -241,7 +241,7 @@ const VacationRequest = () => {
   const addContent = (doc: jsPDF, data: FormData, resolve: () => void) => {
     console.log("Adding PDF content.");
     
-    // رأس الصفحة - حسب الصورة
+    // رأس الصفحة
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text("Réf", 20, 20);
@@ -264,7 +264,7 @@ const VacationRequest = () => {
     let currentY = 85;
     const lineHeight = 7;
     
-    // المعلومات الشخصية - ترتيب حسب الصورة
+    // المعلومات الشخصية - ترتيب حسب الصورة مع العربي على اليمين والفرنسي على اليسار
     doc.setFontSize(11);
     
     // الاسم الكامل
@@ -301,8 +301,8 @@ const VacationRequest = () => {
     doc.text(data.echelon || '', 135, currentY);
     
     doc.setFont("Amiri", "normal");
-    doc.text(`: الرتبة`, 190, currentY, { align: "right" });
-    doc.text(`: السلم`, 130, currentY, { align: "right" });
+    doc.text(`: الرتبة`, 170, currentY, { align: "right" });
+    doc.text(`: السلم`, 190, currentY, { align: "right" });
     currentY += lineHeight;
     
     // الدرجة
@@ -367,7 +367,6 @@ const VacationRequest = () => {
     
     // نوع الإجازة
     const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : (data.leaveType || '………………………………………………………');
-    const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : (translateToArabic(data.leaveType) || '………………………………………………………');
     doc.setFont("helvetica", "bold");
     doc.text("Nature de congé (2)", 20, currentY);
     doc.setFont("helvetica", "normal");
@@ -379,7 +378,6 @@ const VacationRequest = () => {
     
     // المدة
     const durationText = data.duration || '………………………………………………………';
-    const arabicDurationText = data.arabicDuration || translateToArabic(data.duration) || '………………………………………………………';
     doc.setFont("helvetica", "bold");
     doc.text("Durée", 20, currentY);
     doc.setFont("helvetica", "normal");
@@ -404,15 +402,14 @@ const VacationRequest = () => {
       doc.text(format(data.endDate, "dd/MM/yyyy"), 105, currentY);
       
       doc.setFont("Amiri", "normal");
-      doc.text(`: إلى`, 190, currentY, { align: "right" });
-      doc.text(`: ابتداء من`, 130, currentY, { align: "right" });
+      doc.text(`: إلى`, 170, currentY, { align: "right" });
+      doc.text(`: ابتداء من`, 190, currentY, { align: "right" });
       currentY += lineHeight;
     }
     
     // مع (العائلة)
     if (data.with || data.arabicWith) {
       const withText = data.with || '………………………………………………………';
-      const arabicWithText = data.arabicWith || '………………………………………………………';
       doc.setFont("helvetica", "bold");
       doc.text("Avec (3)", 20, currentY);
       doc.setFont("helvetica", "normal");
@@ -426,7 +423,6 @@ const VacationRequest = () => {
     // النيابة
     if (data.interim || data.arabicInterim) {
       const interimText = data.interim || '………………………………………………………';
-      const arabicInterimText = data.arabicInterim || '………………………………………………………';
       doc.setFont("helvetica", "bold");
       doc.text("Intérim (Nom et Fonction)", 20, currentY);
       doc.setFont("helvetica", "normal");
@@ -445,64 +441,73 @@ const VacationRequest = () => {
       doc.text("مغادرة التراب الوطني : نعم", 190, currentY, { align: "right" });
       currentY += lineHeight;
     }
-    
-    // التوقيعات
-    currentY += 20;
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("Signature de l'intéressé", 20, currentY);
-    doc.setFont("Amiri", "bold");
-    doc.text("إمضاء المعني(ة) بالأمر", 105, currentY, { align: "center" });
-    
-    doc.setFont("helvetica", "bold");
-    doc.text("Avis du Chef Immédiat", 110, currentY);
-    doc.setFont("Amiri", "bold");
-    doc.text("رأي الرئيس المباشر", 105, currentY + 5, { align: "center" });
-    
-    doc.setFont("helvetica", "bold");
-    doc.text("Avis du Directeur", 150, currentY);
-    doc.setFont("Amiri", "bold");
-    doc.text("رأي المدير", 190, currentY, { align: "right" });
-    
-    // إضافة التوقيع إن وجد
+
+    // التوقيعات - كود جديد من المستخدم
+    const signatureY = 215;
+    doc.text("Signature de l'intéressé", 30, signatureY);
+    doc.text("إمضاء المعني(ة) بالأمر", 30, signatureY + 5);
+
+    doc.text("Avis du Chef Immédiat", 85, signatureY);
+    doc.text("رأي الرئيس المباشر", 85, signatureY + 5);
+
+    doc.text("Avis du Directeur", 150, signatureY);
+    doc.text("رأي المدير", 150, signatureY + 5);
+
+    console.log("Signature preview value before adding image:", signaturePreview ? "Has data" : "No data", signaturePreview ? `Data URL starts with: ${signaturePreview.substring(0, 30)}` : "");
+
     if (signaturePreview) {
-      const signatureImg = new Image();
-      signatureImg.src = signaturePreview;
-      signatureImg.onload = () => {
-        doc.addImage(signatureImg, "PNG", 20, currentY + 5, 40, 20);
-      };
+      const imgType = signaturePreview.startsWith("data:image/png") ? "PNG" : "JPEG";
+      try {
+        doc.addImage(signaturePreview, imgType, 30, signatureY + 15, 40, 20);
+      } catch (error) {
+        console.error("Error adding signature image:", error);
+      }
     }
-    
-    currentY += 50;
-    
-    // الملاحظات المهمة
-    doc.setFontSize(10);
-    
-    // العنوان المهم
-    doc.setFont("helvetica", "bold");
-    doc.text("Très important :", 20, currentY);
-    doc.setFont("Amiri", "bold");
-    doc.text("هام جداً", 190, currentY, { align: "right" });
-    currentY += 8;
-    
-    // الملاحظات الفرنسية (العمود الأيسر)
-    doc.setFont("helvetica", "normal");
-    doc.text("Aucun agent n'est autorisé à quitter le lieu de son travail avant", 20, currentY);
-    doc.text("d'avoir obtenu sa décision de congé, le cas échéant il sera", 20, currentY + 5);
-    doc.text("considéré en abandon de poste.", 20, currentY + 10);
-    doc.text("(1) La demande doit être déposée 8 jours avant la date demandée.", 20, currentY + 15);
-    doc.text("(2) Nature de congé : Administratif - Mariage - Naissance - Exceptionnel", 20, currentY + 20);
-    doc.text("(3) Si l'intéressé projette de quitter le territoire Marocain,", 20, currentY + 25);
-    doc.text("il faut qu'il le mentionne : \"Quitter le territoire Marocain\"", 20, currentY + 30);
-    
-    // الملاحظات العربية (العمود الأيمن)
-    doc.setFont("Amiri", "normal");
-    doc.text("لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله", 190, currentY, { align: "right" });
-    doc.text("بمقرر الإجازة، وإلا اعتبر في وضعية تخلي عن العمل.", 190, currentY + 5, { align: "right" });
-    doc.text("(1) يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب.", 190, currentY + 15, { align: "right" });
-    doc.text("(2) نوع الإجازة: إدارية - زواج - ازدياد - استثنائية", 190, currentY + 20, { align: "right" });
-    doc.text("(3) إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني،", 190, currentY + 25, { align: "right" });
-    doc.text("فعليه أن يحدد ذلك بعبارة: \"مغادرة التراب الوطني\"", 190, currentY + 30, { align: "right" });
+
+    doc.line(25, signatureY + 38, 70, signatureY + 38);
+    doc.line(80, signatureY + 38, 125, signatureY + 38);
+    doc.line(145, signatureY + 38, 190, signatureY + 38);
+
+    let notesY = 250;
+    doc.setFontSize(9);
+    doc.setFont("Helvetica", "bold");
+    doc.text("Très important :", 20, notesY);
+    doc.text("هام جدا :", 190, notesY, { align: "right" });
+
+    notesY += 5;
+    doc.setFontSize(8);
+    doc.setFont("Helvetica", "normal");
+
+    const notes = [
+      "Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir",
+      "obtenu sa décision de congé le cas échéant il sera considéré en",
+      "abandon de poste.",
+      "(1) La demande doit être déposée 8 jours avant la date demandée",
+      "(2) Nature de congé : Administratif - Mariage - Naissance - Exceptionnel",
+      '(3) Si l\'intéressé projette de quitter le territoire Marocain il faut qu\'il',
+      'le mentionne "Quitter le territoire Marocain"',
+    ];
+
+    const notesAr = [
+      "لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة و إلا اعتبر في",
+      "وضعية تخلي عن العمل.",
+      "(1) يجب تقديم الطلب قبل 8 أيام من التاريخ المطلوب",
+      "(2) نوع الإجازة : إدارية - زواج - ازدياد - استثنائية",
+      '(3) إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة',
+      '"مغادرة التراب الوطني"',
+    ];
+
+    let notesStartXFr = 20;
+    let notesStartXAr = 190;
+    let currentNotesY = notesY;
+
+    notes.forEach((line, i) => {
+      doc.text(line, notesStartXFr, currentNotesY);
+      if (i < notesAr.length) {
+        doc.text(notesAr[i], notesStartXAr, currentNotesY, { align: "right" });
+      }
+      currentNotesY += 5;
+    });
     
     // حفظ الملف
     if (data.matricule) {
