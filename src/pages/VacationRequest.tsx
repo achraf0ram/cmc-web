@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,6 +50,7 @@ const formSchema = z.object({
   echelle: z.string().optional(),
   grade: z.string().optional(),
   fonction: z.string().optional(),
+  arabicFonction: z.string().optional(),
   direction: z.string().optional(),
   arabicDirection: z.string().optional(),
   address: z.string().optional(),
@@ -56,10 +58,13 @@ const formSchema = z.object({
   phone: z.string().optional(),
   leaveType: z.string().min(1, { message: "يرجى اختيار نوع الإجازة" }),
   duration: z.string().min(1, { message: "يرجى تحديد المدة" }),
+  arabicDuration: z.string().optional(),
   startDate: z.date({ required_error: "يرجى تحديد تاريخ البداية" }),
   endDate: z.date({ required_error: "يرجى تحديد تاريخ النهاية" }),
   with: z.string().optional(),
+  arabicWith: z.string().optional(),
   interim: z.string().optional(),
+  arabicInterim: z.string().optional(),
   leaveMorocco: z.boolean().optional(),
   signature: z.union([z.instanceof(File), z.string()]).optional(),
 });
@@ -148,6 +153,7 @@ const VacationRequest = () => {
       echelle: "",
       grade: "",
       fonction: "",
+      arabicFonction: "",
       direction: "",
       arabicDirection: "",
       address: "",
@@ -155,10 +161,13 @@ const VacationRequest = () => {
       phone: "",
       leaveType: "",
       duration: "",
+      arabicDuration: "",
       startDate: undefined,
       endDate: undefined,
       with: "",
+      arabicWith: "",
       interim: "",
+      arabicInterim: "",
       leaveMorocco: false,
       signature: undefined,
     },
@@ -433,532 +442,638 @@ const VacationRequest = () => {
   };
 
   return (
-    <div>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="max-w-4xl mx-auto">
-          <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
-            <CardHeader className="text-center pb-6">
-              <CardTitle className="text-3xl font-bold text-gray-800 mb-2">
-                {language === 'ar' ? 'طلب إجازة' : 'Demande de Congé'}
-              </CardTitle>
-              <p className="text-gray-600">
-                {language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Veuillez remplir tous les champs requis'}
-              </p>
-            </CardHeader>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          {language === 'ar' ? 'طلب إجازة' : 'Demande de Congé'}
+        </h1>
+        <p className="text-gray-600">
+          {language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Veuillez remplir tous les champs requis'}
+        </p>
+      </div>
 
-            <CardContent>
-              {!isSubmitted ? (
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Personal Information Section */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Full Name */}
-                      <FormField
-                        control={form.control}
-                        name="fullName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'الاسم الكامل' : 'Nom & Prénom'} *
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'أدخل الاسم الكامل' : 'Entrez le nom complet'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+      <Card className="shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          <CardTitle className="text-xl font-semibold">
+            {language === 'ar' ? 'معلومات طلب الإجازة' : 'Informations de la demande'}
+          </CardTitle>
+        </CardHeader>
 
-                      {/* Matricule */}
-                      <FormField
-                        control={form.control}
-                        name="matricule"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'الرقم المالي' : 'Matricule'} *
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'أدخل الرقم المالي' : 'Entrez le matricule'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Grade and Scale */}
-                      <FormField
-                        control={form.control}
-                        name="grade"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'الدرجة' : 'Grade'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'أدخل الدرجة' : 'Entrez le grade'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="echelle"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'الرتبة' : 'Échelle'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'أدخل الرتبة' : 'Entrez l\'échelle'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Function */}
-                      <FormField
-                        control={form.control}
-                        name="fonction"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'الوظيفة' : 'Fonction'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'أدخل الوظيفة' : 'Entrez la fonction'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Phone */}
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'الهاتف' : 'Téléphone'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'أدخل رقم الهاتف' : 'Entrez le numéro de téléphone'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Separate French and Arabic Direction Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="direction"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              Direction (Français)
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="Entrez la direction en français"
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="arabicDirection"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              المديرية (العربية)
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="أدخل المديرية بالعربية"
-                                className="border-gray-300 focus:border-blue-500 text-right"
-                                dir="rtl"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Separate French and Arabic Address Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="address"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              Adresse (Français)
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="Entrez l'adresse en français"
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="arabicAddress"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              العنوان (العربية)
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="أدخل العنوان بالعربية"
-                                className="border-gray-300 focus:border-blue-500 text-right"
-                                dir="rtl"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Leave Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="leaveType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'نوع الإجازة' : 'Nature de congé'} *
-                            </FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                                  <SelectValue placeholder={language === 'ar' ? 'اختر نوع الإجازة' : 'Sélectionnez le type'} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Administratif">
-                                  {language === 'ar' ? 'إدارية' : 'Administratif'}
-                                </SelectItem>
-                                <SelectItem value="Mariage">
-                                  {language === 'ar' ? 'زواج' : 'Mariage'}
-                                </SelectItem>
-                                <SelectItem value="Naissance">
-                                  {language === 'ar' ? 'ازدياد' : 'Naissance'}
-                                </SelectItem>
-                                <SelectItem value="Exceptionnel">
-                                  {language === 'ar' ? 'استثنائية' : 'Exceptionnel'}
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="duration"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'المدة' : 'Durée'} *
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'مثال: 5 أيام' : 'Ex: 5 jours'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Date Range */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="startDate"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'تاريخ البداية' : 'Date de début'} *
-                            </FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
-                                    ) : (
-                                      <span>{language === 'ar' ? 'اختر تاريخ البداية' : 'Choisir une date'}</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date < new Date() || date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="endDate"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'تاريخ النهاية' : 'Date de fin'} *
-                            </FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
-                                    ) : (
-                                      <span>{language === 'ar' ? 'اختر تاريخ النهاية' : 'Choisir une date'}</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date < new Date() || date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Additional Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="with"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'مع (العائلة)' : 'Avec (famille)'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'مع الزوج/الزوجة والأطفال' : 'Avec époux/épouse et enfants'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="interim"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'التنابة (الاسم والوظيفة)' : 'Intérim (Nom et Fonction)'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'اسم ووظيفة المتنائب' : 'Nom et fonction du remplaçant'}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Leave Morocco Checkbox */}
+        <CardContent className="p-6">
+          {!isSubmitted ? (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Personal Information Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                    {language === 'ar' ? 'المعلومات الشخصية' : 'Informations Personnelles'}
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Full Name - Single field */}
                     <FormField
                       control={form.control}
-                      name="leaveMorocco"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              className="mt-1"
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'مغادرة التراب الوطني' : 'Quitter le territoire Marocain'}
-                            </FormLabel>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Signature Upload */}
-                    <FormField
-                      control={form.control}
-                      name="signature"
+                      name="fullName"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-sm font-medium text-gray-700">
-                            {language === 'ar' ? 'التوقيع (اختياري)' : 'Signature (optionnel)'}
+                            {language === 'ar' ? 'الاسم الكامل' : 'Nom & Prénom'} *
                           </FormLabel>
                           <FormControl>
-                            <div className="flex items-center space-x-2">
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleSignatureChange}
-                                className="border-gray-300 focus:border-blue-500"
-                              />
-                              <FileImage className="h-5 w-5 text-gray-400" />
-                            </div>
+                            <Input 
+                              {...field} 
+                              placeholder={language === 'ar' ? 'أدخل الاسم الكامل' : 'Entrez le nom complet'}
+                              className="border-gray-300 focus:border-blue-500"
+                            />
                           </FormControl>
-                          {signaturePreview && (
-                            <div className="mt-2">
-                              <img 
-                                src={signaturePreview} 
-                                alt="Signature preview" 
-                                className="max-w-32 max-h-16 border rounded"
-                              />
-                            </div>
-                          )}
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* Submit Button */}
-                    <div className="flex justify-center pt-6">
-                      <Button 
-                        type="submit" 
-                        className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                        disabled={isGeneratingPDF}
-                      >
-                        {isGeneratingPDF ? (
-                          <div className="flex items-center">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            {language === 'ar' ? 'جاري إنشاء الملف...' : 'Génération en cours...'}
-                          </div>
-                        ) : (
-                          <>
-                            {language === 'ar' ? 'تحميل طلب الإجازة' : 'Télécharger la demande'}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              ) : (
-                <div className="text-center py-12">
-                  <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                    {language === 'ar' ? 'تم إنشاء الطلب بنجاح!' : 'Demande générée avec succès!'}
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    {language === 'ar' ? 'تم تحميل ملف PDF لطلب الإجازة' : 'Le fichier PDF de votre demande a été téléchargé'}
-                  </p>
-                  <Button 
-                    onClick={() => {
-                      setIsSubmitted(false);
-                      form.reset();
-                    }}
-                    variant="outline"
-                    className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                  >
-                    {language === 'ar' ? 'طلب جديد' : 'Nouvelle demande'}
-                  </Button>
+                    {/* Matricule - Single field */}
+                    <FormField
+                      control={form.control}
+                      name="matricule"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            {language === 'ar' ? 'الرقم المالي' : 'Matricule'} *
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder={language === 'ar' ? 'أدخل الرقم المالي' : 'Entrez le matricule'}
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Grade and Scale - Single fields */}
+                    <FormField
+                      control={form.control}
+                      name="grade"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            {language === 'ar' ? 'الدرجة' : 'Grade'}
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder={language === 'ar' ? 'أدخل الدرجة' : 'Entrez le grade'}
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="echelle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            {language === 'ar' ? 'الرتبة' : 'Échelle'}
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder={language === 'ar' ? 'أدخل الرتبة' : 'Entrez l\'échelle'}
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Phone - Single field */}
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            {language === 'ar' ? 'الهاتف' : 'Téléphone'}
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder={language === 'ar' ? 'أدخل رقم الهاتف' : 'Entrez le numéro de téléphone'}
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Function - Separate Arabic and French fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="fonction"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            Fonction (Français)
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Entrez la fonction en français"
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="arabicFonction"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            الوظيفة (العربية)
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="أدخل الوظيفة بالعربية"
+                              className="border-gray-300 focus:border-blue-500 text-right"
+                              dir="rtl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Direction - Separate Arabic and French fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="direction"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            Direction (Français)
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Entrez la direction en français"
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="arabicDirection"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            المديرية (العربية)
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="أدخل المديرية بالعربية"
+                              className="border-gray-300 focus:border-blue-500 text-right"
+                              dir="rtl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Address - Separate Arabic and French fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            Adresse (Français)
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Entrez l'adresse en français"
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="arabicAddress"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            العنوان (العربية)
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="أدخل العنوان بالعربية"
+                              className="border-gray-300 focus:border-blue-500 text-right"
+                              dir="rtl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+
+                {/* Leave Information Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+                    {language === 'ar' ? 'معلومات الإجازة' : 'Informations de Congé'}
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="leaveType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            {language === 'ar' ? 'نوع الإجازة' : 'Nature de congé'} *
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="border-gray-300 focus:border-blue-500">
+                                <SelectValue placeholder={language === 'ar' ? 'اختر نوع الإجازة' : 'Sélectionnez le type'} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Administratif">
+                                {language === 'ar' ? 'إدارية' : 'Administratif'}
+                              </SelectItem>
+                              <SelectItem value="Mariage">
+                                {language === 'ar' ? 'زواج' : 'Mariage'}
+                              </SelectItem>
+                              <SelectItem value="Naissance">
+                                {language === 'ar' ? 'ازدياد' : 'Naissance'}
+                              </SelectItem>
+                              <SelectItem value="Exceptionnel">
+                                {language === 'ar' ? 'استثنائية' : 'Exceptionnel'}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Duration - Separate Arabic and French fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="duration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            Durée (Français) *
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Ex: 5 jours"
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="arabicDuration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            المدة (العربية)
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="مثال: 5 أيام"
+                              className="border-gray-300 focus:border-blue-500 text-right"
+                              dir="rtl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Date Range - Single fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            {language === 'ar' ? 'تاريخ البداية' : 'Date de début'} *
+                          </FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
+                                  ) : (
+                                    <span>{language === 'ar' ? 'اختر تاريخ البداية' : 'Choisir une date'}</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date() || date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="endDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            {language === 'ar' ? 'تاريخ النهاية' : 'Date de fin'} *
+                          </FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal border-gray-300 focus:border-blue-500",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
+                                  ) : (
+                                    <span>{language === 'ar' ? 'اختر تاريخ النهاية' : 'Choisir une date'}</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date() || date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* With (Family) - Separate Arabic and French fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="with"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            Avec (famille) - Français
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Avec époux/épouse et enfants"
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="arabicWith"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            مع (العائلة) - العربية
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="مع الزوج/الزوجة والأطفال"
+                              className="border-gray-300 focus:border-blue-500 text-right"
+                              dir="rtl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Interim - Separate Arabic and French fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="interim"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            Intérim (Nom et Fonction) - Français
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Nom et fonction du remplaçant"
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="arabicInterim"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            التنابة (الاسم والوظيفة) - العربية
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="اسم ووظيفة المتنائب"
+                              className="border-gray-300 focus:border-blue-500 text-right"
+                              dir="rtl"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Leave Morocco Checkbox */}
+                  <FormField
+                    control={form.control}
+                    name="leaveMorocco"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="mt-1"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-medium text-gray-700">
+                            {language === 'ar' ? 'مغادرة التراب الوطني' : 'Quitter le territoire Marocain'}
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Signature Upload */}
+                  <FormField
+                    control={form.control}
+                    name="signature"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          {language === 'ar' ? 'التوقيع (اختياري)' : 'Signature (optionnel)'}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleSignatureChange}
+                              className="border-gray-300 focus:border-blue-500"
+                            />
+                            <FileImage className="h-5 w-5 text-gray-400" />
+                          </div>
+                        </FormControl>
+                        {signaturePreview && (
+                          <div className="mt-2">
+                            <img 
+                              src={signaturePreview} 
+                              alt="Signature preview" 
+                              className="max-w-32 max-h-16 border rounded"
+                            />
+                          </div>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Submit Button */}
+                  <div className="flex justify-center pt-6">
+                    <Button 
+                      type="submit" 
+                      className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                      disabled={isGeneratingPDF}
+                    >
+                      {isGeneratingPDF ? (
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          {language === 'ar' ? 'جاري إنشاء الملف...' : 'Génération en cours...'}
+                        </div>
+                      ) : (
+                        <>
+                          {language === 'ar' ? 'تحميل طلب الإجازة' : 'Télécharger la demande'}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            </Form>
+          ) : (
+            <div className="text-center py-12">
+              <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                {language === 'ar' ? 'تم إنشاء الطلب بنجاح!' : 'Demande générée avec succès!'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {language === 'ar' ? 'تم تحميل ملف PDF لطلب الإجازة' : 'Le fichier PDF de votre demande a été téléchargé'}
+              </p>
+              <Button 
+                onClick={() => {
+                  setIsSubmitted(false);
+                  form.reset();
+                }}
+                variant="outline"
+                className="border-blue-500 text-blue-600 hover:bg-blue-50"
+              >
+                {language === 'ar' ? 'طلب جديد' : 'Nouvelle demande'}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
