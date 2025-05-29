@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,6 +48,7 @@ const formSchema = z.object({
   fullName: z.string().min(3, { message: "يرجى إدخال الاسم الكامل" }),
   matricule: z.string().min(1, { message: "يرجى إدخال الرقم المالي" }),
   echelle: z.string().optional(),
+  echelon: z.string().optional(),
   grade: z.string().optional(),
   fonction: z.string().optional(),
   arabicFonction: z.string().optional(),
@@ -56,6 +58,8 @@ const formSchema = z.object({
   arabicAddress: z.string().optional(),
   phone: z.string().optional(),
   leaveType: z.string().min(1, { message: "يرجى اختيار نوع الإجازة" }),
+  customLeaveType: z.string().optional(),
+  arabicCustomLeaveType: z.string().optional(),
   duration: z.string().min(1, { message: "يرجى تحديد المدة" }),
   arabicDuration: z.string().optional(),
   startDate: z.date({ required_error: "يرجى تحديد تاريخ البداية" }),
@@ -141,6 +145,7 @@ const VacationRequest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [showCustomLeaveType, setShowCustomLeaveType] = useState(false);
   const { language, t } = useLanguage();
   const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
@@ -150,6 +155,7 @@ const VacationRequest = () => {
       fullName: "",
       matricule: "",
       echelle: "",
+      echelon: "",
       grade: "",
       fonction: "",
       arabicFonction: "",
@@ -159,6 +165,8 @@ const VacationRequest = () => {
       arabicAddress: "",
       phone: "",
       leaveType: "",
+      customLeaveType: "",
+      arabicCustomLeaveType: "",
       duration: "",
       arabicDuration: "",
       startDate: undefined,
@@ -249,33 +257,52 @@ const VacationRequest = () => {
     
     // بداية إدخال البيانات
     let startY = 80;
-    const lineHeight = 10;
+    const lineHeight = 8;
     const frenchColX = 20;  // X position for French text
     const arabicColX = 190; // X position for Arabic text (right side)
 
-    // Function to add a bilingual field with proper alignment
-    const addBilingualField = (frenchLabel: string, arabicLabel: string, frenchValue: string | undefined, arabicValue?: string | undefined) => {
-        doc.setFontSize(12);
+    // Function to add a field with both French and Arabic on same line
+    const addSameLine = (frenchLabel: string, arabicLabel: string, frenchValue: string | undefined, arabicValue?: string | undefined, colonPosition?: number) => {
+        doc.setFontSize(11);
         
         // French part (left side)
         doc.setFont("helvetica", "normal");
-        const frenchText = `${frenchLabel} : ${frenchValue || '................................................'}`;
+        const frenchText = `${frenchLabel} : ${frenchValue || '…………………………………'}`;
         doc.text(frenchText, frenchColX, startY);
         
         // Arabic part (right side)
         doc.setFont("Amiri", "normal");
-        const arabicText = `${arabicValue || frenchValue || '................................................'} : ${arabicLabel}`;
+        const arabicText = `${arabicValue || frenchValue || '…………………………………'} : ${arabicLabel}`;
         doc.text(arabicText, arabicColX, startY, { align: "right" });
+        
+        startY += lineHeight;
+    };
+
+    // Function to add fields in the middle like Echelle/Echelon
+    const addMiddleFields = (leftFrench: string, leftValue: string | undefined, rightFrench: string, rightValue: string | undefined, leftArabic: string, rightArabic: string) => {
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        
+        // Left French field
+        doc.text(`${leftFrench} : ${leftValue || '………………'}`, frenchColX, startY);
+        
+        // Right French field  
+        doc.text(`${rightFrench} : ${rightValue || '………………'}`, 115, startY);
+        
+        // Arabic equivalents (right side)
+        doc.setFont("Amiri", "normal");
+        doc.text(`${rightValue || '………………'} : ${rightArabic}`, arabicColX, startY, { align: "right" });
+        doc.text(`${leftValue || '………………'} : ${leftArabic}`, arabicColX - 75, startY, { align: "right" });
         
         startY += lineHeight;
     };
     
     // معلومات أساسية
-    addBilingualField("Nom & Prénom", "الاسم الكامل", data.fullName);
-    addBilingualField("Matricule", "الرقم المالي", data.matricule);
-    addBilingualField("Echelle", "الرتبة", data.echelle);
-    addBilingualField("Grade", "الدرجة", data.grade);
-    addBilingualField("Fonction", "الوظيفة", data.fonction, data.arabicFonction);
+    addSameLine("Nom & Prénom", "الاسم الكامل", data.fullName);
+    addSameLine("Matricule", "الرقم المالي", data.matricule);
+    addMiddleFields("Echelle", data.echelle, "Echelon", data.echelon, "الرتبة", "السلم");
+    addSameLine("Grade", "الدرجة", data.grade);
+    addSameLine("Fonction", "الوظيفة", data.fonction, data.arabicFonction);
     
     // عنوان القسم Affectation
     startY += 5;
@@ -287,14 +314,19 @@ const VacationRequest = () => {
     startY += 15;
     
     // معلومات التعيين
-    doc.setFontSize(12);
-    addBilingualField("Direction", "المديرية", data.direction, data.arabicDirection);
-    addBilingualField("Adresse", "العنوان", data.address, data.arabicAddress);
-    addBilingualField("Téléphone", "الهاتف", data.phone);
-    addBilingualField("Nature de congé (2)", "نوع الإجازة (2)", data.leaveType, translateToArabic(data.leaveType));
-    addBilingualField("Durée", "المدة", data.duration, data.arabicDuration || translateToArabic(data.duration));
+    doc.setFontSize(11);
+    addSameLine("Direction", "المديرية", data.direction, data.arabicDirection);
+    addSameLine("Adresse", "العنوان", data.address, data.arabicAddress);
+    addSameLine("Téléphone", "الهاتف", data.phone);
+
+    // نوع الإجازة - عرض النوع المختار أو المخصص
+    const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : data.leaveType;
+    const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : translateToArabic(data.leaveType);
+    addSameLine("Nature de congé (2)", "نوع الإجازة (2)", leaveTypeToDisplay, arabicLeaveTypeToDisplay);
     
-    // تواريخ البدء والانتهاء
+    addSameLine("Durée", "المدة", data.duration, data.arabicDuration || translateToArabic(data.duration));
+    
+    // تواريخ البدء والانتهاء في نفس السطر
     if (data.startDate && data.endDate) {
       doc.setFont("helvetica", "normal");
       doc.text(`Du : ${format(data.startDate, "dd/MM/yyyy")}`, frenchColX, startY);
@@ -308,13 +340,13 @@ const VacationRequest = () => {
     
     // معلومات إضافية
     if (data.with || data.arabicWith) {
-      addBilingualField("Avec (3)", "مع (3)", data.with, data.arabicWith);
+      addSameLine("Avec (3)", "مع (3)", data.with, data.arabicWith);
     }
     if (data.interim || data.arabicInterim) {
-      addBilingualField("Intérim (Nom et Fonction)", "النيابة (الاسم والوظيفة)", data.interim, data.arabicInterim);
+      addSameLine("Intérim (Nom et Fonction)", "النيابة (الاسم والوظيفة)", data.interim, data.arabicInterim);
     }
     if (data.leaveMorocco) {
-      addBilingualField("Quitter le territoire Marocain", "مغادرة التراب الوطني", "Oui", "نعم");
+      addSameLine("Quitter le territoire Marocain", "مغادرة التراب الوطني", "Oui", "نعم");
     }
     
     // التوقيعات
@@ -325,7 +357,7 @@ const VacationRequest = () => {
     doc.setFont("Amiri", "bold");
     doc.text("إمضاء المعني(ة) بالأمر", arabicColX, startY, { align: "right" });
     
-    // إضافة التوقيع إن وجد
+    // إضافة التوقيع إن وجد - تحت "إمضاء المعني بالأمر" مباشرة
     if (signaturePreview) {
       const signatureImg = new Image();
       signatureImg.src = signaturePreview;
@@ -337,6 +369,7 @@ const VacationRequest = () => {
     startY += 30;
     
     // توقيع الرئيس المباشر
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text("Avis du Chef Immédiat", frenchColX, startY);
     doc.setFont("Amiri", "bold");
@@ -461,27 +494,7 @@ const VacationRequest = () => {
                         )}
                       />
 
-                      {/* Grade and Scale - Single fields */}
-                      <FormField
-                        control={form.control}
-                        name="grade"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {language === 'ar' ? 'الدرجة' : 'Grade'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={language === 'ar' ? 'أدخل الدرجة' : 'Entrez le grade'}
-                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
+                      {/* Echelle and Echelon - Two separate fields in same row */}
                       <FormField
                         control={form.control}
                         name="echelle"
@@ -494,6 +507,47 @@ const VacationRequest = () => {
                               <Input 
                                 {...field} 
                                 placeholder={language === 'ar' ? 'أدخل الرتبة' : 'Entrez l\'échelle'}
+                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="echelon"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700">
+                              {language === 'ar' ? 'السلم' : 'Échelon'}
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                placeholder={language === 'ar' ? 'أدخل السلم' : 'Entrez l\'échelon'}
+                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Grade - Single field */}
+                      <FormField
+                        control={form.control}
+                        name="grade"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700">
+                              {language === 'ar' ? 'الدرجة' : 'Grade'}
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                placeholder={language === 'ar' ? 'أدخل الدرجة' : 'Entrez le grade'}
                                 className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                               />
                             </FormControl>
@@ -672,7 +726,13 @@ const VacationRequest = () => {
                             <FormLabel className="text-sm font-medium text-gray-700">
                               {language === 'ar' ? 'نوع الإجازة' : 'Nature de congé'} *
                             </FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select 
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                setShowCustomLeaveType(value === "Autre");
+                              }} 
+                              defaultValue={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger className="border-blue-300 focus:border-blue-500 focus:ring-blue-200">
                                   <SelectValue placeholder={language === 'ar' ? 'اختر نوع الإجازة' : 'Sélectionnez le type'} />
@@ -691,6 +751,9 @@ const VacationRequest = () => {
                                 <SelectItem value="Exceptionnel">
                                   {language === 'ar' ? 'استثنائية' : 'Exceptionnel'}
                                 </SelectItem>
+                                <SelectItem value="Autre">
+                                  {language === 'ar' ? 'أخرى' : 'Autre'}
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -698,6 +761,52 @@ const VacationRequest = () => {
                         )}
                       />
                     </div>
+
+                    {/* Custom Leave Type Fields - Show when "Autre" is selected */}
+                    {showCustomLeaveType && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="customLeaveType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                نوع الإجازة المخصص (Français)
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  placeholder="Spécifiez le type de congé"
+                                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="arabicCustomLeaveType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                نوع الإجازة المخصص (العربية)
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  placeholder="حدد نوع الإجازة"
+                                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                                  dir="rtl"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
 
                     {/* Duration - Separate Arabic and French fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1013,6 +1122,7 @@ const VacationRequest = () => {
                   onClick={() => {
                     setIsSubmitted(false);
                     form.reset();
+                    setShowCustomLeaveType(false);
                   }}
                   variant="outline"
                   className="border-blue-500 text-blue-600 hover:bg-blue-50"
