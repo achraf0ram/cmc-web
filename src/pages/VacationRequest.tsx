@@ -271,6 +271,14 @@ const VacationRequest = () => {
     doc.setFont("Amiri", "bold");
     doc.text("(1) طلب إجازة", 105, 63, { align: "center" });
     
+    // Add line under "Demande de congé" (French)
+    const demandeCongeFrWidth = doc.getTextWidth("Demande de congé");
+    doc.line(105 - demandeCongeFrWidth / 2, 56 + 1, 105 + demandeCongeFrWidth / 2, 56 + 1);
+
+    // Add line under "طلب إجازة" (Arabic)
+    const demandeCongeArWidth = doc.getTextWidth("(1) طلب إجازة");
+    doc.line(105 - demandeCongeArWidth / 2, 63 + 1, 105 + demandeCongeArWidth / 2, 63 + 1);
+    
     let currentY = 80;
     const lineHeight = 8;
     
@@ -322,6 +330,15 @@ const VacationRequest = () => {
     doc.text("Affectation", 105, currentY, { align: "center" });
     doc.setFont("Amiri", "bold");
     doc.text("التعيين", 105, currentY + 5, { align: "center" });
+
+    // Add line under "Affectation" (French)
+    const affectationFrWidth = doc.getTextWidth("Affectation");
+    doc.line(105 - affectationFrWidth / 2, currentY + 1, 105 + affectationFrWidth / 2, currentY + 1);
+
+    // Add line under "التعيين" (Arabic)
+    const affectationArWidth = doc.getTextWidth("التعيين");
+    doc.line(105 - affectationArWidth / 2, currentY + 5 + 1, 105 + affectationArWidth / 2, currentY + 5 + 1);
+
     currentY += 15;
     
     doc.setFontSize(11);
@@ -439,28 +456,64 @@ if (data.interim || data.arabicInterim) {
       currentY += lineHeight;
     }
     
-    // التوقيعات
-    const signatureY = 212;
-    
-    doc.text("Signature de l'intéressé", 30, signatureY);
-    doc.text("إمضاء المعني)ة( بالأمر", 30, signatureY + 5);
+      // التوقيعات مع خطوط تحتها
+  const signatureY = 212;
+  
+  // توقيع المعني بالأمر
+  doc.setFont("helvetica", "normal");
+  const signatureText = "Signature de l'intéressé";
+  doc.text(signatureText, 30, signatureY);
+  // خط تحت النص الفرنسي
+  const signatureWidth = doc.getTextWidth(signatureText);
+  doc.line(30, signatureY + 1, 30 + signatureWidth, signatureY + 1); // Adjusted Y position for line
+  
+  doc.setFont("Amiri", "normal");
+  const arabicSignature = "إمضاء المعني)ة( بالأمر";
+  doc.text(arabicSignature, 30, signatureY + 5);
+  // خط تحت النص العربي
+  const arabicSignatureWidth = doc.getTextWidth(arabicSignature);
+  doc.line(30, signatureY + 5 + 1, 30 + arabicSignatureWidth, signatureY + 5 + 1); // Adjusted Y position for line
 
-    doc.text("Avis du Chef Immédiat", 85, signatureY);
-    doc.text("رأي الرئيس المباشر", 85, signatureY + 5);
+  // رأي الرئيس المباشر
+  doc.setFont("helvetica", "normal","Bold");
+  const chefText = "Avis du Chef Immédiat";
+  doc.text(chefText, 85, signatureY);
+  // خط تحت النص الفرنسي
+  const chefWidth = doc.getTextWidth(chefText);
+  doc.line(85, signatureY + 1, 85 + chefWidth, signatureY + 1); // Adjusted Y position for line
+  
+  doc.setFont("Amiri", "normal");
+  const arabicChef = "رأي الرئيس المباشر";
+  doc.text(arabicChef, 85, signatureY + 5);
+  // خط تحت النص العربي
+  const arabicChefWidth = doc.getTextWidth(arabicChef);
+  doc.line(85, signatureY + 5 + 1, 85 + arabicChefWidth, signatureY + 5 + 1); // Adjusted Y position for line
 
-    doc.text("Avis du Directeur", 150, signatureY);
-    doc.text("رأي المدير", 150, signatureY + 5);
+  // رأي المدير
+  doc.setFont("helvetica", "normal");
+  const directorText = "Avis du Directeur";
+  doc.text(directorText, 150, signatureY);
+  // خط تحت النص الفرنسي
+  const directorWidth = doc.getTextWidth(directorText);
+  doc.line(150, signatureY + 1, 150 + directorWidth, signatureY + 1); // Adjusted Y position for line
+  
+  doc.setFont("Amiri", "normal");
+  const arabicDirector = "رأي المدير";
+  doc.text(arabicDirector, 150, signatureY + 5);
+  // خط تحت النص العربي
+  const arabicDirectorWidth = doc.getTextWidth(arabicDirector);
+  doc.line(150, signatureY + 5 + 1, 150 + arabicDirectorWidth, signatureY + 5 + 1); // Adjusted Y position for line
 
-    console.log("Signature preview value before adding image:", signaturePreview ? "Has data" : "No data", signaturePreview ? `Data URL starts with: ${signaturePreview.substring(0, 30)}` : "");
+  console.log("Signature preview value before adding image:", signaturePreview ? "Has data" : "No data", signaturePreview ? `Data URL starts with: ${signaturePreview.substring(0, 30)}` : "");
 
-    if (signaturePreview) {
-      const imgType = signaturePreview.startsWith("data:image/png") ? "PNG" : "JPEG";
-      try {
-        doc.addImage(signaturePreview, imgType, 30, signatureY + 15, 40, 20);
-      } catch (error) {
-        console.error("Error adding signature image:", error);
-      }
+  if (signaturePreview) {
+    const imgType = signaturePreview.startsWith("data:image/png") ? "PNG" : "JPEG";
+    try {
+      doc.addImage(signaturePreview, imgType, 30, signatureY + 15, 40, 20);
+    } catch (error) {
+      console.error("Error adding signature image:", error);
     }
+  }
 
     let notesY = 250;
     doc.setFontSize(9);
@@ -468,8 +521,15 @@ if (data.interim || data.arabicInterim) {
     // العناوين الرئيسية
     doc.setFont("helvetica", "bold");
     doc.text("Très important :", 10, notesY);
+    // Add line under "Très important :" (French)
+    const tresImportantFrWidth = doc.getTextWidth("Très important :");
+    doc.line(10, notesY + 1, 10 + tresImportantFrWidth, notesY + 1);
+
     doc.setFont("Amiri", "bold");
     doc.text(":هام جداً ", 200, notesY, { align: "right" });
+     // Add line under ":هام جداً " (Arabic)
+    const tresImportantArWidth = doc.getTextWidth(":هام جداً ");
+    doc.line(200 - tresImportantArWidth, notesY + 1, 200, notesY + 1); // Line drawn from right to left
     
     notesY += 5;
     doc.setFontSize(8);
