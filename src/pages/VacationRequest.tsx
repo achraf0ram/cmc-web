@@ -457,6 +457,7 @@ if (data.interim || data.arabicInterim) {
     // doc.line(25, signatureY + 38, 70, signatureY + 38);
     // doc.line(80, signatureY + 38, 125, signatureY + 38);
     // doc.line(145, signatureY + 38, 190, signatureY + 38);
+    
     let notesY = 250;
     doc.setFontSize(9);
     
@@ -484,7 +485,7 @@ if (data.interim || data.arabicInterim) {
      
  " ال يسمح ألي مستخدم بمغادرة العمل إال بعد توصله بمقرر اإلجازة و إال اعتبر في ",
  " وضعية تخلي عن العمل.",
-` يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب (1) ` ,
+` يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب )1( ` ,
  `")2( نوع اإلجازة : إدارية - زواج - ازدياد - استثنائية"`,
  ")3( إذا كان المعني باألمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة ()",
    "'مغادرة التراب الوطني'"
@@ -509,6 +510,7 @@ if (data.interim || data.arabicInterim) {
       });
       currentLineY += 5;
     });
+    
     // حفظ الملف
     if (data.fullName) {
       doc.save(`demande_conge_${data.fullName}.pdf`);
