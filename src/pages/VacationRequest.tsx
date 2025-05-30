@@ -31,7 +31,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import jsPDF from "jspdf";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, Calendar } from "lucide-react";
+import { CheckCircle, Calendar, FileImage } from "lucide-react";
 import { AmiriFont } from "../fonts/AmiriFont";
 
 const formSchema = z.object({
@@ -39,19 +39,30 @@ const formSchema = z.object({
   matricule: z.string().min(1, { message: "يرجى إدخال رقم التسجيل" }),
   phone: z.string().min(10, { message: "يرجى إدخال رقم هاتف صحيح" }),
   grade: z.string().optional(),
+  department: z.string().min(2, { message: "يرجى إدخال القسم" }),
   leaveType: z.string().min(1, { message: "يرجى اختيار نوع الإجازة" }),
   customLeaveType: z.string().optional(),
   customLeaveTypeFrench: z.string().optional(),
   startDate: z.string().min(1, { message: "يرجى اختيار تاريخ البداية" }),
   endDate: z.string().min(1, { message: "يرجى اختيار تاريخ النهاية" }),
+  duration: z.string().min(1, { message: "يرجى إدخال مدة الإجازة" }),
+  arabicDuration: z.string().optional(),
+  with: z.string().optional(),
+  arabicWith: z.string().optional(),
+  interim: z.string().optional(),
+  arabicInterim: z.string().optional(),
   reason: z.string().min(5, { message: "يرجى وصف سبب الإجازة" }),
   leaveTravel: z.string().optional(),
+  signature: z.string().optional(),
+  address: z.string().optional(),
+  arabicAddress: z.string().optional(),
 });
 
 const VacationRequest = () => {
   const { t } = useLanguage();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
   const { toast } = useToast();
 
@@ -62,13 +73,23 @@ const VacationRequest = () => {
       matricule: "",
       phone: "",
       grade: "",
+      department: "",
       leaveType: "",
       customLeaveType: "",
       customLeaveTypeFrench: "",
       startDate: "",
       endDate: "",
+      duration: "",
+      arabicDuration: "",
+      with: "",
+      arabicWith: "",
+      interim: "",
+      arabicInterim: "",
       reason: "",
       leaveTravel: "",
+      signature: "",
+      address: "",
+      arabicAddress: "",
     },
   });
 
@@ -81,6 +102,19 @@ const VacationRequest = () => {
   ];
 
   const watchLeaveType = form.watch("leaveType");
+
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setSignaturePreview(result);
+        form.setValue("signature", result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
@@ -130,9 +164,13 @@ const VacationRequest = () => {
       doc.text(`Echelle : ${data.grade || ""}`, 20, 95);
       doc.text(`السلم : ${data.grade || ""}`, 120, 95);
       
+      // Department
+      doc.text(`Service : ${data.department}`, 20, 105);
+      doc.text(`المصلحة : ${data.department}`, 120, 105);
+      
       // Phone
-      doc.text(`Téléphone : ${data.phone}`, 20, 105);
-      doc.text(`الهاتف : ${data.phone}`, 120, 105);
+      doc.text(`Téléphone : ${data.phone}`, 20, 115);
+      doc.text(`الهاتف : ${data.phone}`, 120, 115);
       
       // Leave type
       let leaveTypeText = "";
@@ -147,79 +185,57 @@ const VacationRequest = () => {
         leaveTypeArabicText = selectedType?.arabic || "";
       }
       
-      doc.text(`Nature de congé : ${leaveTypeText}`, 20, 115);
-      doc.text(`نوع الإجازة : ${leaveTypeArabicText}`, 120, 115);
+      doc.text(`Nature de congé : ${leaveTypeText}`, 20, 125);
+      doc.text(`نوع الإجازة : ${leaveTypeArabicText}`, 120, 125);
+      
+      // Duration
+      doc.text(`Durée : ${data.duration}`, 20, 135);
+      doc.text(`المدة : ${data.arabicDuration || data.duration}`, 120, 135);
       
       // Dates on same line
-      doc.text(`Du : ${data.startDate}`, 20, 125);
-      doc.text(`Au : ${data.endDate}`, 70, 125);
-      doc.text(`ابتداء من : ${data.startDate}`, 120, 125);
-      doc.text(`إلى : ${data.endDate}`, 170, 125);
+      doc.text(`Du : ${data.startDate}`, 20, 145);
+      doc.text(`Au : ${data.endDate}`, 70, 145);
+      doc.text(`ابتداء من : ${data.startDate}`, 120, 145);
+      doc.text(`إلى : ${data.endDate}`, 170, 145);
+      
+      // With family
+      if (data.with) {
+        doc.text(`Avec : ${data.with}`, 20, 155);
+        doc.text(`مع : ${data.arabicWith || data.with}`, 120, 155);
+      }
+      
+      // Interim
+      if (data.interim) {
+        doc.text(`Intérim : ${data.interim}`, 20, 165);
+        doc.text(`النيابة : ${data.arabicInterim || data.interim}`, 120, 165);
+      }
+      
+      // Address
+      if (data.address) {
+        doc.text(`Adresse : ${data.address}`, 20, 175);
+        doc.text(`العنوان : ${data.arabicAddress || data.address}`, 120, 175);
+      }
       
       // Travel indication
       if (data.leaveTravel) {
-        doc.text(`${data.leaveTravel}`, 20, 135);
+        doc.text(`${data.leaveTravel}`, 20, 185);
       }
       
       // Reason
-      doc.text(`Motif : ${data.reason}`, 20, 145);
+      doc.text(`Motif : ${data.reason}`, 20, 195);
       
       // Signature section
-      doc.text("Signature de l'intéressé", 20, 170);
-      doc.text("امضاء المعني بالأمر", 120, 170);
-
-      // Important notes section
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text("Très important", 20, 200);
+      doc.text("Signature de l'intéressé", 20, 220);
+      doc.text("امضاء المعني بالأمر", 120, 220);
       
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      const frenchNotes = [
-        "Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir",
-        "obtenu sa décision de congé, le cas échéant il sera considéré en abandon de poste.",
-        "(1) La demande doit être déposée 8 jours avant la date demandée.",
-        "(2) Nature de congé : Administratif - Mariage - Naissance - Exceptionnel",
-        "(3) Si l'intéressé projette de quitter le territoire Marocain, il faut qu'il le",
-        "mentionne : \"Quitter le territoire Marocain\""
-      ];
-      
-      frenchNotes.forEach((line, index) => {
-        doc.text(line, 20, 210 + (index * 4));
-      });
-
-      // Arabic notes
-      doc.setFont('Amiri', 'normal');
-      doc.setFontSize(10);
-      doc.text("هام جداً", 190, 200, { align: "right" });
-      
-      doc.setFontSize(9);
-      const arabicNotes = [
-        "لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة،",
-        "وإلا اعتبر في وضعية تخلي عن العمل.",
-        "(1) يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب.",
-        "(2) نوع الإجازة: إدارية - زواج - ازدياد - استثنائية",
-        "(3) إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني، فعليه أن",
-        "يحدد ذلك بعبارة: \"مغادرة التراب الوطني\""
-      ];
-      
-      arabicNotes.forEach((line, index) => {
-        doc.text(line, 190, 210 + (index * 4), { align: "right" });
-      });
-
-      // Footer
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.text("Direction Régionale CASABLANCA –SETTAT", 20, 260);
-      doc.text("50, rue Caporal Driss Chbakou", 20, 264);
-      doc.text("Ain Bordja-Casablanca", 20, 268);
-      doc.text("Tél :05 22 60 00 82 - Fax :05 22 6039 65", 20, 272);
-
-      doc.setFont('Amiri', 'normal');
-      doc.text("المديرية الجهوية لجهة الدارالبيضاء – سطات", 190, 260, { align: "right" });
-      doc.text("زنقة الكابورال إدريس اشباكو,50", 190, 264, { align: "right" });
-      doc.text("عين البرجة - الدار البيضاء", 190, 268, { align: "right" });
-      doc.text("الهاتف : 82 00 60 22 05 - الفاكس : 65 6039 22 05", 190, 272, { align: "right" });
+      // Add signature if provided
+      if (data.signature) {
+        try {
+          doc.addImage(data.signature, "PNG", 20, 225, 30, 15);
+        } catch (error) {
+          console.error("Error adding signature:", error);
+        }
+      }
 
       doc.save("demande_de_conge.pdf");
       
@@ -289,158 +305,298 @@ const VacationRequest = () => {
           <CardContent className="p-4 md:p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 md:space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <FormField control={form.control} name="fullName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">الاسم الكامل / Nom complet</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل الاسم الكامل"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={form.control} name="matricule" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">الرقم التسجيلي / Matricule</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل الرقم التسجيلي"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={form.control} name="phone" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">رقم الهاتف / Téléphone</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          type="tel"
-                          className="cmc-input"
-                          placeholder="أدخل رقم الهاتف"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={form.control} name="grade" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">السلم / Echelle</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل السلم"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  <FormField control={form.control} name="leaveType" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">نوع الإجازة / Nature de congé</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                {/* Personal Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 border-b border-cmc-blue-light pb-2 mb-4">
+                    المعلومات الشخصية
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <FormField control={form.control} name="fullName" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">الاسم الكامل / Nom complet</FormLabel>
                         <FormControl>
-                          <SelectTrigger className="cmc-input">
-                            <SelectValue placeholder="اختر نوع الإجازة" />
-                          </SelectTrigger>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل الاسم الكامل"
+                          />
                         </FormControl>
-                        <SelectContent>
-                          {leaveTypes.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  {watchLeaveType === "other" && (
-                    <>
-                      <FormField control={form.control} name="customLeaveType" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-medium">نوع الإجازة (عربي)</FormLabel>
+                    <FormField control={form.control} name="matricule" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">الرقم التسجيلي / Matricule</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل الرقم التسجيلي"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="phone" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">رقم الهاتف / Téléphone</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="tel"
+                            className="cmc-input"
+                            placeholder="أدخل رقم الهاتف"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="grade" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">السلم / Echelle</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل السلم"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="department" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">المصلحة / Service</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل المصلحة"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                </div>
+
+                {/* Leave Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 border-b border-cmc-green-light pb-2 mb-4">
+                    معلومات الإجازة
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <FormField control={form.control} name="leaveType" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">نوع الإجازة / Nature de congé</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <Input 
-                              {...field} 
-                              className="cmc-input"
-                              placeholder="أدخل نوع الإجازة بالعربية"
-                            />
+                            <SelectTrigger className="cmc-input">
+                              <SelectValue placeholder="اختر نوع الإجازة" />
+                            </SelectTrigger>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
+                          <SelectContent>
+                            {leaveTypes.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                      <FormField control={form.control} name="customLeaveTypeFrench" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-medium">نوع الإجازة (فرنسي)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              className="cmc-input"
-                              placeholder="Entrez le type de congé en français"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                    </>
-                  )}
+                    {watchLeaveType === "other" && (
+                      <>
+                        <FormField control={form.control} name="customLeaveType" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 font-medium">نوع الإجازة (عربي)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                className="cmc-input"
+                                placeholder="أدخل نوع الإجازة بالعربية"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
 
-                  <FormField control={form.control} name="startDate" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">تاريخ البداية / Du</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="date" 
-                          {...field} 
-                          className="cmc-input"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                        <FormField control={form.control} name="customLeaveTypeFrench" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 font-medium">نوع الإجازة (فرنسي)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                className="cmc-input"
+                                placeholder="Entrez le type de congé en français"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </>
+                    )}
 
-                  <FormField control={form.control} name="endDate" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">تاريخ النهاية / Au</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="date" 
-                          {...field} 
-                          className="cmc-input"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="duration" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">المدة (فرنسي) / Durée</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="Ex: 5 jours"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={form.control} name="leaveTravel" render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel className="text-slate-700 font-medium">مغادرة التراب الوطني / Quitter le territoire Marocain</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="إذا كنت تنوي مغادرة التراب الوطني، اذكر ذلك هنا"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="arabicDuration" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">المدة (عربي)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="مثال: 5 أيام"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="startDate" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">تاريخ البداية / Du</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            className="cmc-input"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="endDate" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">تاريخ النهاية / Au</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            className="cmc-input"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="with" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">مع (فرنسي) / Avec</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="Avec époux/épouse et enfants"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="arabicWith" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">مع (عربي)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="مع الزوج/الزوجة والأطفال"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="interim" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">النيابة (فرنسي) / Intérim</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="Nom et fonction du remplaçant"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="arabicInterim" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">النيابة (عربي)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="اسم ووظيفة المتنائب"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="address" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">العنوان (فرنسي) / Adresse</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="Adresse pendant le congé"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="arabicAddress" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">العنوان (عربي)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="العنوان أثناء الإجازة"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="leaveTravel" render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel className="text-slate-700 font-medium">مغادرة التراب الوطني / Quitter le territoire Marocain</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="إذا كنت تنوي مغادرة التراب الوطني، اذكر ذلك هنا"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
                 </div>
 
                 <FormField control={form.control} name="reason" render={({ field }) => (
@@ -454,6 +610,33 @@ const VacationRequest = () => {
                         rows={4}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="signature" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-medium">التوقيع (اختياري) / Signature</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center space-x-2 p-4 border border-dashed border-cmc-blue rounded-lg bg-cmc-blue-light/30">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleSignatureChange}
+                          className="border-0 bg-transparent"
+                        />
+                        <FileImage className="h-5 w-5 text-cmc-blue" />
+                      </div>
+                    </FormControl>
+                    {signaturePreview && (
+                      <div className="mt-2">
+                        <img 
+                          src={signaturePreview} 
+                          alt="Signature preview" 
+                          className="max-w-32 max-h-16 border rounded shadow-sm"
+                        />
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )} />

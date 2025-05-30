@@ -37,6 +37,13 @@ const formSchema = z.object({
   purpose: z.string().min(10, { message: "يرجى وصف الغرض من المهمة" }),
   transportation: z.string().optional(),
   accommodationExpenses: z.string().optional(),
+  dailyAllowance: z.string().optional(),
+  travelExpenses: z.string().optional(),
+  otherExpenses: z.string().optional(),
+  totalExpenses: z.string().optional(),
+  accompaniedBy: z.string().optional(),
+  missionType: z.string().optional(),
+  specialInstructions: z.string().optional(),
 });
 
 const MissionOrder = () => {
@@ -59,6 +66,13 @@ const MissionOrder = () => {
       purpose: "",
       transportation: "",
       accommodationExpenses: "",
+      dailyAllowance: "",
+      travelExpenses: "",
+      otherExpenses: "",
+      totalExpenses: "",
+      accompaniedBy: "",
+      missionType: "",
+      specialInstructions: "",
     },
   });
 
@@ -101,16 +115,58 @@ const MissionOrder = () => {
       doc.text(`Du : ${data.startDate} Au : ${data.endDate}`, 20, 140);
       doc.text(`Objet de la mission : ${data.purpose}`, 20, 150);
       
+      if (data.missionType) {
+        doc.text(`Type de mission : ${data.missionType}`, 20, 160);
+      }
+      
       if (data.transportation) {
-        doc.text(`Moyen de transport : ${data.transportation}`, 20, 160);
+        doc.text(`Moyen de transport : ${data.transportation}`, 20, 170);
+      }
+      
+      if (data.accompaniedBy) {
+        doc.text(`Accompagné par : ${data.accompaniedBy}`, 20, 180);
+      }
+      
+      // Financial details
+      let yPosition = 190;
+      if (data.dailyAllowance) {
+        doc.text(`Indemnité journalière : ${data.dailyAllowance}`, 20, yPosition);
+        yPosition += 10;
       }
       
       if (data.accommodationExpenses) {
-        doc.text(`Frais d'hébergement : ${data.accommodationExpenses}`, 20, 170);
+        doc.text(`Frais d'hébergement : ${data.accommodationExpenses}`, 20, yPosition);
+        yPosition += 10;
+      }
+      
+      if (data.travelExpenses) {
+        doc.text(`Frais de déplacement : ${data.travelExpenses}`, 20, yPosition);
+        yPosition += 10;
+      }
+      
+      if (data.otherExpenses) {
+        doc.text(`Autres frais : ${data.otherExpenses}`, 20, yPosition);
+        yPosition += 10;
+      }
+      
+      if (data.totalExpenses) {
+        doc.setFont("helvetica", "bold");
+        doc.text(`Total des frais : ${data.totalExpenses}`, 20, yPosition);
+        doc.setFont("helvetica", "normal");
+        yPosition += 10;
+      }
+      
+      if (data.specialInstructions) {
+        yPosition += 10;
+        doc.text("Instructions spéciales :", 20, yPosition);
+        yPosition += 10;
+        const lines = doc.splitTextToSize(data.specialInstructions, 170);
+        doc.text(lines, 20, yPosition);
+        yPosition += lines.length * 10;
       }
 
-      doc.text("Le Directeur Régional", 140, 200);
-      doc.text("Signature et cachet", 140, 210);
+      doc.text("Le Directeur Régional", 140, 220);
+      doc.text("Signature et cachet", 140, 230);
 
       doc.save("ordre_de_mission.pdf");
       
@@ -180,132 +236,238 @@ const MissionOrder = () => {
           <CardContent className="p-4 md:p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 md:space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <FormField control={form.control} name="fullName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">الاسم الكامل / Nom complet</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل الاسم الكامل"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                {/* Personal Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 border-b border-cmc-blue-light pb-2 mb-4">
+                    المعلومات الشخصية
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <FormField control={form.control} name="fullName" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">الاسم الكامل / Nom complet</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل الاسم الكامل"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={form.control} name="matricule" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">الرقم التسجيلي / Matricule</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل الرقم التسجيلي"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="matricule" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">الرقم التسجيلي / Matricule</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل الرقم التسجيلي"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={form.control} name="grade" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">الرتبة / Grade</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل الرتبة"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="grade" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">الرتبة / Grade</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل الرتبة"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={form.control} name="department" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">القسم / Service</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل القسم"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="department" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">القسم / Service</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل القسم"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                </div>
 
-                  <FormField control={form.control} name="destination" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">وجهة المهمة / Destination</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل وجهة المهمة"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                {/* Mission Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 border-b border-cmc-green-light pb-2 mb-4">
+                    معلومات المهمة
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <FormField control={form.control} name="destination" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">وجهة المهمة / Destination</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل وجهة المهمة"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={form.control} name="transportation" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">وسيلة النقل / Transport</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل وسيلة النقل"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="missionType" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">نوع المهمة / Type de mission</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل نوع المهمة"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={form.control} name="startDate" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">تاريخ البداية / Du</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="date" 
-                          {...field} 
-                          className="cmc-input"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="startDate" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">تاريخ البداية / Du</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            className="cmc-input"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={form.control} name="endDate" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">تاريخ النهاية / Au</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="date" 
-                          {...field} 
-                          className="cmc-input"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="endDate" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">تاريخ النهاية / Au</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            className="cmc-input"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
 
-                  <FormField control={form.control} name="accommodationExpenses" render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel className="text-slate-700 font-medium">مصاريف الإقامة / Frais d'hébergement</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="cmc-input"
-                          placeholder="أدخل مصاريف الإقامة إن وجدت"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                    <FormField control={form.control} name="transportation" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">وسيلة النقل / Transport</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل وسيلة النقل"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="accompaniedBy" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">مرافق بواسطة / Accompagné par</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل اسم المرافق إن وجد"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+                </div>
+
+                {/* Financial Information Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 border-b border-cmc-blue-light pb-2 mb-4">
+                    المعلومات المالية
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <FormField control={form.control} name="dailyAllowance" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">البدل اليومي / Indemnité journalière</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل البدل اليومي"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="accommodationExpenses" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">مصاريف الإقامة / Frais d'hébergement</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل مصاريف الإقامة"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="travelExpenses" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">مصاريف السفر / Frais de déplacement</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل مصاريف السفر"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="otherExpenses" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-medium">مصاريف أخرى / Autres frais</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل المصاريف الأخرى"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <FormField control={form.control} name="totalExpenses" render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel className="text-slate-700 font-medium">إجمالي المصاريف / Total des frais</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            className="cmc-input"
+                            placeholder="أدخل إجمالي المصاريف"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
                 </div>
 
                 <FormField control={form.control} name="purpose" render={({ field }) => (
@@ -317,6 +479,21 @@ const MissionOrder = () => {
                         className="resize-none cmc-input" 
                         placeholder="أدخل الغرض من المهمة بالتفصيل"
                         rows={4}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="specialInstructions" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-700 font-medium">تعليمات خاصة / Instructions spéciales</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        className="resize-none cmc-input" 
+                        placeholder="أدخل أي تعليمات خاصة"
+                        rows={3}
                       />
                     </FormControl>
                     <FormMessage />
