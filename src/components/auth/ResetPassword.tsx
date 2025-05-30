@@ -55,7 +55,7 @@ export const ResetPassword = () => {
         className: "bg-green-50 border-green-200",
       });
       
-      navigate("/signin");
+      navigate("/login");
     } catch (error) {
       toast({
         title: "خطأ",
