@@ -155,7 +155,7 @@ export const SignIn = () => {
                 <div className="text-center">
                   <span className="text-slate-600">ليس لديك حساب؟ </span>
                   <Link
-                    to="/signup"
+                    to="/register"
                     className="text-cmc-blue hover:text-cmc-blue-dark font-medium transition-colors"
                   >
                     إنشاء حساب جديد
