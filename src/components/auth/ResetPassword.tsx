@@ -1,72 +1,66 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Loader2, Lock, ArrowLeft } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { Lock, Eye, EyeOff } from "lucide-react";
+
+const formSchema = z.object({
+  password: z.string().min(6, { message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }),
+  confirmPassword: z.string().min(1, { message: "تأكيد كلمة المرور مطلوب" }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "كلمات المرور غير متطابقة",
+  path: ["confirmPassword"],
+});
 
 export const ResetPassword = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { resetPassword } = useAuth();
-  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirmation, setPasswordConfirmation] = useState("");
-  const [token, setToken] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isResetSuccessful, setIsResetSuccessful] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const query = new URLSearchParams(location.search);
-    const emailParam = query.get('email');
-    const tokenParam = query.get('token');
-    if (emailParam) setEmail(emailParam);
-    if (tokenParam) setToken(tokenParam);
-  }, [location]);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage("");
-    
-    if (!email || !password || !passwordConfirmation) {
-      setErrorMessage("يرجى ملء جميع الحقول المطلوبة");
-      return;
-    }
-    
-    if (password !== passwordConfirmation) {
-      setErrorMessage("كلمات المرور غير متطابقة");
-      return;
-    }
-    
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-
     try {
-      // Note: We're only passing email as required by the updated interface
-      const success = await resetPassword(email);
-      if (success) {
-        setIsResetSuccessful(true);
-        toast({
-          title: "تم إعادة تعيين كلمة المرور بنجاح",
-          description: "يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة",
-        });
-      } else {
-        setErrorMessage("فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى");
-        toast({
-          variant: "destructive",
-          title: "خطأ في إعادة تعيين كلمة المرور",
-          description: "يرجى التحقق من المعلومات المدخلة والمحاولة مرة أخرى",
-        });
-      }
-    } catch (error) {
-      setErrorMessage("حدث خطأ أثناء محاولة إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى");
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log("Password reset:", values);
+      
       toast({
+        title: "تم تحديث كلمة المرور",
+        description: "تم تحديث كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول",
+        className: "bg-green-50 border-green-200",
+      });
+      
+      navigate("/signin");
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث كلمة المرور. يرجى المحاولة مرة أخرى",
         variant: "destructive",
-        title: "خطأ في إعادة تعيين كلمة المرور",
-        description: "حدث خطأ أثناء محاولة إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى",
       });
     } finally {
       setIsLoading(false);
@@ -74,120 +68,103 @@ export const ResetPassword = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-9 shadow-lg">
-        <div className="mb-7 text-center">
-          <img 
-            src="/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png" 
-            alt="CMC" 
-            className="mx-auto h-16 w-auto mb-4" 
-          />
-          <h2 className="text-2xl font-bold text-[#0FA0CE]">CMC</h2>
-          <p className="text-gray-600 mt-2">إعادة تعيين كلمة المرور</p>
+    <div className="min-h-screen cmc-page-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-6 md:mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
+            <Lock className="w-8 h-8 text-cmc-blue" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">إعادة تعيين كلمة المرور</h1>
+          <p className="text-slate-600">أدخل كلمة المرور الجديدة</p>
         </div>
-        
-        {errorMessage && (
-          <div className="mb-4 p-3 text-sm text-white bg-red-500 rounded-md">
-            {errorMessage}
-          </div>
-        )}
-        
-        {isResetSuccessful ? (
-          <div className="text-center p-4">
-            <div className="bg-green-100 text-green-700 p-4 rounded-md mb-4">
-              تم إعادة تعيين كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.
-            </div>
-            <Button 
-              variant="outline"
-              className="mt-4"
-              onClick={() => navigate("/sign-in")}
-            >
-              <ArrowLeft className="ml-2" size={16} />
-              العودة إلى تسجيل الدخول
-            </Button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
-              <div className="relative">
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="أدخل البريد الإلكتروني"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 pr-4"
-                  required
-                  dir="rtl"
-                  readOnly={!!email}
+
+        <Card className="cmc-card">
+          <CardHeader className="cmc-gradient text-white rounded-t-lg p-6">
+            <CardTitle className="text-xl font-semibold text-center">كلمة مرور جديدة</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 md:p-8">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium">كلمة المرور الجديدة</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="أدخل كلمة المرور الجديدة"
+                            className="cmc-input pr-10"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-slate-400" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-slate-400" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">كلمة المرور الجديدة</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="أدخل كلمة المرور الجديدة"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-4"
-                  required
-                  dir="rtl"
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium">تأكيد كلمة المرور</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="أعد إدخال كلمة المرور"
+                            className="cmc-input pr-10"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4 text-slate-400" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-slate-400" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="passwordConfirmation">تأكيد كلمة المرور الجديدة</Label>
-              <div className="relative">
-                <Input
-                  id="passwordConfirmation"
-                  type="password"
-                  placeholder="أعد إدخال كلمة المرور الجديدة"
-                  value={passwordConfirmation}
-                  onChange={(e) => setPasswordConfirmation(e.target.value)}
-                  className="pl-10 pr-4"
-                  required
-                  dir="rtl"
-                />
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  جاري إعادة تعيين كلمة المرور...
-                </>
-              ) : (
-                "إعادة تعيين كلمة المرور"
-              )}
-            </Button>
-            
-            <div className="text-center mt-4">
-              <Button
-                variant="link"
-                className="text-[#0EA5E9]"
-                onClick={() => navigate("/sign-in")}
-                type="button"
-              >
-                <ArrowLeft className="ml-2" size={16} />
-                العودة إلى تسجيل الدخول
-              </Button>
-            </div>
-          </form>
-        )}
+
+                <Button
+                  type="submit"
+                  className="w-full cmc-button-primary py-3"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "جاري التحديث..." : "تحديث كلمة المرور"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

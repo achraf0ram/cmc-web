@@ -156,21 +156,23 @@ const WorkCertificate = () => {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sahara-50 via-white to-sahara-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+      <div className="min-h-screen cmc-page-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md cmc-card">
+          <CardContent className="pt-6 pb-6 md:pt-8 md:pb-8">
+            <div className="flex flex-col items-center text-center gap-4 md:gap-6">
+              <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-r from-cmc-green-light to-emerald-100 flex items-center justify-center shadow-lg">
+                <CheckCircle className="h-8 w-8 md:h-10 md:w-10 text-cmc-green" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">تم الإرسال بنجاح</h2>
-              <p className="text-gray-600">تم إرسال طلب شهادة العمل بنجاح وسيتم معالجته قريباً</p>
-              <Button 
-                onClick={() => setIsSubmitted(false)}
-                className="w-full bg-sahara-600 hover:bg-sahara-700"
-              >
-                إرسال طلب جديد
-              </Button>
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-slate-800">تم الإرسال بنجاح</h2>
+                <p className="text-slate-600 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">تم إرسال طلب شهادة العمل بنجاح وسيتم معالجته قريباً</p>
+                <Button 
+                  onClick={() => setIsSubmitted(false)}
+                  className="cmc-button-primary px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base"
+                >
+                  إرسال طلب جديد
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -179,32 +181,32 @@ const WorkCertificate = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sahara-50 via-white to-sahara-100 p-4">
+    <div className="min-h-screen cmc-page-background p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-sahara-100 rounded-full mb-4">
-            <FileText className="w-8 h-8 text-sahara-600" />
+        <div className="text-center mb-6 md:mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
+            <FileText className="w-6 h-6 md:w-8 md:h-8 text-cmc-blue" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">شهادة العمل</h1>
-          <p className="text-gray-600">قم بملء البيانات المطلوبة لإصدار شهادة العمل</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">شهادة العمل</h1>
+          <p className="text-slate-600 text-sm md:text-base">قم بملء البيانات المطلوبة لإصدار شهادة العمل</p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-sahara-600 to-sahara-700 text-white rounded-t-lg">
-            <CardTitle className="text-xl font-semibold text-center">معلومات الطلب</CardTitle>
+        <Card className="cmc-card">
+          <CardHeader className="cmc-gradient text-white rounded-t-lg p-4 md:p-6">
+            <CardTitle className="text-lg md:text-xl font-semibold text-center">معلومات الطلب</CardTitle>
           </CardHeader>
-          <CardContent className="p-8">
+          <CardContent className="p-4 md:p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 md:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <FormField control={form.control} name="fullName" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">الاسم الكامل / Nom complet</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">الاسم الكامل / Nom complet</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
-                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          className="cmc-input"
                           placeholder="أدخل الاسم الكامل"
                         />
                       </FormControl>
@@ -214,11 +216,11 @@ const WorkCertificate = () => {
 
                   <FormField control={form.control} name="matricule" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">الرقم التسجيلي / Matricule</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">الرقم التسجيلي / Matricule</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
-                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          className="cmc-input"
                           placeholder="أدخل الرقم التسجيلي"
                         />
                       </FormControl>
@@ -228,11 +230,11 @@ const WorkCertificate = () => {
 
                   <FormField control={form.control} name="grade" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">الرتبة / Grade</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">الرتبة / Grade</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
-                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          className="cmc-input"
                           placeholder="أدخل الرتبة"
                         />
                       </FormControl>
@@ -242,12 +244,12 @@ const WorkCertificate = () => {
 
                   <FormField control={form.control} name="hireDate" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">تاريخ التوظيف / Date d'embauche</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">تاريخ التوظيف / Date d'embauche</FormLabel>
                       <FormControl>
                         <Input 
                           type="date" 
                           {...field} 
-                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          className="cmc-input"
                         />
                       </FormControl>
                       <FormMessage />
@@ -256,11 +258,11 @@ const WorkCertificate = () => {
 
                   <FormField control={form.control} name="function" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">الوظيفة / Fonction</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">الوظيفة / Fonction</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
-                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          className="cmc-input"
                           placeholder="أدخل الوظيفة"
                         />
                       </FormControl>
@@ -270,11 +272,11 @@ const WorkCertificate = () => {
 
                   <FormField control={form.control} name="purpose" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">الغرض / Objet</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">الغرض / Objet</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
-                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          className="cmc-input"
                           placeholder="أدخل الغرض من الشهادة"
                         />
                       </FormControl>
@@ -285,11 +287,11 @@ const WorkCertificate = () => {
 
                 <FormField control={form.control} name="additionalInfo" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">معلومات إضافية / Informations supplémentaires</FormLabel>
+                    <FormLabel className="text-slate-700 font-medium">معلومات إضافية / Informations supplémentaires</FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        className="resize-none border-gray-300 focus:border-sahara-500 focus:ring-sahara-500" 
+                        className="resize-none cmc-input" 
                         placeholder="أدخل أي معلومات إضافية"
                         rows={4}
                       />
@@ -298,11 +300,11 @@ const WorkCertificate = () => {
                   </FormItem>
                 )} />
 
-                <div className="flex justify-center pt-6">
+                <div className="flex justify-center pt-4 md:pt-6">
                   <Button 
                     type="submit" 
                     disabled={isGenerating}
-                    className="px-12 py-3 bg-gradient-to-r from-sahara-600 to-sahara-700 hover:from-sahara-700 hover:to-sahara-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="cmc-button-primary px-8 md:px-12 py-2 md:py-3 rounded-lg text-sm md:text-base"
                   >
                     {isGenerating ? "جاري المعالجة..." : "إرسال وتحميل PDF"}
                   </Button>

@@ -1,148 +1,170 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Loader2, User, Lock } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { LogIn, Eye, EyeOff } from "lucide-react";
+
+const formSchema = z.object({
+  email: z.string().email({ message: "البريد الإلكتروني غير صحيح" }),
+  password: z.string().min(6, { message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }),
+});
 
 export const SignIn = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-
     try {
-      const success = await login(email, password);
-      if (success) {
-        toast({
-          title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك في منصة CMC",
-        });
-        navigate("/");
-      }
-    } catch (error: any) {
-      console.error('خطأ في تسجيل الدخول:', error);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Handle specific error cases
-      if (error?.code === 'email_not_confirmed') {
-        toast({
-          variant: "destructive",
-          title: "البريد الإلكتروني غير مؤكد",
-          description: "يرجى التحقق من بريدك الإلكتروني والنقر على رابط التأكيد لتفعيل حسابك",
-        });
-      } else if (error?.message?.includes('Invalid login credentials')) {
-        toast({
-          variant: "destructive",
-          title: "خطأ في بيانات تسجيل الدخول",
-          description: "يرجى التحقق من البريد الإلكتروني وكلمة المرور",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "خطأ في تسجيل الدخول",
-          description: "حدث خطأ أثناء محاولة تسجيل الدخول. يرجى المحاولة مرة أخرى",
-        });
-      }
+      console.log("Login attempt:", values);
+      
+      toast({
+        title: "تم تسجيل الدخول بنجاح",
+        description: "مرحباً بك في منصة OFPPT",
+        className: "bg-green-50 border-green-200",
+      });
+      
+      navigate("/");
+    } catch (error) {
+      toast({
+        title: "خطأ في تسجيل الدخول",
+        description: "يرجى التحقق من البيانات والمحاولة مرة أخرى",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-9 shadow-lg">
-        <div className="mb-7 text-center">
-          <img 
-            src="/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png" 
-            alt="CMC" 
-            className="mx-auto h-16 w-auto mb-4" 
-          />
-          <h2 className="text-2xl font-bold text-[#0FA0CE]">CMC</h2>
-          <p className="text-gray-600 mt-2">منصة إدارة طلبات الموارد البشرية</p>
+    <div className="min-h-screen cmc-page-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-6 md:mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
+            <LogIn className="w-8 h-8 text-cmc-blue" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">تسجيل الدخول</h1>
+          <p className="text-slate-600">أدخل بياناتك للوصول إلى حسابك</p>
         </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
-            <div className="relative">
-              <Input
-                id="email"
-                type="email"
-                placeholder="أدخل البريد الإلكتروني"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 pr-4"
-                required
-                dir="rtl"
-              />
-              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">كلمة المرور</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type="password"
-                placeholder="أدخل كلمة المرور"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-4"
-                required
-                dir="rtl"
-              />
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            </div>
-          </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-[#0EA5E9] hover:bg-[#0EA5E9]/90"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                جاري تسجيل الدخول...
-              </>
-            ) : (
-              "تسجيل الدخول"
-            )}
-          </Button>
-          
-          <div className="text-center mt-4 space-y-2">
-            <div className="text-sm">
-              <Button
-                variant="link"
-                className="p-0 text-[#0EA5E9]"
-                onClick={() => navigate("/forgot-password")}
-                type="button"
-              >
-                نسيت كلمة المرور؟
-              </Button>
-            </div>
-            <div className="text-sm">
-              ليس لديك حساب؟{" "}
-              <Button
-                variant="link"
-                className="p-0 text-[#0EA5E9]"
-                onClick={() => navigate("/register")}
-              >
-                إنشاء حساب جديد
-              </Button>
-            </div>
-          </div>
-        </form>
+
+        <Card className="cmc-card">
+          <CardHeader className="cmc-gradient text-white rounded-t-lg p-6">
+            <CardTitle className="text-xl font-semibold text-center">دخول الموظفين</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 md:p-8">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium">البريد الإلكتروني</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="example@ofppt.ma"
+                          className="cmc-input"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium">كلمة المرور</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="أدخل كلمة المرور"
+                            className="cmc-input pr-10"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-slate-400" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-slate-400" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-center justify-between">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-cmc-blue hover:text-cmc-blue-dark transition-colors"
+                  >
+                    نسيت كلمة المرور؟
+                  </Link>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full cmc-button-primary py-3"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                </Button>
+
+                <div className="text-center">
+                  <span className="text-slate-600">ليس لديك حساب؟ </span>
+                  <Link
+                    to="/signup"
+                    className="text-cmc-blue hover:text-cmc-blue-dark font-medium transition-colors"
+                  >
+                    إنشاء حساب جديد
+                  </Link>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

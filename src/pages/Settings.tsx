@@ -136,28 +136,28 @@ const Settings = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sahara-50 via-white to-sahara-100 p-4">
+    <div className="min-h-screen cmc-page-background p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-sahara-100 rounded-full mb-4">
-            <SettingsIcon className="w-8 h-8 text-sahara-600" />
+        <div className="text-center mb-6 md:mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
+            <SettingsIcon className="w-6 h-6 md:w-8 md:h-8 text-cmc-blue" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">الإعدادات</h1>
-          <p className="text-gray-600">إدارة معلومات الحساب والإعدادات</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">الإعدادات</h1>
+          <p className="text-slate-600 text-sm md:text-base">إدارة معلومات الحساب والإعدادات</p>
         </div>
 
         {/* Tabs Navigation */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6 md:mb-8">
           <div className="bg-white rounded-lg p-1 shadow-lg border">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 space-x-reverse px-6 py-3 rounded-md transition-all duration-200 ${
+                className={`flex items-center space-x-2 space-x-reverse px-4 md:px-6 py-2 md:py-3 rounded-md transition-all duration-200 text-sm md:text-base ${
                   activeTab === tab.id
-                    ? "bg-sahara-600 text-white shadow-md"
-                    : "text-gray-600 hover:bg-gray-100"
+                    ? "cmc-gradient text-white shadow-md"
+                    : "text-slate-600 hover:bg-cmc-blue-light/30"
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -168,25 +168,25 @@ const Settings = () => {
         </div>
 
         {/* Tab Content */}
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-sahara-600 to-sahara-700 text-white rounded-t-lg">
-            <CardTitle className="text-xl font-semibold text-center">
+        <Card className="cmc-card">
+          <CardHeader className="cmc-gradient text-white rounded-t-lg p-4 md:p-6">
+            <CardTitle className="text-lg md:text-xl font-semibold text-center">
               {tabs.find(tab => tab.id === activeTab)?.label}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8">
+          <CardContent className="p-4 md:p-8">
             {/* Profile Tab */}
             {activeTab === "profile" && (
               <Form {...profileForm}>
-                <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form onSubmit={profileForm.handleSubmit(handleProfileSubmit)} className="space-y-4 md:space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <FormField control={profileForm.control} name="fullName" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">الاسم الكامل</FormLabel>
+                        <FormLabel className="text-slate-700 font-medium">الاسم الكامل</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
-                            className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                            className="cmc-input"
                           />
                         </FormControl>
                         <FormMessage />
@@ -195,12 +195,12 @@ const Settings = () => {
 
                     <FormField control={profileForm.control} name="email" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">البريد الإلكتروني</FormLabel>
+                        <FormLabel className="text-slate-700 font-medium">البريد الإلكتروني</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
                             type="email"
-                            className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                            className="cmc-input"
                           />
                         </FormControl>
                         <FormMessage />
@@ -209,12 +209,12 @@ const Settings = () => {
 
                     <FormField control={profileForm.control} name="phone" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">رقم الهاتف</FormLabel>
+                        <FormLabel className="text-slate-700 font-medium">رقم الهاتف</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
                             type="tel"
-                            className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                            className="cmc-input"
                           />
                         </FormControl>
                         <FormMessage />
@@ -223,11 +223,11 @@ const Settings = () => {
 
                     <FormField control={profileForm.control} name="department" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">القسم</FormLabel>
+                        <FormLabel className="text-slate-700 font-medium">القسم</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
-                            className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                            className="cmc-input"
                           />
                         </FormControl>
                         <FormMessage />
@@ -236,11 +236,11 @@ const Settings = () => {
 
                     <FormField control={profileForm.control} name="position" render={({ field }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel className="text-gray-700 font-medium">المنصب</FormLabel>
+                        <FormLabel className="text-slate-700 font-medium">المنصب</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
-                            className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                            className="cmc-input"
                           />
                         </FormControl>
                         <FormMessage />
@@ -248,10 +248,10 @@ const Settings = () => {
                     )} />
                   </div>
 
-                  <div className="flex justify-center pt-6">
+                  <div className="flex justify-center pt-4 md:pt-6">
                     <Button 
                       type="submit" 
-                      className="px-12 py-3 bg-gradient-to-r from-sahara-600 to-sahara-700 hover:from-sahara-700 hover:to-sahara-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="cmc-button-primary px-8 md:px-12 py-2 md:py-3 rounded-lg text-sm md:text-base"
                     >
                       حفظ التغييرات
                     </Button>
@@ -263,16 +263,16 @@ const Settings = () => {
             {/* Password Tab */}
             {activeTab === "password" && (
               <Form {...passwordForm}>
-                <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)} className="space-y-6">
-                  <div className="max-w-md mx-auto space-y-6">
+                <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)} className="space-y-4 md:space-y-6">
+                  <div className="max-w-md mx-auto space-y-4 md:space-y-6">
                     <FormField control={passwordForm.control} name="currentPassword" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">كلمة المرور الحالية</FormLabel>
+                        <FormLabel className="text-slate-700 font-medium">كلمة المرور الحالية</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
                             type="password"
-                            className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                            className="cmc-input"
                           />
                         </FormControl>
                         <FormMessage />
@@ -281,12 +281,12 @@ const Settings = () => {
 
                     <FormField control={passwordForm.control} name="newPassword" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">كلمة المرور الجديدة</FormLabel>
+                        <FormLabel className="text-slate-700 font-medium">كلمة المرور الجديدة</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
                             type="password"
-                            className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                            className="cmc-input"
                           />
                         </FormControl>
                         <FormMessage />
@@ -295,12 +295,12 @@ const Settings = () => {
 
                     <FormField control={passwordForm.control} name="confirmPassword" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-700 font-medium">تأكيد كلمة المرور الجديدة</FormLabel>
+                        <FormLabel className="text-slate-700 font-medium">تأكيد كلمة المرور الجديدة</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
                             type="password"
-                            className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                            className="cmc-input"
                           />
                         </FormControl>
                         <FormMessage />
@@ -308,10 +308,10 @@ const Settings = () => {
                     )} />
                   </div>
 
-                  <div className="flex justify-center pt-6">
+                  <div className="flex justify-center pt-4 md:pt-6">
                     <Button 
                       type="submit" 
-                      className="px-12 py-3 bg-gradient-to-r from-sahara-600 to-sahara-700 hover:from-sahara-700 hover:to-sahara-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="cmc-button-primary px-8 md:px-12 py-2 md:py-3 rounded-lg text-sm md:text-base"
                     >
                       تغيير كلمة المرور
                     </Button>
@@ -322,12 +322,12 @@ const Settings = () => {
 
             {/* Notifications Tab */}
             {activeTab === "notifications" && (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-cmc-blue-light/20 to-cmc-green-light/20 rounded-lg border border-cmc-blue/20">
                     <div>
-                      <h3 className="font-medium text-gray-900">إشعارات البريد الإلكتروني</h3>
-                      <p className="text-sm text-gray-600">تلقي إشعارات حول الطلبات والتحديثات عبر البريد الإلكتروني</p>
+                      <h3 className="font-medium text-slate-800">إشعارات البريد الإلكتروني</h3>
+                      <p className="text-sm text-slate-600">تلقي إشعارات حول الطلبات والتحديثات عبر البريد الإلكتروني</p>
                     </div>
                     <Switch
                       checked={notifications.email}
@@ -335,10 +335,10 @@ const Settings = () => {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-cmc-blue-light/20 to-cmc-green-light/20 rounded-lg border border-cmc-blue/20">
                     <div>
-                      <h3 className="font-medium text-gray-900">الإشعارات الفورية</h3>
-                      <p className="text-sm text-gray-600">تلقي إشعارات فورية في المتصفح</p>
+                      <h3 className="font-medium text-slate-800">الإشعارات الفورية</h3>
+                      <p className="text-sm text-slate-600">تلقي إشعارات فورية في المتصفح</p>
                     </div>
                     <Switch
                       checked={notifications.push}
@@ -346,10 +346,10 @@ const Settings = () => {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-cmc-blue-light/20 to-cmc-green-light/20 rounded-lg border border-cmc-blue/20">
                     <div>
-                      <h3 className="font-medium text-gray-900">إشعارات الرسائل النصية</h3>
-                      <p className="text-sm text-gray-600">تلقي إشعارات مهمة عبر الرسائل النصية</p>
+                      <h3 className="font-medium text-slate-800">إشعارات الرسائل النصية</h3>
+                      <p className="text-sm text-slate-600">تلقي إشعارات مهمة عبر الرسائل النصية</p>
                     </div>
                     <Switch
                       checked={notifications.sms}
@@ -358,16 +358,16 @@ const Settings = () => {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t">
-                  <h3 className="font-medium text-gray-900 mb-3">حالة الإشعارات</h3>
+                <div className="pt-4 md:pt-6 border-t border-slate-200">
+                  <h3 className="font-medium text-slate-800 mb-3">حالة الإشعارات</h3>
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant={notifications.email ? "default" : "secondary"}>
+                    <Badge variant={notifications.email ? "default" : "secondary"} className={notifications.email ? "bg-cmc-green text-white" : ""}>
                       البريد الإلكتروني: {notifications.email ? "مفعل" : "معطل"}
                     </Badge>
-                    <Badge variant={notifications.push ? "default" : "secondary"}>
+                    <Badge variant={notifications.push ? "default" : "secondary"} className={notifications.push ? "bg-cmc-green text-white" : ""}>
                       الإشعارات الفورية: {notifications.push ? "مفعل" : "معطل"}
                     </Badge>
-                    <Badge variant={notifications.sms ? "default" : "secondary"}>
+                    <Badge variant={notifications.sms ? "default" : "secondary"} className={notifications.sms ? "bg-cmc-green text-white" : ""}>
                       الرسائل النصية: {notifications.sms ? "مفعل" : "معطل"}
                     </Badge>
                   </div>
