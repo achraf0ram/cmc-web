@@ -74,7 +74,7 @@ export const ForgotPassword = () => {
                   <p className="text-slate-600 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">
                     تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد.
                   </p>
-                  <Link to="/login">
+                  <Link to="/Login">
                     <Button className="cmc-button-primary px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base">
                       العودة إلى تسجيل الدخول
                     </Button>
@@ -136,7 +136,7 @@ export const ForgotPassword = () => {
 
                 <div className="text-center">
                   <Link
-                    to="/login"
+                    to="/Login"
                     className="inline-flex items-center gap-2 text-cmc-blue hover:text-cmc-blue-dark font-medium transition-colors"
                   >
                     <ArrowRight className="w-4 h-4" />
