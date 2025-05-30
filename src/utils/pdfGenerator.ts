@@ -1,4 +1,3 @@
-
 import jsPDF from "jspdf";
 import { format } from "date-fns";
 import { FormData } from "@/types/vacationRequest";
@@ -72,12 +71,25 @@ const addContent = (doc: jsPDF, data: FormData, signaturePreview: string | null,
   doc.setFont("helvetica", "normal");
   doc.text(`${format(new Date(), "dd/MM/yyyy")}`, 20 + dateLabelWidth, headerTextY);
   
-  // العنوان الرئيسي
+  // العنوان الرئيسي مع خط تحته
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text("Demande de congé", 105, 56, { align: "center" });
+  const frenchTitle = "Demande de congé";
+  doc.text(frenchTitle, 105, 56, { align: "center" });
+  
+  // إضافة خط تحت العنوان الفرنسي
+  const frenchTitleWidth = doc.getTextWidth(frenchTitle);
+  const frenchTitleStartX = 105 - (frenchTitleWidth / 2);
+  doc.line(frenchTitleStartX, 58, frenchTitleStartX + frenchTitleWidth, 58);
+  
   doc.setFont("Amiri", "bold");
-  doc.text("(1) طلب إجازة", 105, 63, { align: "center" });
+  const arabicTitle = "(1) طلب إجازة";
+  doc.text(arabicTitle, 105, 63, { align: "center" });
+  
+  // إضافة خط تحت العنوان العربي
+  const arabicTitleWidth = doc.getTextWidth(arabicTitle);
+  const arabicTitleStartX = 105 - (arabicTitleWidth / 2);
+  doc.line(arabicTitleStartX, 65, arabicTitleStartX + arabicTitleWidth, 65);
   
   let currentY = 80;
   const lineHeight = 8;
@@ -124,15 +136,30 @@ const addContent = (doc: jsPDF, data: FormData, signaturePreview: string | null,
   doc.text(formatArabicForPDF(`${arabicFunctionText} : الوظيفة`), 190, currentY, { align: "right" });
   currentY += lineHeight + 5;
   
-  // قسم التعيين
+  // قسم التعيين مع خط تحته
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("Affectation", 105, currentY, { align: "center" });
+  const affectationText = "Affectation";
+  doc.text(affectationText, 105, currentY, { align: "center" });
+  
+  // إضافة خط تحت "Affectation"
+  const affectationWidth = doc.getTextWidth(affectationText);
+  const affectationStartX = 105 - (affectationWidth / 2);
+  doc.line(affectationStartX, currentY + 2, affectationStartX + affectationWidth, currentY + 2);
+  
   doc.setFont("Amiri", "bold");
-  doc.text("التعيين", 105, currentY + 5, { align: "center" });
+  const arabicAffectation = "التعيين";
+  doc.text(arabicAffectation, 105, currentY + 5, { align: "center" });
+  
+  // إضافة خط تحت "التعيين"
+  const arabicAffectationWidth = doc.getTextWidth(arabicAffectation);
+  const arabicAffectationStartX = 105 - (arabicAffectationWidth / 2);
+  doc.line(arabicAffectationStartX, currentY + 7, arabicAffectationStartX + arabicAffectationWidth, currentY + 7);
+  
   currentY += 15;
   
   doc.setFontSize(11);
+  
   // المديرية
   const directionText = data.direction || '………………';
   const arabicDirectionText = data.arabicDirection || '………………';
@@ -245,17 +272,53 @@ const addContent = (doc: jsPDF, data: FormData, signaturePreview: string | null,
     currentY += lineHeight;
   }
   
-  // التوقيعات
+  // التوقيعات مع خطوط تحتها
   const signatureY = 215;
   
-  doc.text("Signature de l'intéressé", 30, signatureY);
-  doc.text("إمضاء المعني)ة( بالأمر", 30, signatureY + 5);
+  // توقيع المعني بالأمر
+  doc.setFont("helvetica", "normal");
+  const signatureText = "Signature de l'intéressé";
+  doc.text(signatureText, 30, signatureY);
+  // خط تحت النص الفرنسي
+  const signatureWidth = doc.getTextWidth(signatureText);
+  doc.line(30, signatureY + 2, 30 + signatureWidth, signatureY + 2);
+  
+  doc.setFont("Amiri", "normal");
+  const arabicSignature = "إمضاء المعني)ة( بالأمر";
+  doc.text(arabicSignature, 30, signatureY + 5);
+  // خط تحت النص العربي
+  const arabicSignatureWidth = doc.getTextWidth(arabicSignature);
+  doc.line(30, signatureY + 7, 30 + arabicSignatureWidth, signatureY + 7);
 
-  doc.text("Avis du Chef Immédiat", 85, signatureY);
-  doc.text("رأي الرئيس المباشر", 85, signatureY + 5);
+  // رأي الرئيس المباشر
+  doc.setFont("helvetica", "normal");
+  const chefText = "Avis du Chef Immédiat";
+  doc.text(chefText, 85, signatureY);
+  // خط تحت النص الفرنسي
+  const chefWidth = doc.getTextWidth(chefText);
+  doc.line(85, signatureY + 2, 85 + chefWidth, signatureY + 2);
+  
+  doc.setFont("Amiri", "normal");
+  const arabicChef = "رأي الرئيس المباشر";
+  doc.text(arabicChef, 85, signatureY + 5);
+  // خط تحت النص العربي
+  const arabicChefWidth = doc.getTextWidth(arabicChef);
+  doc.line(85, signatureY + 7, 85 + arabicChefWidth, signatureY + 7);
 
-  doc.text("Avis du Directeur", 150, signatureY);
-  doc.text("رأي المدير", 150, signatureY + 5);
+  // رأي المدير
+  doc.setFont("helvetica", "normal");
+  const directorText = "Avis du Directeur";
+  doc.text(directorText, 150, signatureY);
+  // خط تحت النص الفرنسي
+  const directorWidth = doc.getTextWidth(directorText);
+  doc.line(150, signatureY + 2, 150 + directorWidth, signatureY + 2);
+  
+  doc.setFont("Amiri", "normal");
+  const arabicDirector = "رأي المدير";
+  doc.text(arabicDirector, 150, signatureY + 5);
+  // خط تحت النص العربي
+  const arabicDirectorWidth = doc.getTextWidth(arabicDirector);
+  doc.line(150, signatureY + 7, 150 + arabicDirectorWidth, signatureY + 7);
 
   console.log("Signature preview value before adding image:", signaturePreview ? "Has data" : "No data", signaturePreview ? `Data URL starts with: ${signaturePreview.substring(0, 30)}` : "");
 
@@ -275,8 +338,20 @@ const addContent = (doc: jsPDF, data: FormData, signaturePreview: string | null,
   let notesY = 250;
   doc.setFontSize(9);
   doc.setFont("Helvetica", "bold");
-  doc.text("Très important :", 20, notesY);
-  doc.text("هام جدا :", 190, notesY, { align: "right" });
+  
+  // "هام جدا" و "Très important" مع خطوط تحتها
+  const importantTextFr = "Très important :";
+  doc.text(importantTextFr, 20, notesY);
+  // خط تحت النص الفرنسي
+  const importantFrWidth = doc.getTextWidth(importantTextFr);
+  doc.line(20, notesY + 2, 20 + importantFrWidth, notesY + 2);
+  
+  doc.setFont("Amiri", "bold");
+  const importantTextAr = "هام جدا :";
+  doc.text(importantTextAr, 190, notesY, { align: "right" });
+  // خط تحت النص العربي
+  const importantArWidth = doc.getTextWidth(importantTextAr);
+  doc.line(190 - importantArWidth, notesY + 2, 190, notesY + 2);
 
   notesY += 5;
   doc.setFontSize(8);
