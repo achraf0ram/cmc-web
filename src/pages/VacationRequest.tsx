@@ -294,10 +294,10 @@ const VacationRequest = () => {
     // السلم والرتبة في نفس السطر
     doc.setFont("helvetica", "normal");
     doc.text(`Echelle : ${data.echelle || '………………'}`, 20, currentY);
-    doc.text(`Echelon : ${data.echelon || '………………'}`, 100, currentY, { align: "right" });
+    doc.text(`Echelon : ${data.echelon || '………………'}`, 100, currentY);
     doc.setFont("Amiri", "normal");
     doc.text(formatArabicForPDF(`${data.echelon || '………………'} : السلم`), 190, currentY, { align: "right" });
-    doc.text(formatArabicForPDF(`${data.echelle || '………………'} : الرتبة`), 110, currentY);
+    doc.text(formatArabicForPDF(`${data.echelle || '………………'} : الرتبة`), 110, currentY, { align: "right" });
     currentY += lineHeight;
     
     // الدرجة
@@ -352,22 +352,20 @@ const VacationRequest = () => {
     currentY += lineHeight;
     
     // نوع الإجازة
-const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : data.leaveType;
-const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : translateToArabic(data.leaveType);
+    const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : data.leaveType;
+    const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : translateToArabic(data.leaveType);
 
-// النص الفرنسي
-doc.setFont("helvetica", "normal");
-doc.text(`Nature de congé (2) : ${leaveTypeToDisplay || '…………………………………'}`, 20, currentY);
+    // النص الفرنسي
+    doc.setFont("helvetica", "normal");
+    doc.text(`Nature de congé (2) : ${leaveTypeToDisplay || '…………………………………'}`, 20, currentY);
 
-// النص العربي المعدل
-doc.setFont("Amiri", "normal");
-const arabicText = `نوع الإجازة )2(: ${arabicLeaveTypeToDisplay || '…………………………………'}`;
-doc.text(formatArabicForPDF(arabicText), 190, currentY, { 
-  align: "right",
-  lang: "ar"
-});
+    // النص العربي المعدل
+    doc.setFont("Amiri", "normal");
+    const arabicText = `نوع الإجازة )2(: ${arabicLeaveTypeToDisplay || '…………………………………'}`;
+    doc.text(formatArabicForPDF(arabicText), 190, currentY, { align: "right" });
 
-currentY += lineHeight;
+    currentY += lineHeight;
+    
     // المدة
     const durationText = data.duration || '…………………………………';
     const arabicDurationText = data.arabicDuration || translateToArabic(data.duration) || '…………………………………';
@@ -384,44 +382,43 @@ currentY += lineHeight;
     if (data.startDate && data.endDate) {
       doc.setFont("helvetica", "normal");
       doc.text(`Du : ${format(data.startDate, "dd/MM/yyyy")}`, 20, currentY);
-      doc.text(`Au : ${format(data.endDate, "dd/MM/yyyy")}`, 100, currentY, { align: "right" });
+      doc.text(`Au : ${format(data.endDate, "dd/MM/yyyy")}`, 100, currentY);
       
       doc.setFont("Amiri", "normal");
-      doc.text(formatArabicForPDF(`${format(data.endDate, "dd/MM/yyyy")} : إلى`), 110, currentY);
+      doc.text(formatArabicForPDF(`${format(data.endDate, "dd/MM/yyyy")} : إلى`), 110, currentY, { align: "right" });
       doc.text(formatArabicForPDF(`${format(data.startDate, "dd/MM/yyyy")} : ابتداء من`), 190, currentY, { align: "right" });
       currentY += lineHeight;
     }
     
     // مع (3)
-if (data.with || data.arabicWith) {
-  const withText = data.with || '…………………………………';
-  const arabicWithText = data.arabicWith || '…………………………………';
-  doc.setFont("helvetica", "normal");
-  doc.text(`Avec (3) : ${withText}`, 20, currentY);
-  doc.setFont("Amiri", "normal");
-  const formattedArabicWith = `مع )3( : ${arabicWithText}`; // النص العربي مع النقط
-  doc.text(formattedArabicWith, 190, currentY, { align: "right" });
-  currentY += lineHeight;
-}
-// النيابة
-if (data.interim || data.arabicInterim) {
-  const interimText = data.interim || '…………………………………';
-  const arabicInterimText = data.arabicInterim || '…………………………………';
-  
-  // النص الفرنسي
-  doc.setFont("helvetica", "normal");
-  doc.text(`Intérim (Nom et Fonction) : ${interimText}`, 20, currentY);
-  
-  // النص العربي المعدل
-  doc.setFont("Amiri", "normal");
-  const formattedArabicInterim = `النيابة )الاسم والوظيفة(: ${arabicInterimText}`;
-  doc.text(formattedArabicInterim, 190, currentY, { 
-    align: "right",
-    lang: "ar"
-  });
-  
-  currentY += lineHeight;
-}
+    if (data.with || data.arabicWith) {
+      const withText = data.with || '…………………………………';
+      const arabicWithText = data.arabicWith || '…………………………………';
+      doc.setFont("helvetica", "normal");
+      doc.text(`Avec (3) : ${withText}`, 20, currentY);
+      doc.setFont("Amiri", "normal");
+      const formattedArabicWith = `مع )3( : ${arabicWithText}`; // النص العربي مع النقط
+      doc.text(formattedArabicWith, 190, currentY, { align: "right" });
+      currentY += lineHeight;
+    }
+    
+    // النيابة
+    if (data.interim || data.arabicInterim) {
+      const interimText = data.interim || '…………………………………';
+      const arabicInterimText = data.arabicInterim || '…………………………………';
+      
+      // النص الفرنسي
+      doc.setFont("helvetica", "normal");
+      doc.text(`Intérim (Nom et Fonction) : ${interimText}`, 20, currentY);
+      
+      // النص العربي المعدل
+      doc.setFont("Amiri", "normal");
+      const formattedArabicInterim = `النيابة )الاسم والوظيفة(: ${arabicInterimText}`;
+      doc.text(formattedArabicInterim, 190, currentY, { align: "right" });
+      
+      currentY += lineHeight;
+    }
+    
     // مغادرة التراب الوطني
     if (data.leaveMorocco) {
       doc.setFont("helvetica", "normal");
@@ -454,9 +451,9 @@ if (data.interim || data.arabicInterim) {
       }
     }
 
-    // doc.line(25, signatureY + 38, 70, signatureY + 38);
-    // doc.line(80, signatureY + 38, 125, signatureY + 38);
-    // doc.line(145, signatureY + 38, 190, signatureY + 38);
+    doc.line(25, signatureY + 38, 70, signatureY + 38);
+    doc.line(80, signatureY + 38, 125, signatureY + 38);
+    doc.line(145, signatureY + 38, 190, signatureY + 38);
     
     let notesY = 250;
     doc.setFontSize(9);
@@ -482,13 +479,12 @@ if (data.interim || data.arabicInterim) {
     ];
     
     const arabicNotes = [
-     
- " ال يسمح ألي مستخدم بمغادرة العمل إال بعد توصله بمقرر اإلجازة و إال اعتبر في ",
- " وضعية تخلي عن العمل.",
-` يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب )1( ` ,
- `")2( نوع اإلجازة : إدارية - زواج - ازدياد - استثنائية"`,
- ")3( إذا كان المعني باألمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة ()",
-   "'مغادرة التراب الوطني'"
+      " لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة و إلا اعتبر في ",
+      " وضعية تخلي عن العمل.",
+      ` يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب )1( ` ,
+      `")2( نوع الإجازة : إدارية - زواج - ازدياد - استثنائية"`,
+      ")3( إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة",
+      '"مغادرة التراب الوطني"'
     ];
     
     // طباعة النصوص الفرنسية (اليسار)
@@ -504,10 +500,7 @@ if (data.interim || data.arabicInterim) {
     currentLineY = notesY;
     
     arabicNotes.forEach((line) => {
-      doc.text(line, 190, currentLineY, { 
-        align: "right",
-        lang: "ar"
-      });
+      doc.text(line, 190, currentLineY, { align: "right" });
       currentLineY += 5;
     });
     
