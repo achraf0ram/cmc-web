@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -40,19 +41,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -103,4 +97,25 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom CMC Theme Classes */
+.cmc-gradient {
+  background: linear-gradient(135deg, #0FA0CE 0%, #10b981 100%);
+}
+
+.cmc-card {
+  @apply bg-white/95 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300;
+}
+
+.cmc-button-primary {
+  @apply bg-gradient-to-r from-cmc-blue to-cmc-green hover:from-cmc-blue-dark hover:to-emerald-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200;
+}
+
+.cmc-input {
+  @apply border-slate-200 bg-white/80 backdrop-blur-sm focus:border-cmc-blue focus:ring-cmc-blue/20;
+}
+
+.cmc-page-background {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 50%, #f0fdf4 100%);
 }

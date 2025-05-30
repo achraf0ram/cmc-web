@@ -17,18 +17,18 @@ export const SuccessMessage = ({
   onReset
 }: SuccessMessageProps) => {
   return (
-    <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-      <CardContent className="pt-8 pb-8">
-        <div className="flex flex-col items-center text-center gap-6">
-          <div className="h-20 w-20 rounded-full bg-gradient-to-r from-green-100 to-green-200 flex items-center justify-center shadow-lg">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+    <Card className="cmc-card">
+      <CardContent className="pt-6 pb-6 md:pt-8 md:pb-8">
+        <div className="flex flex-col items-center text-center gap-4 md:gap-6">
+          <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-r from-cmc-green-light to-emerald-100 flex items-center justify-center shadow-lg">
+            <CheckCircle className="h-8 w-8 md:h-10 md:w-10 text-cmc-green" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold mb-3 text-gray-900">{title}</h2>
-            <p className="text-gray-600 leading-relaxed mb-6">{description}</p>
+            <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-slate-800">{title}</h2>
+            <p className="text-slate-600 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">{description}</p>
             <Button 
               onClick={onReset}
-              className="px-8 py-3 bg-gradient-to-r from-sahara-600 to-sahara-700 hover:from-sahara-700 hover:to-sahara-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+              className="cmc-button-primary px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base"
             >
               {buttonText}
             </Button>

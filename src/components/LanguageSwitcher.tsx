@@ -10,7 +10,7 @@ export const LanguageSwitcher = () => {
       variant="outline"
       size="sm"
       onClick={() => setLanguage(language === 'ar' ? 'fr' : 'ar')}
-      className="min-w-[60px]"
+      className="min-w-[50px] md:min-w-[60px] h-8 md:h-9 text-xs md:text-sm border-cmc-blue/30 text-cmc-blue hover:bg-cmc-blue-light/30 hover:border-cmc-blue transition-all duration-200"
     >
       {language === 'ar' ? 'FR' : 'عربي'}
     </Button>

@@ -11,7 +11,7 @@ export const MainLayout = () => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="min-h-screen flex relative bg-gradient-to-br from-sahara-50 via-white to-sahara-100">
+    <div className="min-h-screen flex relative cmc-page-background">
       <AppSidebar />
       
       <div className={cn(
@@ -21,7 +21,7 @@ export const MainLayout = () => {
       )}>
         <AppHeader />
         
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
       </div>
