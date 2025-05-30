@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,17 +23,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
 import jsPDF from "jspdf";
 import { format } from "date-fns";
-import { useToast } from "@/components/ui/use-toast";
-import { CheckCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { CheckCircle, FileText } from "lucide-react";
 
 // Import the Arabic font data
 import { AmiriFont } from "../fonts/AmiriFont";
-
-// IMPORTANT: Place your converted Arabic font file (e.g., arabic_font.js) in a directory accessible to your project.
-// For example, you might put it in client/public/fonts/
-
-// You might need to import the font file if your converter generates a JS module
-// import './fonts/arabic_font.js'; // Uncomment and update path if needed
 
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "يرجى إدخال الاسم الكامل" }),
@@ -79,14 +74,12 @@ const WorkCertificate = () => {
         await new Promise((resolve) => {
           img.onload = resolve;
         });
-        // Adjusted logo position to top left (example coordinates)
-        doc.addImage(img, "PNG", 6, 6, 98, 33); // Adjust size (40x15) and position (15, 10) as needed
+        doc.addImage(img, "PNG", 6, 6, 98, 33);
       } catch (error) {
         console.error("Error loading logo:", error);
       }
 
       // --- Arabic Font Setup ---
-      // Add Amiri font to PDF
       console.log("Adding Amiri font to VFS...");
       doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
       console.log("Amiri font added to VFS. Adding font to doc...");
@@ -96,24 +89,19 @@ const WorkCertificate = () => {
       // Set font for Latin text (like French)
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
-      // Adjusted vertical position based on new logo placement
       doc.text("N/Réf. : OFP/DR CASA SETTAT/DAAL/SRRH /N°", 20, 45);
-      // Adjusted vertical position of date
       doc.text(`Casablanca, le ${currentDate}`, 140, 45);
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
-      // Adjusted vertical position of title
       doc.text("ATTESTATION DE TRAVAIL", 75, 65);
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
-      // Adjusted vertical position of introductory text
       doc.text("Nous soussignés, Directeur Régional Casablanca-Settat de l'Office de la", 20, 75);
       doc.text("Formation Professionnelle et de la Promotion du Travail (OFPPT), attestons", 20, 80);
       doc.text("que :", 20, 85);
 
-      // Adjusted vertical positions of form data fields
       doc.text(`Monsieur : ${data.fullName}`, 20, 95);
       doc.text(`Matricule : ${data.matricule}`, 20, 105);
       doc.text(`Grade : ${data.grade || ""}`, 20, 115);
@@ -128,15 +116,13 @@ const WorkCertificate = () => {
       console.log("Font set to Amiri.");
       
       doc.setFontSize(9);
-      // These lines are for Arabic text and need an Arabic-supporting font set above
       doc.text("المديرية الجهوية لجهة الدارالبيضاء – سطات", 190, 230, { align: "right" });
       doc.text( " زنقة الكابورال إدريس اشباكو,50", 190, 234, { align: "right" });
       doc.text("عين البرجة - الدار البيضاء", 190, 238, { align: "right" });
       doc.text("الهاتف : 82 00 60 22 05 - الفاكس : 65 6039 22 05", 190, 242, { align: "right" });
-      // --- End Arabic text ---
 
       // Add French text for the footer on the left side
-      doc.setFont("helvetica", "normal"); // Ensure using a font that supports Latin characters
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.text("Direction Régionale CASABLANCA –SETTAT", 20, 230);
       doc.text("50, rue Caporal Driss Chbakou", 20, 234);
@@ -145,10 +131,6 @@ const WorkCertificate = () => {
 
       // Save PDF
       doc.save("attestation_de_travail.pdf");
-
-      // Here you would typically send the data to your backend
-      // For example:
-      // await axios.post('/api/work-certificate', data);
       
       setIsSubmitted(true);
 
@@ -172,86 +154,164 @@ const WorkCertificate = () => {
     }
   };
 
-  return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">{t("workCertificateTitle")}</h1>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("requestInfo")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <FormField control={form.control} name="fullName" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Monsieur (سيد)</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="matricule" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Matricule (الرقم التسجيلي)</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="grade" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Grade (الرتبة)</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="hireDate" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date d'embauche (تاريخ التوظيف)</FormLabel>
-                  <FormControl><Input type="date" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="function" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fonction (الوظيفة)</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="purpose" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Objet (الغرض)</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="additionalInfo" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Informations supplémentaires (معلومات إضافية)</FormLabel>
-                  <FormControl><Textarea {...field} className="resize-none" /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <div className="flex justify-end">
-                <Button 
-                  type="submit" 
-                  disabled={isGenerating}
-                  className="w-full"
-                >
-                  {isGenerating ? "جاري المعالجة..." : "إرسال وتحميل PDF"}
-                </Button>
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sahara-50 via-white to-sahara-100 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+              <h2 className="text-xl font-semibold text-gray-900">تم الإرسال بنجاح</h2>
+              <p className="text-gray-600">تم إرسال طلب شهادة العمل بنجاح وسيتم معالجته قريباً</p>
+              <Button 
+                onClick={() => setIsSubmitted(false)}
+                className="w-full bg-sahara-600 hover:bg-sahara-700"
+              >
+                إرسال طلب جديد
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sahara-50 via-white to-sahara-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-sahara-100 rounded-full mb-4">
+            <FileText className="w-8 h-8 text-sahara-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">شهادة العمل</h1>
+          <p className="text-gray-600">قم بملء البيانات المطلوبة لإصدار شهادة العمل</p>
+        </div>
+
+        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-sahara-600 to-sahara-700 text-white rounded-t-lg">
+            <CardTitle className="text-xl font-semibold text-center">معلومات الطلب</CardTitle>
+          </CardHeader>
+          <CardContent className="p-8">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField control={form.control} name="fullName" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">الاسم الكامل / Nom complet</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          placeholder="أدخل الاسم الكامل"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="matricule" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">الرقم التسجيلي / Matricule</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          placeholder="أدخل الرقم التسجيلي"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="grade" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">الرتبة / Grade</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          placeholder="أدخل الرتبة"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="hireDate" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">تاريخ التوظيف / Date d'embauche</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          {...field} 
+                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="function" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">الوظيفة / Fonction</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          placeholder="أدخل الوظيفة"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="purpose" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 font-medium">الغرض / Objet</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="border-gray-300 focus:border-sahara-500 focus:ring-sahara-500"
+                          placeholder="أدخل الغرض من الشهادة"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+
+                <FormField control={form.control} name="additionalInfo" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 font-medium">معلومات إضافية / Informations supplémentaires</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        className="resize-none border-gray-300 focus:border-sahara-500 focus:ring-sahara-500" 
+                        placeholder="أدخل أي معلومات إضافية"
+                        rows={4}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <div className="flex justify-center pt-6">
+                  <Button 
+                    type="submit" 
+                    disabled={isGenerating}
+                    className="px-12 py-3 bg-gradient-to-r from-sahara-600 to-sahara-700 hover:from-sahara-700 hover:to-sahara-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    {isGenerating ? "جاري المعالجة..." : "إرسال وتحميل PDF"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
