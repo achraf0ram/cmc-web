@@ -221,253 +221,261 @@ doc.text(format(data.endDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 5.
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">{t("missionOrderTitle")}</h1>
+    <div className="cmc-page-background min-h-screen p-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-cmc-blue mb-2">{t("missionOrderTitle")}</h1>
+          <p className="text-cmc-gray-dark">طلب أمر مهمة جديد</p>
+        </div>
 
-      {isSubmitted ? (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle className="h-8 w-8 text-green-600" />
+        {isSubmitted ? (
+          <Card className="cmc-card border-cmc-green/20 bg-cmc-green-light/50">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-cmc-green-light flex items-center justify-center">
+                  <CheckCircle className="h-8 w-8 text-cmc-green" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold mb-2 text-cmc-blue">{t("requestSubmitted")}</h2>
+                  <p className="text-cmc-gray-dark">
+                    {t("requestReviewMessage")}
+                    <br />
+                    {t("followUpMessage")}
+                  </p>
+                  <Button 
+                    className="cmc-button-primary mt-4" 
+                    onClick={() => setIsSubmitted(false)}
+                  >
+                    {t("newRequest")}
+                  </Button>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-2">{t("requestSubmitted")}</h2>
-                <p className="text-muted-foreground">
-                  {t("requestReviewMessage")}
-                  <br />
-                  {t("followUpMessage")}
-                </p>
-                <Button className="mt-4" onClick={() => setIsSubmitted(false)}>
-                  {t("newRequest")}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("requestInfo")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="monsieurMadame"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Monsieur/Madame :</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="matricule"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Matricule :</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="destination"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>De se rendre à :</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t("destinationPlaceholder")} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="purpose"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pour accomplir la mission suivante :</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder={t("purposePlaceholder")}
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Date de départ :</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "yyyy-MM-dd")
-                              ) : (
-                                <span>{t("pickDate")}</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="cmc-card">
+            <CardHeader className="bg-gradient-to-r from-cmc-blue/10 to-cmc-green/10">
+              <CardTitle className="text-cmc-blue">{t("requestInfo")}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="monsieurMadame"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">Monsieur/Madame :</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="cmc-input" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="matricule"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">Matricule :</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="cmc-input" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="destination"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">De se rendre à :</FormLabel>
+                        <FormControl>
+                          <Input placeholder={t("destinationPlaceholder")} {...field} className="cmc-input" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="purpose"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">Pour accomplir la mission suivante :</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={t("purposePlaceholder")}
+                            className="cmc-input resize-none"
+                            {...field}
                           />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Heure de départ :</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Date de retour :</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "yyyy-MM-dd")
-                              ) : (
-                                <span>{t("pickDate")}</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-cmc-blue font-medium">Date de départ :</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "cmc-input w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "yyyy-MM-dd")
+                                ) : (
+                                  <span>{t("pickDate")}</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date < new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">Heure de départ :</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} className="cmc-input" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-cmc-blue font-medium">Date de retour :</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "cmc-input w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "yyyy-MM-dd")
+                                ) : (
+                                  <span>{t("pickDate")}</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date < new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">Heure de retour :</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} className="cmc-input" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="conducteur"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">Conducteur :</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="cmc-input" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="conducteurMatricule"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">Matricule Conducteur :</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="cmc-input" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="additionalInfo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-cmc-blue font-medium">L'intéressé(e) utilisera :</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={t("additionalInfoPlaceholder")}
+                            className="cmc-input resize-none"
+                            {...field}
                           />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Heure de retour :</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="conducteur"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Conducteur :</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="conducteurMatricule"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Matricule Conducteur :</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="additionalInfo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>L'intéressé(e) utilisera :</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder={t("additionalInfoPlaceholder")}
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full">
-                  إرسال وتحميل PDF
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      )}
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="cmc-button-primary w-full">
+                    إرسال وتحميل PDF
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
