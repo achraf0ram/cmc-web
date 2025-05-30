@@ -77,7 +77,7 @@ export const SignIn = () => {
 
         <Card className="cmc-card">
           <CardHeader className="cmc-gradient text-white rounded-t-lg p-6">
-            <CardTitle className="text-xl font-semibold text-center">دخول الموظفين</CardTitle>
+            <CardTitle className="text-xl font-semibold text-center">C M C</CardTitle>
           </CardHeader>
           <CardContent className="p-6 md:p-8">
             <Form {...form}>
