@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { MessageCircle, X, Send, Bot } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -18,18 +18,50 @@ interface Message {
 
 export const AIAssistantButton = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'مرحباً! أنا مساعد CMC الذكي. يمكنني مساعدتك في الحصول على معلومات حول الخدمات والإجراءات.',
-      isUser: false,
-      timestamp: new Date(),
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const { toast } = useToast();
+
+  // رسائل الترحيب حسب اللغة
+  const getWelcomeMessage = () => {
+    if (language === 'ar') {
+      return `مرحباً! أنا مساعد مدينة المهن والكفاءات CMC الذكي 🤖
+
+يمكنني مساعدتك في:
+• معلومات عن الخدمات والإجراءات
+• شهادات العمل والمهام
+• طلبات الإجازات
+• معلومات عن مدينة المهن والكفاءات
+
+كيف يمكنني مساعدتك اليوم؟`;
+    } else {
+      return `Bonjour! Je suis l'assistant intelligent de la Cité des Métiers et des Compétences CMC 🤖
+
+Je peux vous aider avec:
+• Informations sur les services et procédures
+• Certificats de travail et missions
+• Demandes de congé
+• Informations sur la Cité des Métiers et des Compétences
+
+Comment puis-je vous aider aujourd'hui?`;
+    }
+  };
+
+  // تهيئة الرسائل عند فتح النافذة لأول مرة
+  const initializeMessages = () => {
+    if (messages.length === 0) {
+      setMessages([
+        {
+          id: '1',
+          text: getWelcomeMessage(),
+          isUser: false,
+          timestamp: new Date(),
+        }
+      ]);
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -46,7 +78,6 @@ export const AIAssistantButton = () => {
     setIsLoading(true);
 
     try {
-      // محاكاة استجابة الذكاء الاصطناعي مع معلومات من موقع CMC
       const aiResponse = await generateAIResponse(userMessage.text);
       
       const aiMessage: Message = {
@@ -60,8 +91,10 @@ export const AIAssistantButton = () => {
     } catch (error) {
       console.error('Error generating AI response:', error);
       toast({
-        title: "خطأ",
-        description: "حدث خطأ في الحصول على الاستجابة. يرجى المحاولة مرة أخرى.",
+        title: language === 'ar' ? "خطأ" : "Erreur",
+        description: language === 'ar' 
+          ? "حدث خطأ في الحصول على الاستجابة. يرجى المحاولة مرة أخرى."
+          : "Une erreur s'est produite lors de l'obtention de la réponse. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
@@ -70,43 +103,173 @@ export const AIAssistantButton = () => {
   };
 
   const generateAIResponse = async (userInput: string): Promise<string> => {
-    // محاكاة استجابة ذكية بناءً على النص المدخل
     const lowerInput = userInput.toLowerCase();
     
-    if (lowerInput.includes('شهادة') || lowerInput.includes('عمل')) {
-      return `يمكنك طلب شهادة العمل من خلال قسم "شهادة العمل" في المنصة. سيتم معالجة طلبك خلال 3-5 أيام عمل.
-      
-للمزيد من المعلومات حول CMC، يمكنك زيارة الموقع الرسمي: https://cmc.ac.ma/ar`;
-    }
-    
-    if (lowerInput.includes('إجازة') || lowerInput.includes('عطلة')) {
-      return `لطلب إجازة، توجه إلى قسم "طلب الإجازة" واملأ النموذج المطلوب. تأكد من تقديم الطلب قبل أسبوعين على الأقل من التاريخ المطلوب.
-      
-CMC يوفر أنواع مختلفة من الإجازات حسب القوانين المعمول بها.`;
-    }
-    
-    if (lowerInput.includes('مهمة') || lowerInput.includes('أمر')) {
-      return `أمر المهمة يمكن طلبه من قسم "أمر المهمة" في المنصة. سيتم إشعارك بالموافقة أو الرفض خلال 24-48 ساعة.
-      
-تأكد من تعبئة جميع البيانات المطلوبة بدقة.`;
-    }
-    
-    if (lowerInput.includes('cmc') || lowerInput.includes('كلية')) {
-      return `كلية محمد السادس للعلوم الصحية (CMC) هي مؤسسة تعليمية رائدة في المغرب.
-      
-للمزيد من المعلومات:
-- الموقع الرسمي: https://cmc.ac.ma/ar
-- تقدم برامج طبية متقدمة
-- تركز على التدريب العملي والبحث العلمي`;
-    }
-    
-    return `شكراً لسؤالك. يمكنني مساعدتك في:
-- طلب شهادة العمل
-- طلب الإجازات
-- أوامر المهمات
-- معلومات عامة حول CMC
+    if (language === 'ar') {
+      // الاستجابات باللغة العربية
+      if (lowerInput.includes('شهادة') || lowerInput.includes('عمل')) {
+        return `📄 شهادة العمل - مدينة المهن والكفاءات CMC
 
-للمزيد من المعلومات التفصيلية، يرجى زيارة الموقع الرسمي: https://cmc.ac.ma/ar`;
+يمكنك طلب شهادة العمل من خلال:
+• قسم "شهادة العمل" في المنصة
+• مدة المعالجة: 3-5 أيام عمل
+• متطلبات: تعبئة النموذج بالبيانات الصحيحة
+
+🏢 نبذة عن CMC:
+مدينة المهن والكفاءات هي مؤسسة تعليمية رائدة تهدف إلى تطوير المهارات والكفاءات في مختلف المجالات المهنية والتقنية.
+
+🌐 للمزيد: https://cmc.ac.ma/ar`;
+      }
+      
+      if (lowerInput.includes('إجازة') || lowerInput.includes('عطلة')) {
+        return `🏖️ طلب الإجازة - مدينة المهن والكفاءات
+
+أنواع الإجازات المتاحة:
+• إجازة سنوية عادية
+• إجازة مرضية (بمبرر طبي)
+• إجازة اضطرارية
+• إجازة بدون راتب
+
+📋 خطوات الطلب:
+1. توجه لقسم "طلب الإجازة"
+2. املأ النموذج المطلوب
+3. قدم الطلب قبل أسبوعين على الأقل
+
+✅ CMC يوفر أنواع مختلفة من الإجازات حسب القوانين المعمول بها.`;
+      }
+      
+      if (lowerInput.includes('مهمة') || lowerInput.includes('أمر')) {
+        return `🎯 أمر المهمة - مدينة المهن والكفاءات
+
+📝 طريقة الطلب:
+• قسم "أمر المهمة" في المنصة
+• مدة الرد: 24-48 ساعة
+• حالة الطلب: موافقة أو رفض مع التبرير
+
+⚠️ تأكد من:
+- تعبئة جميع البيانات بدقة
+- تحديد الوجهة والمدة
+- إرفاق المبررات اللازمة
+
+🏢 CMC تدعم التطوير المهني والمشاركة في المؤتمرات والدورات التدريبية.`;
+      }
+      
+      if (lowerInput.includes('cmc') || lowerInput.includes('مدينة') || lowerInput.includes('كفاءات') || lowerInput.includes('مهن')) {
+        return `🏢 مدينة المهن والكفاءات (CMC)
+
+🎯 الرسالة:
+تطوير الكفاءات البشرية في مختلف المجالات المهنية والتقنية لتلبية احتياجات سوق العمل.
+
+🌟 الخدمات الرئيسية:
+• التكوين المهني والتقني
+• التدريب المستمر
+• التأهيل وإعادة التأهيل
+• الاستشارات المهنية
+
+🎓 البرامج التعليمية:
+- برامج التكوين التقني
+- ورش العمل التطبيقية
+- برامج التطوير المهني
+- شهادات معتمدة
+
+🌐 المزيد من المعلومات: https://cmc.ac.ma/ar
+📧 للتواصل: معلومات الاتصال متوفرة على الموقع الرسمي`;
+      }
+      
+      return `شكراً لتواصلك مع مساعد CMC الذكي! 🤖
+
+يمكنني مساعدتك في:
+📄 طلب شهادة العمل
+🏖️ طلبات الإجازات  
+🎯 أوامر المهمات
+🏢 معلومات عن مدينة المهن والكفاءات
+📚 الخدمات والبرامج التعليمية
+
+🌐 الموقع الرسمي: https://cmc.ac.ma/ar
+💬 اكتب سؤالك وسأكون سعيداً لمساعدتك!`;
+    } else {
+      // الاستجابات باللغة الفرنسية
+      if (lowerInput.includes('certificat') || lowerInput.includes('travail') || lowerInput.includes('attestation')) {
+        return `📄 Certificat de Travail - Cité des Métiers et des Compétences
+
+Vous pouvez demander votre certificat via:
+• Section "Certificat de Travail" sur la plateforme
+• Délai de traitement: 3-5 jours ouvrables
+• Exigences: Remplir le formulaire avec les données exactes
+
+🏢 À propos de CMC:
+La Cité des Métiers et des Compétences est une institution éducative de premier plan visant à développer les compétences dans divers domaines professionnels et techniques.
+
+🌐 Plus d'infos: https://cmc.ac.ma/ar`;
+      }
+      
+      if (lowerInput.includes('congé') || lowerInput.includes('vacances')) {
+        return `🏖️ Demande de Congé - Cité des Métiers et des Compétences
+
+Types de congés disponibles:
+• Congé annuel ordinaire
+• Congé maladie (avec justificatif médical)
+• Congé d'urgence
+• Congé sans solde
+
+📋 Étapes de demande:
+1. Aller à la section "Demande de Congé"
+2. Remplir le formulaire requis
+3. Soumettre au moins deux semaines à l'avance
+
+✅ CMC offre différents types de congés selon la réglementation en vigueur.`;
+      }
+      
+      if (lowerInput.includes('mission') || lowerInput.includes('ordre')) {
+        return `🎯 Ordre de Mission - Cité des Métiers et des Compétences
+
+📝 Procédure de demande:
+• Section "Ordre de Mission" sur la plateforme
+• Délai de réponse: 24-48 heures
+• Statut: Approbation ou refus avec justification
+
+⚠️ Assurez-vous de:
+- Remplir toutes les données avec précision
+- Spécifier la destination et la durée
+- Joindre les justificatifs nécessaires
+
+🏢 CMC soutient le développement professionnel et la participation aux conférences et formations.`;
+      }
+      
+      if (lowerInput.includes('cmc') || lowerInput.includes('cité') || lowerInput.includes('métiers') || lowerInput.includes('compétences')) {
+        return `🏢 Cité des Métiers et des Compétences (CMC)
+
+🎯 Mission:
+Développer les compétences humaines dans divers domaines professionnels et techniques pour répondre aux besoins du marché du travail.
+
+🌟 Services principaux:
+• Formation professionnelle et technique
+• Formation continue
+• Qualification et requalification
+• Conseil professionnel
+
+🎓 Programmes éducatifs:
+- Programmes de formation technique
+- Ateliers pratiques
+- Programmes de développement professionnel
+- Certifications accréditées
+
+🌐 Plus d'informations: https://cmc.ac.ma/ar
+📧 Contact: Informations disponibles sur le site officiel`;
+      }
+      
+      return `Merci de contacter l'assistant intelligent CMC! 🤖
+
+Je peux vous aider avec:
+📄 Demande de certificat de travail
+🏖️ Demandes de congé
+🎯 Ordres de mission
+🏢 Informations sur la Cité des Métiers et des Compétences
+📚 Services et programmes éducatifs
+
+🌐 Site officiel: https://cmc.ac.ma/ar
+💬 Écrivez votre question et je serai ravi de vous aider!`;
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -116,33 +279,82 @@ CMC يوفر أنواع مختلفة من الإجازات حسب القواني
     }
   };
 
+  const handleOpenChat = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      initializeMessages();
+    }
+  };
+
   return (
     <>
-      {/* الزر العائم */}
+      {/* الزر العائم المحسن */}
       <Button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleOpenChat}
         className={cn(
-          "fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50",
-          "bg-gradient-to-r from-cmc-blue to-cmc-green hover:from-cmc-blue-dark hover:to-emerald-600",
-          "transition-all duration-300 hover:scale-110"
+          "fixed bottom-6 h-16 w-16 rounded-full shadow-2xl z-50 group",
+          "bg-gradient-to-br from-cmc-blue via-cmc-green to-emerald-500",
+          "hover:from-cmc-blue-dark hover:via-emerald-600 hover:to-emerald-700",
+          "transition-all duration-500 hover:scale-110 hover:shadow-3xl",
+          "border-2 border-white/20 backdrop-blur-sm",
+          "animate-pulse hover:animate-none",
+          // تغيير الموضع حسب اللغة
+          language === 'ar' ? 'right-6' : 'left-6'
         )}
         size="icon"
       >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+        <div className="relative flex items-center justify-center">
+          {isOpen ? (
+            <X size={28} className="text-white drop-shadow-lg" />
+          ) : (
+            <>
+              <Bot size={28} className="text-white drop-shadow-lg" />
+              <Sparkles 
+                size={12} 
+                className="absolute -top-1 -right-1 text-yellow-300 animate-bounce" 
+              />
+            </>
+          )}
+        </div>
+        
+        {/* نص توضيحي يظهر عند التمرير */}
+        <div className={cn(
+          "absolute bottom-full mb-3 px-3 py-2 rounded-lg",
+          "bg-gray-900 text-white text-xs font-medium",
+          "opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+          "whitespace-nowrap shadow-lg",
+          language === 'ar' ? 'right-0' : 'left-0'
+        )}>
+          {language === 'ar' ? 'مساعد CMC الذكي 🤖' : 'Assistant CMC 🤖'}
+          <div className={cn(
+            "absolute top-full w-0 h-0 border-4 border-transparent border-t-gray-900",
+            language === 'ar' ? 'right-4' : 'left-4'
+          )}></div>
+        </div>
       </Button>
 
-      {/* نافذة المحادثة */}
+      {/* نافذة المحادثة المحسنة */}
       {isOpen && (
         <Card className={cn(
-          "fixed bottom-24 right-6 w-80 md:w-96 h-96 z-40",
-          "cmc-card flex flex-col"
+          "fixed bottom-24 w-80 md:w-96 h-[32rem] z-40",
+          "cmc-card flex flex-col overflow-hidden",
+          "shadow-2xl border-0 backdrop-blur-lg bg-white/95",
+          // تغيير الموضع حسب اللغة
+          language === 'ar' ? 'right-6' : 'left-6'
         )}>
-          {/* رأس النافذة */}
-          <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-cmc-blue to-cmc-green text-white rounded-t-lg">
-            <Bot size={20} />
+          {/* رأس النافذة المحسن */}
+          <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-cmc-blue to-cmc-green text-white">
+            <div className="relative">
+              <Bot size={24} className="drop-shadow-lg" />
+              <Sparkles size={8} className="absolute -top-1 -right-1 text-yellow-300" />
+            </div>
             <div className="flex-1">
-              <h3 className="font-semibold">مساعد CMC الذكي</h3>
-              <p className="text-xs opacity-90">هنا لمساعدتك</p>
+              <h3 className="font-bold text-lg">
+                {language === 'ar' ? 'مساعد CMC الذكي' : 'Assistant CMC'}
+              </h3>
+              <p className="text-xs opacity-90">
+                {language === 'ar' ? 'مدينة المهن والكفاءات' : 'Cité des Métiers et Compétences'}
+              </p>
             </div>
           </div>
 
@@ -159,18 +371,18 @@ CMC يوفر أنواع مختلفة من الإجازات حسب القواني
                 >
                   <div
                     className={cn(
-                      "max-w-[80%] p-3 rounded-lg text-sm",
+                      "max-w-[85%] p-3 rounded-xl text-sm leading-relaxed",
                       message.isUser
-                        ? "bg-cmc-blue text-white rounded-br-none"
-                        : "bg-gray-100 text-gray-800 rounded-bl-none"
+                        ? "bg-gradient-to-r from-cmc-blue to-cmc-green text-white rounded-br-none shadow-lg"
+                        : "bg-gray-50 text-gray-800 rounded-bl-none border border-gray-100 shadow-sm"
                     )}
                   >
                     <p className="whitespace-pre-wrap">{message.text}</p>
                     <p className={cn(
-                      "text-xs mt-1 opacity-70",
+                      "text-xs mt-2 opacity-70",
                       message.isUser ? "text-blue-100" : "text-gray-500"
                     )}>
-                      {message.timestamp.toLocaleTimeString('ar-MA', {
+                      {message.timestamp.toLocaleTimeString(language === 'ar' ? 'ar-MA' : 'fr-FR', {
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
@@ -180,11 +392,11 @@ CMC يوفر أنواع مختلفة من الإجازات حسب القواني
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 p-3 rounded-lg rounded-bl-none">
+                  <div className="bg-gray-50 p-3 rounded-xl rounded-bl-none border border-gray-100">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-cmc-blue rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-cmc-green rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -192,22 +404,22 @@ CMC يوفر أنواع مختلفة من الإجازات حسب القواني
             </div>
           </ScrollArea>
 
-          {/* منطقة الإدخال */}
-          <div className="p-4 border-t bg-gray-50 rounded-b-lg">
+          {/* منطقة الإدخال المحسنة */}
+          <div className="p-4 border-t bg-gradient-to-r from-gray-50 to-blue-50">
             <div className="flex gap-2">
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="اكتب رسالتك هنا..."
-                className="flex-1 cmc-input"
+                placeholder={language === 'ar' ? "اكتب رسالتك هنا..." : "Tapez votre message ici..."}
+                className="flex-1 cmc-input border-gray-200 focus:border-cmc-blue rounded-xl"
                 disabled={isLoading}
               />
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isLoading}
                 size="icon"
-                className="cmc-button-primary"
+                className="cmc-button-primary rounded-xl h-10 w-10 shadow-lg hover:shadow-xl"
               >
                 <Send size={16} />
               </Button>

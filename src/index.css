@@ -189,3 +189,49 @@
 .hover\:bg-cmc-blue-light\/30:hover {
   background-color: hsl(var(--cmc-blue-light) / 0.3);
 }
+
+/* تأثيرات إضافية للمساعد الذكي */
+.shadow-3xl {
+  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(15, 160, 206, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(15, 160, 206, 0.6), 0 0 40px rgba(16, 185, 129, 0.3);
+  }
+}
+
+.ai-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* تحسينات للرسائل */
+.message-fade-in {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* تأثيرات للنصوص التوضيحية */
+.tooltip-arrow::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #1f2937 transparent transparent transparent;
+}
