@@ -26,6 +26,7 @@ const formSchema = z.object({
 
 export const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login, isLoading } = useAuth();
@@ -39,10 +40,14 @@ export const SignIn = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    console.log("Login attempt:", values);
+    
     try {
-      console.log("Login attempt:", values);
-      
       const success = await login(values.email, values.password);
+      console.log("Login result:", success);
       
       if (success) {
         toast({
@@ -51,7 +56,12 @@ export const SignIn = () => {
           className: "bg-green-50 border-green-200",
         });
         
-        navigate("/");
+        // انتظار قصير لضمان تحديث الحالة قبل التنقل
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 100);
+      } else {
+        throw new Error("فشل في تسجيل الدخول");
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -73,8 +83,12 @@ export const SignIn = () => {
         description: errorMessage,
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const isButtonDisabled = isLoading || isSubmitting;
 
   return (
     <div className="min-h-screen cmc-page-background flex items-center justify-center p-4">
@@ -106,6 +120,7 @@ export const SignIn = () => {
                           type="email"
                           placeholder="example@ofppt.ma"
                           className="cmc-input"
+                          disabled={isButtonDisabled}
                           {...field}
                         />
                       </FormControl>
@@ -126,6 +141,7 @@ export const SignIn = () => {
                             type={showPassword ? "text" : "password"}
                             placeholder="أدخل كلمة المرور"
                             className="cmc-input pr-10"
+                            disabled={isButtonDisabled}
                             {...field}
                           />
                           <Button
@@ -134,6 +150,7 @@ export const SignIn = () => {
                             size="sm"
                             className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                             onClick={() => setShowPassword(!showPassword)}
+                            disabled={isButtonDisabled}
                           >
                             {showPassword ? (
                               <EyeOff className="h-4 w-4 text-slate-400" />
@@ -160,9 +177,9 @@ export const SignIn = () => {
                 <Button
                   type="submit"
                   className="w-full cmc-button-primary py-3"
-                  disabled={isLoading}
+                  disabled={isButtonDisabled}
                 >
-                  {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                  {isButtonDisabled ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
                 </Button>
 
                 <div className="text-center">
