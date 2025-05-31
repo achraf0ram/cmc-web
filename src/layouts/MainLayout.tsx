@@ -1,6 +1,7 @@
 
 import { AppHeader } from "@/components/AppHeader";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AIAssistantButton } from "@/components/AIAssistantButton";
 import { Outlet } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,9 @@ export const MainLayout = () => {
           <Outlet />
         </main>
       </div>
+      
+      {/* زر المساعد الذكي العائم */}
+      <AIAssistantButton />
     </div>
   );
 };

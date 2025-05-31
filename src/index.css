@@ -48,6 +48,11 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --cmc-blue: 200 92% 48%;
+    --cmc-blue-light: 200 92% 85%;
+    --cmc-blue-dark: 200 92% 35%;
+    --cmc-green: 158 64% 52%;
   }
 
   .dark {
@@ -118,4 +123,69 @@
 
 .cmc-page-background {
   background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 50%, #f0fdf4 100%);
+}
+
+/* CMC Color Classes */
+.text-cmc-blue {
+  color: hsl(var(--cmc-blue));
+}
+
+.bg-cmc-blue {
+  background-color: hsl(var(--cmc-blue));
+}
+
+.text-cmc-blue-light {
+  color: hsl(var(--cmc-blue-light));
+}
+
+.bg-cmc-blue-light {
+  background-color: hsl(var(--cmc-blue-light));
+}
+
+.text-cmc-blue-dark {
+  color: hsl(var(--cmc-blue-dark));
+}
+
+.bg-cmc-blue-dark {
+  background-color: hsl(var(--cmc-blue-dark));
+}
+
+.text-cmc-green {
+  color: hsl(var(--cmc-green));
+}
+
+.bg-cmc-green {
+  background-color: hsl(var(--cmc-green));
+}
+
+.from-cmc-blue {
+  --tw-gradient-from: hsl(var(--cmc-blue)) var(--tw-gradient-from-position);
+}
+
+.to-cmc-green {
+  --tw-gradient-to: hsl(var(--cmc-green)) var(--tw-gradient-to-position);
+}
+
+.from-cmc-blue-dark {
+  --tw-gradient-from: hsl(var(--cmc-blue-dark)) var(--tw-gradient-from-position);
+}
+
+.hover\:from-cmc-blue-dark:hover {
+  --tw-gradient-from: hsl(var(--cmc-blue-dark)) var(--tw-gradient-from-position);
+}
+
+.hover\:to-emerald-600:hover {
+  --tw-gradient-to: #059669 var(--tw-gradient-to-position);
+}
+
+.hover\:text-cmc-blue-dark:hover {
+  color: hsl(var(--cmc-blue-dark));
+}
+
+.hover\:bg-cmc-blue-light\/50:hover {
+  background-color: hsl(var(--cmc-blue-light) / 0.5);
+}
+
+.hover\:bg-cmc-blue-light\/30:hover {
+  background-color: hsl(var(--cmc-blue-light) / 0.3);
 }
