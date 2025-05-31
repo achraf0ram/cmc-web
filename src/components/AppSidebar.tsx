@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -24,7 +23,7 @@ export const AppSidebar = () => {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { logout, user, profile } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   
 
@@ -56,7 +55,7 @@ export const AppSidebar = () => {
       size="icon"
       onClick={() => setIsMobileOpen(!isMobileOpen)}  // Toggle mobile sidebar visibility
       className={cn(
-        "fixed top-4 z-40 hover:bg-[#D3E4FD] text-[#0EA5E9]",
+        "fixed top-4 z-40 hover:bg-[#E8F5E9] text-[#2E7D32]",
         language === 'ar' ? 'right-4' : 'left-4'
       )}
     >
@@ -70,7 +69,7 @@ export const AppSidebar = () => {
       {isMobile && <MobileToggle />}
       <div
         className={cn(
-          "fixed md:static h-screen bg-white shadow-md flex flex-col transition-all duration-300 z-40",
+          "fixed top-0 h-screen bg-white shadow-md flex flex-col transition-all duration-300 z-40",
           collapsed ? "w-20" : "w-64",
           isMobile
             ? isMobileOpen
@@ -79,7 +78,8 @@ export const AppSidebar = () => {
               ? "translate-x-full"
               : "-translate-x-full"
             : "",
-          language === "ar" ? "right-0" : "left-0"
+          language === "ar" ? "right-0" : "left-0",
+          "h-[100vh]"
         )}>
         {/* Header */}
         <div className='flex justify-between items-center p-4 border-b h-20'>
@@ -103,7 +103,7 @@ export const AppSidebar = () => {
                 setCollapsed(!collapsed);
               }
             }}
-            className='hover:bg-[#D3E4FD] text-[#0EA5E9]'>
+            className='hover:bg-[#E8F5E9] text-[#2E7D32]'>
             {chevronIcon}
           </Button>
         </div>
@@ -120,7 +120,7 @@ export const AppSidebar = () => {
                 variant='ghost'
                 className={cn(
                   "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
-                  "hover:bg-[#D3E4FD] hover:text-[#0EA5E9]"
+                  "hover:bg-[#E8F5E9] hover:text-[#2E7D32]"
                 )}>
                 <item.icon size={20} />
                 {!collapsed && <span>{t(item.name)}</span>}
@@ -136,21 +136,21 @@ export const AppSidebar = () => {
               "flex items-center gap-3 px-4 py-2",
               collapsed && "justify-center"
             )}>
-            <div className='w-8 h-8 rounded-full bg-[#D3E4FD] flex items-center justify-center'>
+            <div className='w-8 h-8 rounded-full bg-[#E8F5E9] flex items-center justify-center'>
               <User
                 size={16}
-                className='text-[#0EA5E9]'
+                className='text-[#2E7D32]'
               />
             </div>
             {!collapsed && (
-              <div className='text-sm'>{profile?.full_name || user?.email || "مستخدم"}</div>
+              <div className='text-sm'>{user?.name || "user"}</div>
             )}
           </div>
           <Button
             variant='ghost'
             className={cn(
               "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
-              "hover:bg-[#FDE1D3] hover:text-red-500 text-muted-foreground",
+              "hover:bg-[#E8F5E9] hover:text-[#2E7D32] text-muted-foreground",
               collapsed && "justify-center"
             )}
             onClick={handleSignOut}>

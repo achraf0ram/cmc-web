@@ -1,4 +1,3 @@
-
 import { Search, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +22,7 @@ export const AppHeader = () => {
       "bg-white/95 backdrop-blur-sm border-b border-slate-200/50 py-3 px-4 md:px-6 flex items-center justify-between shadow-sm",
       "relative z-20 h-16 md:h-20"
     )}>
-      <div className="flex-1 max-w-md">
+      <div className="flex-grow max-w-lg mx-auto">
         <div className="relative w-full">
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
           <Input
