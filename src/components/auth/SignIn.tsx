@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { LogIn, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email({ message: "البريد الإلكتروني غير صحيح" }),
@@ -25,9 +26,9 @@ const formSchema = z.object({
 
 export const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login, isLoading } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,28 +39,40 @@ export const SignIn = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       console.log("Login attempt:", values);
       
-      toast({
-        title: "تم تسجيل الدخول بنجاح",
-        description: "مرحباً بك في منصة OFPPT",
-        className: "bg-green-50 border-green-200",
-      });
+      const success = await login(values.email, values.password);
       
-      navigate("/");
-    } catch (error) {
+      if (success) {
+        toast({
+          title: "تم تسجيل الدخول بنجاح",
+          description: "مرحباً بك في منصة CMC",
+          className: "bg-green-50 border-green-200",
+        });
+        
+        navigate("/");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      
+      let errorMessage = "يرجى التحقق من البيانات والمحاولة مرة أخرى";
+      
+      if (error?.message) {
+        if (error.message.includes("Invalid login credentials")) {
+          errorMessage = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+        } else if (error.message.includes("Email not confirmed")) {
+          errorMessage = "يرجى تأكيد البريد الإلكتروني أولاً";
+        } else if (error.message.includes("Too many requests")) {
+          errorMessage = "محاولات كثيرة، يرجى المحاولة لاحقاً";
+        }
+      }
+      
       toast({
         title: "خطأ في تسجيل الدخول",
-        description: "يرجى التحقق من البيانات والمحاولة مرة أخرى",
+        description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
