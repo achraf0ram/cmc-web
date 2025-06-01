@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, Sparkles, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,7 @@ export const AIAssistantButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState<Position>({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { language, t } = useLanguage();
@@ -35,87 +36,102 @@ export const AIAssistantButton = () => {
 
   // تهيئة الموضع الافتراضي حسب اللغة
   useEffect(() => {
-    const defaultX = language === 'ar' ? window.innerWidth - 88 : 24;
-    const defaultY = window.innerHeight - 88;
-    setPosition({ x: defaultX, y: defaultY });
-  }, [language]);
-
-  // التعامل مع تغيير حجم النافذة
-  useEffect(() => {
-    const handleResize = () => {
-      setPosition(prev => ({
-        x: Math.min(prev.x, window.innerWidth - 64),
-        y: Math.min(prev.y, window.innerHeight - 64)
-      }));
+    const updatePosition = () => {
+      const defaultX = language === 'ar' ? window.innerWidth - 88 : 24;
+      const defaultY = window.innerHeight - 88;
+      setPosition({ x: defaultX, y: defaultY });
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [language]);
 
-  // معالجة بداية السحب
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+  // بدء السحب
+  const handleMouseDown = (e: React.MouseEvent) => {
     if (isOpen) return;
-    
     e.preventDefault();
     
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
     setIsDragging(true);
-    setDragStart({
-      x: clientX - position.x,
-      y: clientY - position.y
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
     });
   };
 
-  // معالجة السحب
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isOpen) return;
+    e.preventDefault();
+    
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const touch = e.touches[0];
+    setIsDragging(true);
+    setDragOffset({
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top
+    });
+  };
+
+  // السحب
   useEffect(() => {
-    const handleDragMove = (e: MouseEvent | TouchEvent) => {
+    const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
-      
       e.preventDefault();
-      
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-      
-      const newX = clientX - dragStart.x;
-      const newY = clientY - dragStart.y;
-      
+
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+
       const maxX = window.innerWidth - 64;
       const maxY = window.innerHeight - 64;
-      
+
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
         y: Math.max(0, Math.min(newY, maxY))
       });
     };
 
-    const handleDragEnd = () => {
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+
+      const touch = e.touches[0];
+      const newX = touch.clientX - dragOffset.x;
+      const newY = touch.clientY - dragOffset.y;
+
+      const maxX = window.innerWidth - 64;
+      const maxY = window.innerHeight - 64;
+
+      setPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
+    const handleEnd = () => {
       setIsDragging(false);
     };
 
     if (isDragging) {
-      // إضافة مستمعات للماوس واللمس
-      document.addEventListener('mousemove', handleDragMove, { passive: false });
-      document.addEventListener('mouseup', handleDragEnd);
-      document.addEventListener('touchmove', handleDragMove, { passive: false });
-      document.addEventListener('touchend', handleDragEnd);
-      
-      // منع التمرير أثناء السحب
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleEnd);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleEnd);
+      document.body.style.userSelect = 'none';
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleDragMove);
-      document.removeEventListener('mouseup', handleDragEnd);
-      document.removeEventListener('touchmove', handleDragMove);
-      document.removeEventListener('touchend', handleDragEnd);
-      document.body.style.overflow = '';
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleEnd);
+      document.body.style.userSelect = '';
     };
-  }, [isDragging, dragStart]);
+  }, [isDragging, dragOffset]);
 
   // رسائل الترحيب حسب اللغة
   const getWelcomeMessage = () => {
@@ -384,28 +400,28 @@ Je peux vous aider avec:
 
   return (
     <>
-      {/* الزر العائم القابل للسحب */}
+      {/* الزر العائم القابل للسحب مع ألوان CMC */}
       <div 
         ref={containerRef}
         className="fixed z-50 group"
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
-          cursor: isDragging ? 'grabbing' : 'grab'
+          cursor: isDragging ? 'grabbing' : (isOpen ? 'pointer' : 'grab')
         }}
       >
-        {/* دائرة خلفية متحركة */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-purple-500 to-emerald-500 animate-spin opacity-75 blur-sm"></div>
+        {/* دائرة خلفية متحركة بألوان CMC */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cmc-blue via-emerald-500 to-cmc-green animate-spin opacity-75 blur-sm"></div>
         
         <Button
           ref={buttonRef}
-          onMouseDown={handleDragStart}
-          onTouchStart={handleDragStart}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
           onClick={handleButtonClick}
           className={cn(
             "relative h-16 w-16 rounded-full shadow-2xl",
-            "bg-gradient-to-br from-blue-600 via-purple-600 to-emerald-600",
-            "hover:from-blue-700 hover:via-purple-700 hover:to-emerald-700",
+            "bg-gradient-to-br from-cmc-blue via-cmc-blue-dark to-cmc-green",
+            "hover:from-cmc-blue-dark hover:via-blue-700 hover:to-emerald-600",
             "transition-all duration-500 hover:scale-110 hover:shadow-3xl",
             "border-3 border-white/30 backdrop-blur-sm",
             "before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-pulse",
@@ -423,14 +439,14 @@ Je peux vous aider avec:
                   size={12} 
                   className="absolute -top-2 -right-2 text-yellow-300 animate-bounce" 
                 />
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-cmc-green rounded-full border-2 border-white animate-pulse"></div>
               </>
             )}
           </div>
         </Button>
         
         {/* نص توضيحي محسن */}
-        {!isDragging && (
+        {!isDragging && !isOpen && (
           <div className={cn(
             "absolute bottom-full mb-4 px-4 py-3 rounded-xl",
             "bg-gray-900/95 backdrop-blur-md text-white text-sm font-medium",
@@ -440,19 +456,19 @@ Je peux vous aider avec:
             "pointer-events-none"
           )}>
             <div className="flex items-center gap-2">
-              <Brain size={16} className="text-blue-400" />
+              <Brain size={16} className="text-cmc-blue" />
               <span>{language === 'ar' ? 'مساعد CMC الذكي (اسحب لتحريك)' : 'Assistant IA CMC (glisser pour déplacer)'}</span>
-              <Sparkles size={12} className="text-yellow-400" />
+              <Sparkles size={12} className="text-cmc-green" />
             </div>
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-8 border-transparent border-t-gray-900/95"></div>
           </div>
         )}
 
-        {/* تأثير النبضة */}
-        <div className="absolute inset-0 rounded-full bg-blue-400/30 animate-ping"></div>
+        {/* تأثير النبضة بألوان CMC */}
+        <div className="absolute inset-0 rounded-full bg-cmc-blue/30 animate-ping"></div>
       </div>
 
-      {/* نافذة المحادثة المحسنة */}
+      {/* نافذة المحادثة المحسنة بألوان CMC */}
       {isOpen && (
         <Card className={cn(
           "fixed w-80 md:w-96 h-[32rem] z-40",
@@ -465,8 +481,8 @@ Je peux vous aider avec:
           top: position.y + 512 < window.innerHeight ? `${position.y}px` : `${window.innerHeight - 512}px`
         }}
         >
-          {/* رأس النافذة المحسن */}
-          <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 text-white">
+          {/* رأس النافذة المحسن بألوان CMC */}
+          <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-cmc-blue via-cmc-blue-dark to-cmc-green text-white">
             <div className="relative">
               <Brain size={24} className="drop-shadow-lg" />
               <Sparkles size={8} className="absolute -top-1 -right-1 text-yellow-300" />
@@ -479,7 +495,7 @@ Je peux vous aider avec:
                 {language === 'ar' ? 'مدينة المهن والكفاءات' : 'Cité des Métiers et Compétences'}
               </p>
             </div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse border border-white/50"></div>
+            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse border border-white/50"></div>
           </div>
 
           {/* منطقة الرسائل */}
@@ -497,7 +513,7 @@ Je peux vous aider avec:
                     className={cn(
                       "max-w-[85%] p-3 rounded-xl text-sm leading-relaxed",
                       message.isUser
-                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-br-none shadow-lg"
+                        ? "bg-gradient-to-r from-cmc-blue to-cmc-green text-white rounded-br-none shadow-lg"
                         : "bg-gray-50 text-gray-800 rounded-bl-none border border-gray-100 shadow-sm"
                     )}
                   >
@@ -518,9 +534,9 @@ Je peux vous aider avec:
                 <div className="flex justify-start">
                   <div className="bg-gray-50 p-3 rounded-xl rounded-bl-none border border-gray-100">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-cmc-blue rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-cmc-blue-dark rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-cmc-green rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -536,14 +552,14 @@ Je peux vous aider avec:
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={language === 'ar' ? "اكتب رسالتك هنا..." : "Tapez votre message ici..."}
-                className="flex-1 cmc-input border-gray-200 focus:border-blue-500 rounded-xl"
+                className="flex-1 cmc-input border-gray-200 focus:border-cmc-blue rounded-xl"
                 disabled={isLoading}
               />
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isLoading}
                 size="icon"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl h-10 w-10 shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-gradient-to-r from-cmc-blue to-cmc-green hover:from-cmc-blue-dark hover:to-emerald-600 rounded-xl h-10 w-10 shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <Send size={16} />
               </Button>
