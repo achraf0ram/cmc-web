@@ -41,13 +41,14 @@ export const AppSidebar = () => {
     navigate("/login", { replace: true });
   };
 
+  // تحسين اتجاه السهم حسب اللغة وحالة الشريط الجانبي
   const chevronIcon = language === 'ar' ? 
   (collapsed ? 
-    <ChevronLeft size={18} /> : 
-    <ChevronRight size={18} />) :
-  (collapsed ? 
     <ChevronRight size={18} /> : 
-    <ChevronLeft size={18} />);
+    <ChevronLeft size={18} />) :
+  (collapsed ? 
+    <ChevronLeft size={18} /> : 
+    <ChevronRight size={18} />);
 
   // Mobile toggle button that appears at the top of the screen
   const MobileToggle = () => (
@@ -61,7 +62,11 @@ export const AppSidebar = () => {
       )}
     >
       {/* Change icon to X when sidebar is open */}
-      {isMobileOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
+      {isMobileOpen ? (
+        language === 'ar' ? <ChevronRight size={24} /> : <ChevronLeft size={24} />
+      ) : (
+        <Menu size={24} />
+      )}
     </Button>
   );
 
