@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { MessageCircle, X, Send, Bot, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, Sparkles, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -288,50 +288,66 @@ Je peux vous aider avec:
 
   return (
     <>
-      {/* الزر العائم المحسن */}
-      <Button
-        onClick={handleOpenChat}
-        className={cn(
-          "fixed bottom-6 h-16 w-16 rounded-full shadow-2xl z-50 group",
-          "bg-gradient-to-br from-cmc-blue via-cmc-green to-emerald-500",
-          "hover:from-cmc-blue-dark hover:via-emerald-600 hover:to-emerald-700",
-          "transition-all duration-500 hover:scale-110 hover:shadow-3xl",
-          "border-2 border-white/20 backdrop-blur-sm",
-          "animate-pulse hover:animate-none",
-          // تغيير الموضع حسب اللغة
-          language === 'ar' ? 'right-6' : 'left-6'
-        )}
-        size="icon"
-      >
-        <div className="relative flex items-center justify-center">
-          {isOpen ? (
-            <X size={28} className="text-white drop-shadow-lg" />
-          ) : (
-            <>
-              <Bot size={28} className="text-white drop-shadow-lg" />
-              <Sparkles 
-                size={12} 
-                className="absolute -top-1 -right-1 text-yellow-300 animate-bounce" 
-              />
-            </>
-          )}
-        </div>
+      {/* الزر العائم المحسن مع شكل أكثر جاذبية */}
+      <div className={cn(
+        "fixed bottom-6 z-50 group",
+        // تغيير الموضع حسب اللغة
+        language === 'ar' ? 'right-6' : 'left-6'
+      )}>
+        {/* دائرة خلفية متحركة */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-purple-500 to-emerald-500 animate-spin opacity-75 blur-sm"></div>
         
-        {/* نص توضيحي يظهر عند التمرير */}
+        <Button
+          onClick={handleOpenChat}
+          className={cn(
+            "relative h-16 w-16 rounded-full shadow-2xl",
+            "bg-gradient-to-br from-blue-600 via-purple-600 to-emerald-600",
+            "hover:from-blue-700 hover:via-purple-700 hover:to-emerald-700",
+            "transition-all duration-500 hover:scale-110 hover:shadow-3xl",
+            "border-3 border-white/30 backdrop-blur-sm",
+            "before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-pulse"
+          )}
+          size="icon"
+        >
+          <div className="relative flex items-center justify-center">
+            {isOpen ? (
+              <X size={28} className="text-white drop-shadow-lg" />
+            ) : (
+              <>
+                <Brain size={28} className="text-white drop-shadow-lg" />
+                <Sparkles 
+                  size={12} 
+                  className="absolute -top-2 -right-2 text-yellow-300 animate-bounce" 
+                />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+              </>
+            )}
+          </div>
+        </Button>
+        
+        {/* نص توضيحي محسن */}
         <div className={cn(
-          "absolute bottom-full mb-3 px-3 py-2 rounded-lg",
-          "bg-gray-900 text-white text-xs font-medium",
-          "opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-          "whitespace-nowrap shadow-lg",
+          "absolute bottom-full mb-4 px-4 py-3 rounded-xl",
+          "bg-gray-900/95 backdrop-blur-md text-white text-sm font-medium",
+          "opacity-0 group-hover:opacity-100 transition-all duration-300",
+          "whitespace-nowrap shadow-2xl border border-gray-700",
+          "transform group-hover:scale-105",
           language === 'ar' ? 'right-0' : 'left-0'
         )}>
-          {language === 'ar' ? 'مساعد CMC الذكي 🤖' : 'Assistant CMC 🤖'}
+          <div className="flex items-center gap-2">
+            <Brain size={16} className="text-blue-400" />
+            <span>{language === 'ar' ? 'مساعد CMC الذكي' : 'Assistant IA CMC'}</span>
+            <Sparkles size={12} className="text-yellow-400" />
+          </div>
           <div className={cn(
-            "absolute top-full w-0 h-0 border-4 border-transparent border-t-gray-900",
-            language === 'ar' ? 'right-4' : 'left-4'
+            "absolute top-full w-0 h-0 border-8 border-transparent border-t-gray-900/95",
+            language === 'ar' ? 'right-6' : 'left-6'
           )}></div>
         </div>
-      </Button>
+
+        {/* تأثير النبضة */}
+        <div className="absolute inset-0 rounded-full bg-blue-400/30 animate-ping"></div>
+      </div>
 
       {/* نافذة المحادثة المحسنة */}
       {isOpen && (
@@ -339,23 +355,25 @@ Je peux vous aider avec:
           "fixed bottom-24 w-80 md:w-96 h-[32rem] z-40",
           "cmc-card flex flex-col overflow-hidden",
           "shadow-2xl border-0 backdrop-blur-lg bg-white/95",
+          "animate-scale-in",
           // تغيير الموضع حسب اللغة
           language === 'ar' ? 'right-6' : 'left-6'
         )}>
           {/* رأس النافذة المحسن */}
-          <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-cmc-blue to-cmc-green text-white">
+          <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 text-white">
             <div className="relative">
-              <Bot size={24} className="drop-shadow-lg" />
+              <Brain size={24} className="drop-shadow-lg" />
               <Sparkles size={8} className="absolute -top-1 -right-1 text-yellow-300" />
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-lg">
-                {language === 'ar' ? 'مساعد CMC الذكي' : 'Assistant CMC'}
+                {language === 'ar' ? 'مساعد CMC الذكي' : 'Assistant IA CMC'}
               </h3>
               <p className="text-xs opacity-90">
                 {language === 'ar' ? 'مدينة المهن والكفاءات' : 'Cité des Métiers et Compétences'}
               </p>
             </div>
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse border border-white/50"></div>
           </div>
 
           {/* منطقة الرسائل */}
@@ -365,7 +383,7 @@ Je peux vous aider avec:
                 <div
                   key={message.id}
                   className={cn(
-                    "flex",
+                    "flex message-fade-in",
                     message.isUser ? "justify-end" : "justify-start"
                   )}
                 >
@@ -373,7 +391,7 @@ Je peux vous aider avec:
                     className={cn(
                       "max-w-[85%] p-3 rounded-xl text-sm leading-relaxed",
                       message.isUser
-                        ? "bg-gradient-to-r from-cmc-blue to-cmc-green text-white rounded-br-none shadow-lg"
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-br-none shadow-lg"
                         : "bg-gray-50 text-gray-800 rounded-bl-none border border-gray-100 shadow-sm"
                     )}
                   >
@@ -394,9 +412,9 @@ Je peux vous aider avec:
                 <div className="flex justify-start">
                   <div className="bg-gray-50 p-3 rounded-xl rounded-bl-none border border-gray-100">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-cmc-blue rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-cmc-green rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -412,14 +430,14 @@ Je peux vous aider avec:
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={language === 'ar' ? "اكتب رسالتك هنا..." : "Tapez votre message ici..."}
-                className="flex-1 cmc-input border-gray-200 focus:border-cmc-blue rounded-xl"
+                className="flex-1 cmc-input border-gray-200 focus:border-blue-500 rounded-xl"
                 disabled={isLoading}
               />
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isLoading}
                 size="icon"
-                className="cmc-button-primary rounded-xl h-10 w-10 shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl h-10 w-10 shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <Send size={16} />
               </Button>
