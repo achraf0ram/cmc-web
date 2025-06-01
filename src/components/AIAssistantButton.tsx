@@ -27,8 +27,9 @@ export const AIAssistantButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState<Position>({ x: 0, y: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { language, t } = useLanguage();
   const { toast } = useToast();
 
@@ -52,52 +53,69 @@ export const AIAssistantButton = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // بداية السحب
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (isOpen) return; // منع السحب عند فتح النافذة
+  // معالجة بداية السحب
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (isOpen) return;
+    
+    e.preventDefault();
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     
     setIsDragging(true);
-    const rect = buttonRef.current?.getBoundingClientRect();
-    if (rect) {
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      });
-    }
+    setDragStart({
+      x: clientX - position.x,
+      y: clientY - position.y
+    });
   };
 
-  // السحب
+  // معالجة السحب
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleDragMove = (e: MouseEvent | TouchEvent) => {
       if (!isDragging) return;
-
-      const newX = e.clientX - dragOffset.x;
-      const newY = e.clientY - dragOffset.y;
-
-      // التأكد من بقاء الزر داخل حدود الشاشة
+      
+      e.preventDefault();
+      
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+      
+      const newX = clientX - dragStart.x;
+      const newY = clientY - dragStart.y;
+      
       const maxX = window.innerWidth - 64;
       const maxY = window.innerHeight - 64;
-
+      
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
         y: Math.max(0, Math.min(newY, maxY))
       });
     };
 
-    const handleMouseUp = () => {
+    const handleDragEnd = () => {
       setIsDragging(false);
     };
 
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      // إضافة مستمعات للماوس واللمس
+      document.addEventListener('mousemove', handleDragMove, { passive: false });
+      document.addEventListener('mouseup', handleDragEnd);
+      document.addEventListener('touchmove', handleDragMove, { passive: false });
+      document.addEventListener('touchend', handleDragEnd);
+      
+      // منع التمرير أثناء السحب
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mousemove', handleDragMove);
+      document.removeEventListener('mouseup', handleDragEnd);
+      document.removeEventListener('touchmove', handleDragMove);
+      document.removeEventListener('touchend', handleDragEnd);
+      document.body.style.overflow = '';
     };
-  }, [isDragging, dragOffset]);
+  }, [isDragging, dragStart]);
 
   // رسائل الترحيب حسب اللغة
   const getWelcomeMessage = () => {
@@ -177,6 +195,7 @@ Comment puis-je vous aider aujourd'hui?`;
     }
   };
 
+  // ... keep existing code (generateAIResponse function)
   const generateAIResponse = async (userInput: string): Promise<string> => {
     const lowerInput = userInput.toLowerCase();
     
@@ -354,10 +373,12 @@ Je peux vous aider avec:
     }
   };
 
-  const handleOpenChat = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      initializeMessages();
+  const handleButtonClick = () => {
+    if (!isDragging) {
+      setIsOpen(!isOpen);
+      if (!isOpen) {
+        initializeMessages();
+      }
     }
   };
 
@@ -365,6 +386,7 @@ Je peux vous aider avec:
     <>
       {/* الزر العائم القابل للسحب */}
       <div 
+        ref={containerRef}
         className="fixed z-50 group"
         style={{
           left: `${position.x}px`,
@@ -377,8 +399,9 @@ Je peux vous aider avec:
         
         <Button
           ref={buttonRef}
-          onMouseDown={handleMouseDown}
-          onClick={!isDragging ? handleOpenChat : undefined}
+          onMouseDown={handleDragStart}
+          onTouchStart={handleDragStart}
+          onClick={handleButtonClick}
           className={cn(
             "relative h-16 w-16 rounded-full shadow-2xl",
             "bg-gradient-to-br from-blue-600 via-purple-600 to-emerald-600",
@@ -386,7 +409,7 @@ Je peux vous aider avec:
             "transition-all duration-500 hover:scale-110 hover:shadow-3xl",
             "border-3 border-white/30 backdrop-blur-sm",
             "before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-pulse",
-            isDragging && "scale-110"
+            isDragging && "scale-110 shadow-3xl"
           )}
           size="icon"
         >
@@ -407,21 +430,23 @@ Je peux vous aider avec:
         </Button>
         
         {/* نص توضيحي محسن */}
-        <div className={cn(
-          "absolute bottom-full mb-4 px-4 py-3 rounded-xl",
-          "bg-gray-900/95 backdrop-blur-md text-white text-sm font-medium",
-          "opacity-0 group-hover:opacity-100 transition-all duration-300",
-          "whitespace-nowrap shadow-2xl border border-gray-700",
-          "transform group-hover:scale-105",
-          "pointer-events-none"
-        )}>
-          <div className="flex items-center gap-2">
-            <Brain size={16} className="text-blue-400" />
-            <span>{language === 'ar' ? 'مساعد CMC الذكي (اسحب لتحريك)' : 'Assistant IA CMC (glisser pour déplacer)'}</span>
-            <Sparkles size={12} className="text-yellow-400" />
+        {!isDragging && (
+          <div className={cn(
+            "absolute bottom-full mb-4 px-4 py-3 rounded-xl",
+            "bg-gray-900/95 backdrop-blur-md text-white text-sm font-medium",
+            "opacity-0 group-hover:opacity-100 transition-all duration-300",
+            "whitespace-nowrap shadow-2xl border border-gray-700",
+            "transform group-hover:scale-105",
+            "pointer-events-none"
+          )}>
+            <div className="flex items-center gap-2">
+              <Brain size={16} className="text-blue-400" />
+              <span>{language === 'ar' ? 'مساعد CMC الذكي (اسحب لتحريك)' : 'Assistant IA CMC (glisser pour déplacer)'}</span>
+              <Sparkles size={12} className="text-yellow-400" />
+            </div>
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-8 border-transparent border-t-gray-900/95"></div>
           </div>
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-8 border-transparent border-t-gray-900/95"></div>
-        </div>
+        )}
 
         {/* تأثير النبضة */}
         <div className="absolute inset-0 rounded-full bg-blue-400/30 animate-ping"></div>
