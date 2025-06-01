@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, Sparkles, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,13 +15,89 @@ interface Message {
   timestamp: Date;
 }
 
+interface Position {
+  x: number;
+  y: number;
+}
+
 export const AIAssistantButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const { language, t } = useLanguage();
   const { toast } = useToast();
+
+  // تهيئة الموضع الافتراضي حسب اللغة
+  useEffect(() => {
+    const defaultX = language === 'ar' ? window.innerWidth - 88 : 24;
+    const defaultY = window.innerHeight - 88;
+    setPosition({ x: defaultX, y: defaultY });
+  }, [language]);
+
+  // التعامل مع تغيير حجم النافذة
+  useEffect(() => {
+    const handleResize = () => {
+      setPosition(prev => ({
+        x: Math.min(prev.x, window.innerWidth - 64),
+        y: Math.min(prev.y, window.innerHeight - 64)
+      }));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // بداية السحب
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isOpen) return; // منع السحب عند فتح النافذة
+    
+    setIsDragging(true);
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    }
+  };
+
+  // السحب
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+
+      // التأكد من بقاء الزر داخل حدود الشاشة
+      const maxX = window.innerWidth - 64;
+      const maxY = window.innerHeight - 64;
+
+      setPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
 
   // رسائل الترحيب حسب اللغة
   const getWelcomeMessage = () => {
@@ -288,24 +363,30 @@ Je peux vous aider avec:
 
   return (
     <>
-      {/* الزر العائم المحسن مع شكل أكثر جاذبية */}
-      <div className={cn(
-        "fixed bottom-6 z-50 group",
-        // تغيير الموضع حسب اللغة
-        language === 'ar' ? 'right-6' : 'left-6'
-      )}>
+      {/* الزر العائم القابل للسحب */}
+      <div 
+        className="fixed z-50 group"
+        style={{
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
+      >
         {/* دائرة خلفية متحركة */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 via-purple-500 to-emerald-500 animate-spin opacity-75 blur-sm"></div>
         
         <Button
-          onClick={handleOpenChat}
+          ref={buttonRef}
+          onMouseDown={handleMouseDown}
+          onClick={!isDragging ? handleOpenChat : undefined}
           className={cn(
             "relative h-16 w-16 rounded-full shadow-2xl",
             "bg-gradient-to-br from-blue-600 via-purple-600 to-emerald-600",
             "hover:from-blue-700 hover:via-purple-700 hover:to-emerald-700",
             "transition-all duration-500 hover:scale-110 hover:shadow-3xl",
             "border-3 border-white/30 backdrop-blur-sm",
-            "before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-pulse"
+            "before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-pulse",
+            isDragging && "scale-110"
           )}
           size="icon"
         >
@@ -332,17 +413,14 @@ Je peux vous aider avec:
           "opacity-0 group-hover:opacity-100 transition-all duration-300",
           "whitespace-nowrap shadow-2xl border border-gray-700",
           "transform group-hover:scale-105",
-          language === 'ar' ? 'right-0' : 'left-0'
+          "pointer-events-none"
         )}>
           <div className="flex items-center gap-2">
             <Brain size={16} className="text-blue-400" />
-            <span>{language === 'ar' ? 'مساعد CMC الذكي' : 'Assistant IA CMC'}</span>
+            <span>{language === 'ar' ? 'مساعد CMC الذكي (اسحب لتحريك)' : 'Assistant IA CMC (glisser pour déplacer)'}</span>
             <Sparkles size={12} className="text-yellow-400" />
           </div>
-          <div className={cn(
-            "absolute top-full w-0 h-0 border-8 border-transparent border-t-gray-900/95",
-            language === 'ar' ? 'right-6' : 'left-6'
-          )}></div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-8 border-transparent border-t-gray-900/95"></div>
         </div>
 
         {/* تأثير النبضة */}
@@ -352,13 +430,16 @@ Je peux vous aider avec:
       {/* نافذة المحادثة المحسنة */}
       {isOpen && (
         <Card className={cn(
-          "fixed bottom-24 w-80 md:w-96 h-[32rem] z-40",
+          "fixed w-80 md:w-96 h-[32rem] z-40",
           "cmc-card flex flex-col overflow-hidden",
           "shadow-2xl border-0 backdrop-blur-lg bg-white/95",
-          "animate-scale-in",
-          // تغيير الموضع حسب اللغة
-          language === 'ar' ? 'right-6' : 'left-6'
-        )}>
+          "animate-scale-in"
+        )}
+        style={{
+          left: position.x + 80 < window.innerWidth - 384 ? `${position.x + 80}px` : `${position.x - 384}px`,
+          top: position.y + 512 < window.innerHeight ? `${position.y}px` : `${window.innerHeight - 512}px`
+        }}
+        >
           {/* رأس النافذة المحسن */}
           <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 text-white">
             <div className="relative">
