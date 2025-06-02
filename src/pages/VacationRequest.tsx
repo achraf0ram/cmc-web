@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { generateVacationPDF } from "@/utils/pdfGenerator";
 import { sendRequestWithEmail } from "@/services/requestService";
 import { useNotifications } from "@/hooks/useNotifications";
+import { formSchema, FormData } from "@/types/vacationRequest";
 
 const VacationRequest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -22,20 +22,7 @@ const VacationRequest = () => {
   const { toast } = useToast();
   const { addNotification } = useNotifications();
 
-  const formSchema = z.object({
-    fullName: z.string().min(3, { message: language === 'ar' ? "يرجى إدخال الاسم الكامل" : "Veuillez entrer le nom complet" }),
-    employeeId: z.string().min(1, { message: language === 'ar' ? "يرجى إدخال رقم الموظف" : "Veuillez entrer le numéro d'employé" }),
-    phoneNumber: z.string().min(10, { message: language === 'ar' ? "يرجى إدخال رقم هاتف صحيح" : "Veuillez entrer un numéro de téléphone valide" }),
-    position: z.string().min(2, { message: language === 'ar' ? "يرجى إدخال المنصب" : "Veuillez entrer le poste" }),
-    department: z.string().min(2, { message: language === 'ar' ? "يرجى إدخال القسم" : "Veuillez entrer le département" }),
-    leaveType: z.string().min(1, { message: language === 'ar' ? "يرجى اختيار نوع الإجازة" : "Veuillez sélectionner le type de congé" }),
-    startDate: z.date({ required_error: language === 'ar' ? "يرجى تحديد تاريخ البداية" : "Veuillez sélectionner la date de début" }),
-    endDate: z.date({ required_error: language === 'ar' ? "يرجى تحديد تاريخ النهاية" : "Veuillez sélectionner la date de fin" }),
-    numberOfDays: z.number().min(1, { message: language === 'ar' ? "يرجى إدخال عدد الأيام" : "Veuillez entrer le nombre de jours" }),
-    reason: z.string().min(5, { message: language === 'ar' ? "يرجى ذكر سبب الإجازة" : "Veuillez indiquer la raison du congé" }),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -64,7 +51,7 @@ const VacationRequest = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormData) => {
     try {
       setIsGenerating(true);
       console.log("Submitting vacation request:", values);
