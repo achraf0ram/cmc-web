@@ -41,27 +41,24 @@ export const AppSidebar = () => {
     navigate("/login", { replace: true });
   };
 
-  // تحسين اتجاه السهم حسب اللغة وحالة الشريط الجانبي
   const chevronIcon = language === 'ar' ? 
   (collapsed ? 
-    <ChevronRight size={18} /> : 
-    <ChevronLeft size={18} />) :
-  (collapsed ? 
     <ChevronLeft size={18} /> : 
-    <ChevronRight size={18} />);
+    <ChevronRight size={18} />) :
+  (collapsed ? 
+    <ChevronRight size={18} /> : 
+    <ChevronLeft size={18} />);
 
-  // Mobile toggle button that appears at the top of the screen
   const MobileToggle = () => (
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => setIsMobileOpen(!isMobileOpen)}  // Toggle mobile sidebar visibility
+      onClick={() => setIsMobileOpen(!isMobileOpen)}
       className={cn(
-        "fixed top-4 z-40 hover:bg-[#E8F5E9] text-[#2E7D32]",
+        "fixed top-4 z-50 hover:bg-[#E8F5E9] text-[#2E7D32]",
         language === 'ar' ? 'right-4' : 'left-4'
       )}
     >
-      {/* Change icon to X when sidebar is open */}
       {isMobileOpen ? (
         language === 'ar' ? <ChevronRight size={24} /> : <ChevronLeft size={24} />
       ) : (
@@ -75,7 +72,7 @@ export const AppSidebar = () => {
       {isMobile && <MobileToggle />}
       <div
         className={cn(
-          "fixed top-0 h-screen bg-white shadow-md flex flex-col transition-all duration-300 z-40",
+          "fixed top-0 h-screen bg-white shadow-lg flex flex-col transition-all duration-300 z-40 border-r",
           collapsed ? "w-20" : "w-64",
           isMobile
             ? isMobileOpen
@@ -84,9 +81,9 @@ export const AppSidebar = () => {
               ? "translate-x-full"
               : "-translate-x-full"
             : "",
-          language === "ar" ? "right-0" : "left-0",
-          "h-[100vh]"
+          language === "ar" ? "right-0" : "left-0"
         )}>
+        
         {/* Header */}
         <div className='flex justify-between items-center p-4 border-b h-20'>
           {!collapsed && (
@@ -120,7 +117,7 @@ export const AppSidebar = () => {
             <Link
               to={item.path}
               key={item.path}
-              onClick={() => isMobile && setIsMobileOpen(false)} // Close mobile sidebar when clicking on a menu item
+              onClick={() => isMobile && setIsMobileOpen(false)}
             >
               <Button
                 variant='ghost'
@@ -165,6 +162,7 @@ export const AppSidebar = () => {
           </Button>
         </div>
       </div>
+      
       {/* Overlay for mobile */}
       {isMobile && isMobileOpen && (
         <div

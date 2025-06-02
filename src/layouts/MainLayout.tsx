@@ -12,13 +12,13 @@ export const MainLayout = () => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="min-h-screen flex relative cmc-page-background">
+    <div className="min-h-screen flex w-full relative cmc-page-background">
       <AppSidebar />
       
       <div className={cn(
-        "flex-1 flex flex-col",
-        !isMobile && (language === 'ar' ? 'mr-0 md:mr-0' : 'ml-0 md:ml-0'),
-        "pt-16 md:pt-0" 
+        "flex-1 flex flex-col transition-all duration-300",
+        !isMobile && (language === 'ar' ? 'mr-20' : 'ml-20'),
+        "pt-16 md:pt-0"
       )}>
         <AppHeader />
         
@@ -27,7 +27,6 @@ export const MainLayout = () => {
         </main>
       </div>
       
-      {/* زر المساعد الذكي العائم */}
       <AIAssistantButton />
     </div>
   );
