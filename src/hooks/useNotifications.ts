@@ -8,6 +8,7 @@ interface Notification {
   message: string;
   type: 'success' | 'error' | 'info' | 'warning';
   timestamp: Date;
+  read?: boolean;
 }
 
 export const useNotifications = () => {
@@ -17,11 +18,18 @@ export const useNotifications = () => {
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>) => {
     const newNotification: Notification = {
       ...notification,
-      id: Date.now().toString(),
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
+      read: false,
     };
 
-    setNotifications(prev => [newNotification, ...prev]);
+    console.log("Adding new notification:", newNotification);
+
+    setNotifications(prev => {
+      const updated = [newNotification, ...prev];
+      console.log("Updated notifications:", updated);
+      return updated;
+    });
 
     // عرض Toast للإشعار
     toast({
@@ -37,6 +45,12 @@ export const useNotifications = () => {
     });
   };
 
+  const markAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    );
+  };
+
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
@@ -45,22 +59,16 @@ export const useNotifications = () => {
     setNotifications([]);
   };
 
-  // محاكاة الإشعارات الحقيقية
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // يمكنك هنا إضافة منطق لجلب الإشعارات من الخادم
-      // const fetchNotifications = async () => {
-      //   // جلب الإشعارات من API
-      // };
-    }, 30000); // كل 30 ثانية
-
-    return () => clearInterval(interval);
-  }, []);
+  const getUnreadCount = () => {
+    return notifications.filter(n => !n.read).length;
+  };
 
   return {
     notifications,
     addNotification,
     removeNotification,
     clearAllNotifications,
+    markAsRead,
+    getUnreadCount,
   };
 };

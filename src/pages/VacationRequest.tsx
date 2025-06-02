@@ -1,7 +1,7 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -58,6 +58,7 @@ const VacationRequest = () => {
 
       // إنشاء PDF
       const pdfBase64 = await generateVacationPDF(values);
+      console.log("PDF generated successfully");
       
       // إرسال الطلب عبر الإيميل
       const emailResult = await sendRequestWithEmail({

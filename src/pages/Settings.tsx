@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,16 +19,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-// import { Label } from "@/components/ui/label";
-// import { useToast } from "@/hooks/use-toast";
-// import { useAuth } from "@/contexts/AuthContext";
-// import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const profileFormSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  phone: z.string().min(10),
+  full_name: z.string().min(2, "الاسم يجب أن يكون أكثر من حرفين"),
+  phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
 });
 
 const notificationsFormSchema = z.object({
@@ -37,24 +35,24 @@ const notificationsFormSchema = z.object({
 });
 
 const passwordFormSchema = z.object({
-  currentPassword: z.string().min(8),
-  newPassword: z.string().min(8),
-  confirmPassword: z.string().min(8),
+  newPassword: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
+  confirmPassword: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
+  message: "كلمات المرور غير متطابقة",
   path: ["confirmPassword"],
 });
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const [isLoading, setIsLoading] = useState(false);
   const { t } = useLanguage();
+  const { profile, updateUser, user } = useAuth();
   
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: "Achraf Ramdani",
-      email: "ram.m@example.com",
-      phone: "0501234567",
+      full_name: profile?.full_name || "",
+      phone: profile?.phone || "",
     },
   });
 
@@ -70,39 +68,88 @@ const Settings = () => {
   const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
     resolver: zodResolver(passwordFormSchema),
     defaultValues: {
-      currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     },
   });
 
-  function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
-    console.log(values);
-    toast({
-      title: "Les informations ont été mises à jour",
-      description: "Les modifications ont été enregistrées avec succès",
-    });
+  async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
+    try {
+      setIsLoading(true);
+      console.log("Updating profile:", values);
+      
+      const success = await updateUser({
+        id: user?.id || "",
+        full_name: values.full_name,
+        phone: values.phone,
+        email: user?.email || "",
+        created_at: "",
+        updated_at: "",
+      });
+
+      if (success) {
+        toast({
+          title: "تم التحديث بنجاح",
+          description: "تم تحديث المعلومات الشخصية بنجاح",
+          className: "bg-green-50 border-green-200",
+        });
+      } else {
+        throw new Error("فشل في تحديث المعلومات");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث المعلومات",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
     console.log(values);
     toast({
-      title: "Les paramètres d'alerte ont été mis à jour",
-      description: "Les modifications ont été enregistrées avec succès",
+      title: "تم تحديث إعدادات الإشعارات",
+      description: "تم حفظ إعدادات الإشعارات بنجاح",
+      className: "bg-green-50 border-green-200",
     });
   }
 
-  function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
-    console.log(values);
-    toast({
-      title: "Le mot de passe a été changé",
-      description: "Le mot de passe a été changé avec succès",
-    });
-    passwordForm.reset({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
+  async function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
+    try {
+      setIsLoading(true);
+      console.log("Updating password");
+      
+      const { error } = await supabase.auth.updateUser({
+        password: values.newPassword
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "تم تغيير كلمة المرور",
+        description: "تم تغيير كلمة المرور بنجاح",
+        className: "bg-green-50 border-green-200",
+      });
+      
+      passwordForm.reset({
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تغيير كلمة المرور",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -111,14 +158,14 @@ const Settings = () => {
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-2">
-            {t('settings')}
+            الإعدادات
           </h1>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-t-lg p-4 md:p-6">
             <CardTitle className="text-lg md:text-xl font-semibold text-center">
-              {t('settings')}
+              إعدادات الحساب
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-8">
@@ -128,19 +175,19 @@ const Settings = () => {
                   value="profile" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-green-600 data-[state=active]:text-white"
                 >
-                  {t('profileTab')}
+                  المعلومات الشخصية
                 </TabsTrigger>
                 <TabsTrigger 
                   value="notifications" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-green-600 data-[state=active]:text-white"
                 >
-                  {t('notificationsTab')}
+                  الإشعارات
                 </TabsTrigger>
                 <TabsTrigger 
                   value="password" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-green-600 data-[state=active]:text-white"
                 >
-                  {t('passwordTab')}
+                  كلمة المرور
                 </TabsTrigger>
               </TabsList>
               
@@ -150,10 +197,10 @@ const Settings = () => {
                     <div className="grid gap-6 sm:grid-cols-2">
                       <FormField
                         control={profileForm.control}
-                        name="name"
+                        name="full_name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">{t('name')}</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">الاسم الكامل</FormLabel>
                             <FormControl>
                               <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
@@ -164,10 +211,10 @@ const Settings = () => {
                       
                       <FormField
                         control={profileForm.control}
-                        name="email"
+                        name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">{t('email')}</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">رقم الهاتف</FormLabel>
                             <FormControl>
                               <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
@@ -177,26 +224,20 @@ const Settings = () => {
                       />
                     </div>
                     
-                    <FormField
-                      control={profileForm.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-slate-700 font-medium">{t('phone')}</FormLabel>
-                          <FormControl>
-                            <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
                     <div className="flex justify-end">
                       <Button 
                         type="submit" 
+                        disabled={isLoading}
                         className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                       >
-                        {t('saveChanges')}
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            جاري الحفظ...
+                          </>
+                        ) : (
+                          "حفظ التغييرات"
+                        )}
                       </Button>
                     </div>
                   </form>
@@ -213,9 +254,9 @@ const Settings = () => {
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base text-slate-700 font-medium">{t('emailNotifications')}</FormLabel>
+                              <FormLabel className="text-base text-slate-700 font-medium">إشعارات البريد الإلكتروني</FormLabel>
                               <FormDescription className="text-slate-600">
-                                {t('emailNotificationsDesc')}
+                                تلقي إشعارات عبر البريد الإلكتروني
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -235,9 +276,9 @@ const Settings = () => {
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base text-slate-700 font-medium">{t('newRequests')}</FormLabel>
+                              <FormLabel className="text-base text-slate-700 font-medium">الطلبات الجديدة</FormLabel>
                               <FormDescription className="text-slate-600">
-                                {t('newRequestsDesc')}
+                                تلقي إشعارات عند تقديم طلبات جديدة
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -257,9 +298,9 @@ const Settings = () => {
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base text-slate-700 font-medium">{t('requestUpdates')}</FormLabel>
+                              <FormLabel className="text-base text-slate-700 font-medium">تحديثات الطلبات</FormLabel>
                               <FormDescription className="text-slate-600">
-                                {t('requestUpdatesDesc')}
+                                تلقي إشعارات عند تحديث حالة الطلبات
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -279,7 +320,7 @@ const Settings = () => {
                         type="submit" 
                         className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                       >
-                        {t('saveChanges')}
+                        حفظ التغييرات
                       </Button>
                     </div>
                   </form>
@@ -292,24 +333,10 @@ const Settings = () => {
                     <div className="grid gap-6">
                       <FormField
                         control={passwordForm.control}
-                        name="currentPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">{t('currentPassword')}</FormLabel>
-                            <FormControl>
-                              <Input type="password" {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={passwordForm.control}
                         name="newPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">{t('newPassword')}</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">كلمة المرور الجديدة</FormLabel>
                             <FormControl>
                               <Input type="password" {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
@@ -323,7 +350,7 @@ const Settings = () => {
                         name="confirmPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">{t('confirmPassword')}</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">تأكيد كلمة المرور</FormLabel>
                             <FormControl>
                               <Input type="password" {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
@@ -336,9 +363,17 @@ const Settings = () => {
                     <div className="flex justify-end">
                       <Button 
                         type="submit" 
+                        disabled={isLoading}
                         className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                       >
-                        {t('changePassword')}
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            جاري التغيير...
+                          </>
+                        ) : (
+                          "تغيير كلمة المرور"
+                        )}
                       </Button>
                     </div>
                   </form>

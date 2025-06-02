@@ -1,7 +1,8 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { BarChart3, Calendar, CheckCircle, Settings, Bell } from "lucide-react";
+import { BarChart3, Calendar, CheckCircle, Settings, Bell, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 export const Dashboard = () => {
   const { t } = useLanguage();
   const { profile } = useAuth();
-  const { notifications } = useNotifications();
+  const { notifications, removeNotification, markAsRead, getUnreadCount } = useNotifications();
 
   const stats = [
     {
@@ -36,33 +37,57 @@ export const Dashboard = () => {
     },
   ];
 
+  const handleNotificationClick = (id: string) => {
+    markAsRead(id);
+  };
+
+  const formatTimeAgo = (timestamp: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - timestamp.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "الآن";
+    if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
+    if (diffHours < 24) return `منذ ${diffHours} ساعة`;
+    return `منذ ${diffDays} يوم`;
+  };
+
   // دمج الإشعارات الحقيقية مع الإشعارات الثابتة
-  const allNotifications = [
-    ...notifications.slice(0, 2).map(notif => ({
-      id: notif.id,
-      title: notif.title,
-      time: `منذ ${Math.floor((Date.now() - notif.timestamp.getTime()) / 60000)} دقيقة`,
-      type: notif.type
-    })),
+  const staticNotifications = [
     {
-      id: 1,
+      id: "static-1",
       title: "تم الموافقة على طلب الإجازة",
       time: "منذ ساعتين",
-      type: "success"
+      type: "success",
+      read: true
     },
     {
-      id: 2,
+      id: "static-2", 
       title: "تم إصدار شهادة العمل",
       time: "منذ 3 ساعات",
-      type: "info"
+      type: "info",
+      read: true
     },
     {
-      id: 3,
+      id: "static-3",
       title: "تذكير: تحديث البيانات الشخصية",
       time: "منذ يوم",
-      type: "warning"
+      type: "warning",
+      read: true
     }
-  ].slice(0, 5); // عرض أحدث 5 إشعارات فقط
+  ];
+
+  const realNotifications = notifications.slice(0, 3).map(notif => ({
+    id: notif.id,
+    title: notif.title,
+    time: formatTimeAgo(notif.timestamp),
+    type: notif.type,
+    read: notif.read
+  }));
+
+  const allNotifications = [...realNotifications, ...staticNotifications].slice(0, 5);
 
   return (
     <div className="w-full">
@@ -131,9 +156,9 @@ export const Dashboard = () => {
             <CardTitle className="text-lg md:text-xl font-semibold text-center flex items-center justify-center gap-2">
               <Bell className="w-5 h-5 md:w-6 md:h-6" />
               الإشعارات الحديثة
-              {notifications.length > 0 && (
+              {getUnreadCount() > 0 && (
                 <Badge variant="secondary" className="bg-white text-cmc-blue">
-                  {notifications.length}
+                  {getUnreadCount()}
                 </Badge>
               )}
             </CardTitle>
@@ -141,7 +166,13 @@ export const Dashboard = () => {
           <CardContent className="p-4 md:p-6">
             <div className="space-y-3">
               {allNotifications.map((notification) => (
-                <div key={notification.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border">
+                <div 
+                  key={notification.id} 
+                  className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
+                    notification.read ? 'bg-slate-50' : 'bg-gradient-to-r from-blue-50 to-green-50 border-blue-200'
+                  }`}
+                  onClick={() => handleNotificationClick(notification.id)}
+                >
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
                       notification.type === 'success' ? 'bg-green-500' :
@@ -150,13 +181,32 @@ export const Dashboard = () => {
                       'bg-yellow-500'
                     }`}></div>
                     <div>
-                      <p className="font-medium text-slate-800">{notification.title}</p>
+                      <p className={`font-medium ${notification.read ? 'text-slate-600' : 'text-slate-800'}`}>
+                        {notification.title}
+                      </p>
                       <p className="text-xs text-slate-500">{notification.time}</p>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    جديد
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {!notification.read && (
+                      <Badge variant="secondary" className="text-xs">
+                        جديد
+                      </Badge>
+                    )}
+                    {notification.id.startsWith('notif-') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeNotification(notification.id);
+                        }}
+                        className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
               {allNotifications.length === 0 && (
