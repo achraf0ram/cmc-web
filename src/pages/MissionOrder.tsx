@@ -30,12 +30,16 @@ import { useToast } from "@/hooks/use-toast";
 
 // Import the Arabic font data
 import { AmiriFont } from "../fonts/AmiriFont";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const MissionOrder = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { language, t } = useLanguage();
   const { toast } = useToast();
+
+  // Import the notification hook  
+  const { addNotification } = useNotifications();
 
   // تعريف الـ Schema للتحقق من صحة البيانات
   const formSchema = z.object({
@@ -80,18 +84,46 @@ const MissionOrder = () => {
     try {
       setIsGenerating(true);
       console.log(values);
-      await generatePDF(values);
+      
+      // إنشاء PDF والحصول على base64
+      const pdfBase64 = await generatePDF(values);
+      
+      // إرسال الطلب عبر الإيميل
+      const emailResult = await sendRequestWithEmail({
+        type: 'mission-order',
+        data: values,
+        pdfBase64: pdfBase64,
+      });
+
+      if (!emailResult.success) {
+        throw new Error(emailResult.error || 'فشل في إرسال الطلب');
+      }
+
       setIsSubmitted(true);
       
+      // إضافة إشعار نجاح
+      addNotification({
+        title: "تم الإرسال بنجاح",
+        message: "تم إرسال طلب أمر المهمة وسيتم مراجعته قريباً",
+        type: "success"
+      });
+
       // Show success toast
       toast({
         title: "تم بنجاح",
-        description: "تم إنشاء أمر المهمة وتحميله بنجاح",
+        description: "تم إنشاء أمر المهمة وإرساله للإدارة بنجاح",
         variant: "default",
         className: "bg-green-50 border-green-200",
       });
     } catch (error) {
       console.error("Error:", error);
+      
+      addNotification({
+        title: "خطأ في الإرسال",
+        message: error instanceof Error ? error.message : "حدث خطأ أثناء معالجة الطلب",
+        type: "error"
+      });
+
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.",
@@ -102,8 +134,8 @@ const MissionOrder = () => {
     }
   };
 
-  // دالة لتوليد PDF
-  const generatePDF = async (data: z.infer<typeof formSchema>) => {
+  // دالة لتوليد PDF مع إرجاع base64
+  const generatePDF = async (data: z.infer<typeof formSchema>): Promise<string> => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const currentDate = format(new Date(), "EEEE d MMMM yyyy", { locale: fr });
 
@@ -235,8 +267,13 @@ doc.text(format(data.endDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 5.
     const noteY = visaY + visaSectionHeight + 5; // Adjusted vertical position
     doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, noteY);
 
+    // Convert PDF to base64 and return it
+    const pdfBase64 = doc.output('datauristring').split(',')[1];
+    
     // حفظ الـ PDF
     doc.save(`ordre_mission_${data.destination.replace(/\s+/g, '_')}.pdf`);
+    
+    return pdfBase64;
   };
 
   if (isSubmitted) {

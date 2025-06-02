@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,10 +5,12 @@ import { BarChart3, Calendar, CheckCircle, Settings, Bell } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNotifications } from "@/hooks/useNotifications";
 
 export const Dashboard = () => {
   const { t } = useLanguage();
   const { profile } = useAuth();
+  const { notifications } = useNotifications();
 
   const stats = [
     {
@@ -35,7 +36,14 @@ export const Dashboard = () => {
     },
   ];
 
-  const notifications = [
+  // دمج الإشعارات الحقيقية مع الإشعارات الثابتة
+  const allNotifications = [
+    ...notifications.slice(0, 2).map(notif => ({
+      id: notif.id,
+      title: notif.title,
+      time: `منذ ${Math.floor((Date.now() - notif.timestamp.getTime()) / 60000)} دقيقة`,
+      type: notif.type
+    })),
     {
       id: 1,
       title: "تم الموافقة على طلب الإجازة",
@@ -54,7 +62,7 @@ export const Dashboard = () => {
       time: "منذ يوم",
       type: "warning"
     }
-  ];
+  ].slice(0, 5); // عرض أحدث 5 إشعارات فقط
 
   return (
     <div className="w-full">
@@ -123,16 +131,23 @@ export const Dashboard = () => {
             <CardTitle className="text-lg md:text-xl font-semibold text-center flex items-center justify-center gap-2">
               <Bell className="w-5 h-5 md:w-6 md:h-6" />
               الإشعارات الحديثة
+              {notifications.length > 0 && (
+                <Badge variant="secondary" className="bg-white text-cmc-blue">
+                  {notifications.length}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-6">
             <div className="space-y-3">
-              {notifications.map((notification) => (
+              {allNotifications.map((notification) => (
                 <div key={notification.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${
                       notification.type === 'success' ? 'bg-green-500' :
-                      notification.type === 'info' ? 'bg-blue-500' : 'bg-yellow-500'
+                      notification.type === 'info' ? 'bg-blue-500' : 
+                      notification.type === 'error' ? 'bg-red-500' :
+                      'bg-yellow-500'
                     }`}></div>
                     <div>
                       <p className="font-medium text-slate-800">{notification.title}</p>
@@ -144,6 +159,11 @@ export const Dashboard = () => {
                   </Badge>
                 </div>
               ))}
+              {allNotifications.length === 0 && (
+                <div className="text-center py-8 text-slate-500">
+                  لا توجد إشعارات جديدة
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

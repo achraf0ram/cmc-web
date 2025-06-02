@@ -27,6 +27,8 @@ import { CheckCircle } from "lucide-react";
 
 // Import the Arabic font data
 import { AmiriFont } from "../fonts/AmiriFont";
+import { useNotifications } from "@/hooks/useNotifications";
+import { sendRequestWithEmail } from "@/services/requestService";
 
 const WorkCertificate = () => {
   const { t, language } = useLanguage();
@@ -35,6 +37,9 @@ const WorkCertificate = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
   const { toast } = useToast();
+
+  // Import the notification hook
+  const { addNotification } = useNotifications();
 
   // Define form schema inside the component to access the language context
   const formSchema = z.object({
@@ -130,21 +135,49 @@ const WorkCertificate = () => {
       doc.text("Ain Bordja-Casablanca", 20, 238);
       doc.text("Tél :05 22 60 00 82 - Fax :05 22 6039 65", 20, 242);
 
+      // Convert PDF to base64
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
+
       // Save PDF
       doc.save("attestation_de_travail.pdf");
+
+      // إرسال الطلب عبر الإيميل
+      const emailResult = await sendRequestWithEmail({
+        type: 'work-certificate',
+        data: data,
+        pdfBase64: pdfBase64,
+      });
+
+      if (!emailResult.success) {
+        throw new Error(emailResult.error || 'فشل في إرسال الطلب');
+      }
       
       setIsSubmitted(true);
+
+      // إضافة إشعار نجاح
+      addNotification({
+        title: "تم الإرسال بنجاح",
+        message: "تم إرسال طلب شهادة العمل وسيتم مراجعته قريباً",
+        type: "success"
+      });
 
       // Show success toast
       toast({
         title: "تم بنجاح",
-        description: "تم إنشاء شهادة العمل وتحميلها بنجاح",
+        description: "تم إنشاء شهادة العمل وإرسالها للإدارة بنجاح",
         variant: "default",
         className: "bg-green-50 border-green-200",
       });
 
     } catch (error) {
       console.error("Error:", error);
+      
+      addNotification({
+        title: "خطأ في الإرسال",
+        message: error instanceof Error ? error.message : "حدث خطأ أثناء معالجة الطلب",
+        type: "error"
+      });
+
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.",
