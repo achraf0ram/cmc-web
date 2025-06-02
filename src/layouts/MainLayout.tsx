@@ -17,7 +17,6 @@ export const MainLayout = () => {
       
       <div className={cn(
         "flex-1 flex flex-col transition-all duration-300",
-        !isMobile && (language === 'ar' ? 'mr-20' : 'ml-20'),
         "pt-16 md:pt-0"
       )}>
         <AppHeader />

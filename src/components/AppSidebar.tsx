@@ -67,13 +67,31 @@ export const AppSidebar = () => {
     </Button>
   );
 
+  // Show toggle button for desktop when sidebar is collapsed
+  const DesktopToggle = () => (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setCollapsed(false)}
+      className={cn(
+        "fixed top-4 z-50 hover:bg-[#E8F5E9] text-[#2E7D32]",
+        language === 'ar' ? 'right-4' : 'left-4'
+      )}
+    >
+      <Menu size={24} />
+    </Button>
+  );
+
   return (
     <>
       {isMobile && <MobileToggle />}
+      {!isMobile && collapsed && <DesktopToggle />}
       <div
         className={cn(
           "fixed top-0 h-screen bg-white shadow-lg flex flex-col transition-all duration-300 z-40 border-r",
-          collapsed ? "w-20" : "w-64",
+          collapsed ? "w-64" : "w-64",
+          // Hide completely when collapsed on desktop
+          !isMobile && collapsed && "hidden",
           isMobile
             ? isMobileOpen
               ? "translate-x-0"
@@ -86,16 +104,14 @@ export const AppSidebar = () => {
         
         {/* Header */}
         <div className='flex justify-between items-center p-4 border-b h-20'>
-          {!collapsed && (
-            <div className='flex items-center gap-2'>
-              <img
-                src='/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png'
-                alt='CMC'
-                className='h-10 w-auto'
-              />
-              <span className='text-[#0FA0CE] font-bold text-xl'>CMC</span>
-            </div>
-          )}
+          <div className='flex items-center gap-2'>
+            <img
+              src='/lovable-uploads/61196920-7ed5-45d7-af8f-330e58178ad2.png'
+              alt='CMC'
+              className='h-10 w-auto'
+            />
+            <span className='text-[#0FA0CE] font-bold text-xl'>CMC</span>
+          </div>
           <Button
             variant='ghost'
             size='icon'
@@ -103,7 +119,7 @@ export const AppSidebar = () => {
               if (isMobile) {
                 setIsMobileOpen(false);
               } else {
-                setCollapsed(!collapsed);
+                setCollapsed(true);
               }
             }}
             className='hover:bg-[#E8F5E9] text-[#2E7D32]'>
@@ -126,7 +142,7 @@ export const AppSidebar = () => {
                   "hover:bg-[#E8F5E9] hover:text-[#2E7D32]"
                 )}>
                 <item.icon size={20} />
-                {!collapsed && <span>{t(item.name)}</span>}
+                <span>{t(item.name)}</span>
               </Button>
             </Link>
           ))}
@@ -134,31 +150,24 @@ export const AppSidebar = () => {
 
         {/* Footer */}
         <div className='border-t py-4 flex flex-col gap-2'>
-          <div
-            className={cn(
-              "flex items-center gap-3 px-4 py-2",
-              collapsed && "justify-center"
-            )}>
+          <div className="flex items-center gap-3 px-4 py-2">
             <div className='w-8 h-8 rounded-full bg-[#E8F5E9] flex items-center justify-center'>
               <User
                 size={16}
                 className='text-[#2E7D32]'
               />
             </div>
-            {!collapsed && (
-              <div className='text-sm'>{profile?.full_name || "المستخدم"}</div>
-            )}
+            <div className='text-sm'>{profile?.full_name || "المستخدم"}</div>
           </div>
           <Button
             variant='ghost'
             className={cn(
               "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
-              "hover:bg-[#E8F5E9] hover:text-[#2E7D32] text-muted-foreground",
-              collapsed && "justify-center"
+              "hover:bg-[#E8F5E9] hover:text-[#2E7D32] text-muted-foreground"
             )}
             onClick={handleSignOut}>
             <LogOut size={18} />
-            {!collapsed && <span>{t("logout")}</span>}
+            <span>{t("logout")}</span>
           </Button>
         </div>
       </div>
