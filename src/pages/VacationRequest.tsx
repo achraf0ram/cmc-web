@@ -6,8 +6,8 @@ import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import { PersonalInfoSection } from "@/components/forms/PersonalInfoSection";
-import { LeaveInfoSection } from "@/components/forms/LeaveInfoSection";
+import PersonalInfoSection from "@/components/forms/PersonalInfoSection";
+import LeaveInfoSection from "@/components/forms/LeaveInfoSection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { generateVacationPDF } from "@/utils/pdfGenerator";
@@ -17,6 +17,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 const VacationRequest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const { language } = useLanguage();
   const { toast } = useToast();
   const { addNotification } = useNotifications();
@@ -38,13 +39,28 @@ const VacationRequest = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
-      employeeId: "",
-      phoneNumber: "",
-      position: "",
-      department: "",
+      matricule: "",
+      echelle: "",
+      echelon: "",
+      grade: "",
+      phone: "",
+      fonction: "",
+      arabicFonction: "",
+      direction: "",
+      arabicDirection: "",
+      address: "",
+      arabicAddress: "",
       leaveType: "",
-      numberOfDays: 1,
-      reason: "",
+      customLeaveType: "",
+      arabicCustomLeaveType: "",
+      duration: "",
+      arabicDuration: "",
+      with: "",
+      arabicWith: "",
+      interim: "",
+      arabicInterim: "",
+      leaveMorocco: false,
+      signature: "",
     },
   });
 
@@ -146,7 +162,11 @@ const VacationRequest = () => {
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 md:space-y-8">
           <PersonalInfoSection form={form} />
-          <LeaveInfoSection form={form} />
+          <LeaveInfoSection 
+            form={form} 
+            signaturePreview={signaturePreview}
+            setSignaturePreview={setSignaturePreview}
+          />
           
           <div className="flex justify-center pt-4 md:pt-6">
             <Button 

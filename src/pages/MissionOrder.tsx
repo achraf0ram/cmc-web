@@ -27,10 +27,11 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
+import { sendRequestWithEmail } from "@/services/requestService";
+import { useNotifications } from "@/hooks/useNotifications";
 
 // Import the Arabic font data
 import { AmiriFont } from "../fonts/AmiriFont";
-import { useNotifications } from "@/hooks/useNotifications";
 
 const MissionOrder = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
