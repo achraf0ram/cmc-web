@@ -29,13 +29,33 @@ export const sendRequestWithEmail = async (requestData: RequestData): Promise<{ 
 
     console.log("User profile:", profile);
 
-    // تحضير بيانات الطلب
+    // حفظ الطلب في قاعدة البيانات أولاً
+    const { data: savedRequest, error: saveError } = await supabase
+      .from('requests')
+      .insert({
+        user_id: user.id,
+        type: requestData.type,
+        data: requestData.data,
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (saveError) {
+      console.error('Error saving request to database:', saveError);
+      throw new Error('فشل في حفظ الطلب في قاعدة البيانات');
+    }
+
+    console.log('Request saved to database:', savedRequest);
+
+    // تحضير بيانات الطلب للإيميل
     const requestPayload = {
       type: requestData.type,
       userEmail: user.email,
       userName: profile?.full_name || 'مستخدم',
       data: requestData.data,
       pdfBase64: requestData.pdfBase64,
+      requestId: savedRequest.id,
     };
 
     console.log("Sending request to edge function:", requestPayload);
@@ -47,13 +67,16 @@ export const sendRequestWithEmail = async (requestData: RequestData): Promise<{ 
 
     if (error) {
       console.error('Error calling edge function:', error);
-      throw error;
+      // حتى لو فشل الإيميل، الطلب محفوظ في قاعدة البيانات
+      console.log('Request saved but email failed to send');
+      return { success: true }; // نعتبره نجاح لأن الطلب محفوظ
     }
 
     console.log('Edge function response:', data);
 
     if (!data || !data.success) {
-      throw new Error(data?.error || 'فشل في إرسال الطلب');
+      console.log('Email failed but request is saved in database');
+      return { success: true }; // نعتبره نجاح لأن الطلب محفوظ
     }
 
     console.log('Request sent successfully');

@@ -7,35 +7,14 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Dashboard = () => {
   const { t } = useLanguage();
   const { profile } = useAuth();
   const { notifications, removeNotification, markAsRead, getUnreadCount } = useNotifications();
-
-  const stats = [
-    {
-      title: t('pendingRequests'),
-      value: '5',
-      description: t('awaitingApproval'),
-      icon: Calendar,
-      color: 'from-cmc-blue to-cmc-blue-dark'
-    },
-    {
-      title: t('approvedRequests'),
-      value: '12',
-      description: t('thisMonth'),
-      icon: CheckCircle,
-      color: 'from-cmc-green to-emerald-600'
-    },
-    {
-      title: t('vacationDays'),
-      value: '15',
-      description: t('remaining'),
-      icon: BarChart3,
-      color: 'from-cmc-blue to-cmc-green'
-    },
-  ];
+  const { pendingRequests, approvedRequests, vacationDaysRemaining, isLoading, error } = useDashboardData();
 
   const handleNotificationClick = (id: string) => {
     markAsRead(id);
@@ -63,6 +42,31 @@ export const Dashboard = () => {
     type: notif.type,
     read: notif.read
   }));
+
+  // إنشاء بيانات الإحصائيات مع البيانات الحقيقية
+  const stats = [
+    {
+      title: 'الطلبات المعلقة',
+      value: isLoading ? '...' : pendingRequests.toString(),
+      description: 'في انتظار المراجعة',
+      icon: Calendar,
+      color: 'from-cmc-blue to-cmc-blue-dark'
+    },
+    {
+      title: 'الطلبات الموافق عليها',
+      value: isLoading ? '...' : approvedRequests.toString(),
+      description: 'هذا الشهر',
+      icon: CheckCircle,
+      color: 'from-cmc-green to-emerald-600'
+    },
+    {
+      title: 'أيام الإجازة',
+      value: isLoading ? '...' : vacationDaysRemaining.toString(),
+      description: 'المتبقية',
+      icon: BarChart3,
+      color: 'from-cmc-blue to-cmc-green'
+    },
+  ];
 
   return (
     <div className="w-full">
@@ -102,6 +106,15 @@ export const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Error Alert */}
+        {error && (
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="p-4">
+              <p className="text-red-700 text-center">{error}</p>
+            </CardContent>
+          </Card>
+        )}
         
         {/* Stats Cards */}
         <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3 mb-6 md:mb-8">
@@ -116,7 +129,13 @@ export const Dashboard = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-4 md:p-6">
-                <div className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">{stat.value}</div>
+                <div className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    stat.value
+                  )}
+                </div>
                 <p className="text-xs md:text-sm text-slate-600">
                   {stat.description}
                 </p>
