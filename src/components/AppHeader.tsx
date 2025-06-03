@@ -1,3 +1,4 @@
+
 import { Search, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -16,6 +18,23 @@ import {
 export const AppHeader = () => {
   const { t } = useLanguage();
   const isMobile = useIsMobile();
+  const { notifications, getUnreadCount, markAsRead } = useNotifications();
+  
+  const formatTimeAgo = (timestamp: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - timestamp.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "الآن";
+    if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
+    if (diffHours < 24) return `منذ ${diffHours} ساعة`;
+    return `منذ ${diffDays} يوم`;
+  };
+
+  const displayNotifications = notifications.slice(0, 5);
+  const unreadCount = getUnreadCount();
   
   return (
     <header className={cn(
@@ -38,33 +57,51 @@ export const AppHeader = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative hover:bg-cmc-blue-light/50 text-cmc-blue h-9 w-9 md:h-10 md:w-10">
               <Bell size={16} />
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-gradient-to-r from-cmc-blue to-cmc-green text-xs">
-                3
-              </Badge>
+              {unreadCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-gradient-to-r from-cmc-blue to-cmc-green text-xs">
+                  {unreadCount}
+                </Badge>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-72 md:w-80 cmc-card">
             <div className="p-4 border-b border-slate-100">
               <h4 className="font-semibold text-slate-800">{t('notifications')}</h4>
             </div>
-            <DropdownMenuItem className="p-4 cursor-pointer hover:bg-cmc-blue-light/30">
-              <div className="flex flex-col gap-1">
-                <span className="font-medium text-slate-800">تم الموافقة على طلب الإجازة</span>
-                <span className="text-xs text-slate-500">منذ ساعتين</span>
+            {displayNotifications.length > 0 ? (
+              displayNotifications.map((notification) => (
+                <DropdownMenuItem 
+                  key={notification.id}
+                  className="p-4 cursor-pointer hover:bg-cmc-blue-light/30"
+                  onClick={() => markAsRead(notification.id)}
+                >
+                  <div className="flex flex-col gap-1 w-full">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        notification.type === 'success' ? 'bg-green-500' :
+                        notification.type === 'info' ? 'bg-blue-500' : 
+                        notification.type === 'error' ? 'bg-red-500' :
+                        'bg-yellow-500'
+                      }`}></div>
+                      <span className={`font-medium ${notification.read ? 'text-slate-600' : 'text-slate-800'}`}>
+                        {notification.title}
+                      </span>
+                      {!notification.read && (
+                        <Badge variant="secondary" className="text-xs mr-auto">
+                          جديد
+                        </Badge>
+                      )}
+                    </div>
+                    <span className="text-sm text-slate-500">{notification.message}</span>
+                    <span className="text-xs text-slate-400">{formatTimeAgo(notification.timestamp)}</span>
+                  </div>
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <div className="p-4 text-center text-slate-500">
+                لا توجد إشعارات
               </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="p-4 cursor-pointer hover:bg-cmc-blue-light/30">
-              <div className="flex flex-col gap-1">
-                <span className="font-medium text-slate-800">تم إصدار شهادة العمل</span>
-                <span className="text-xs text-slate-500">منذ 3 ساعات</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="p-4 cursor-pointer hover:bg-cmc-blue-light/30">
-              <div className="flex flex-col gap-1">
-                <span className="font-medium text-slate-800">تذكير: تحديث البيانات الشخصية</span>
-                <span className="text-xs text-slate-500">منذ يوم</span>
-              </div>
-            </DropdownMenuItem>
+            )}
             <div className="p-2 text-center border-t border-slate-100">
               <Button variant="link" size="sm" className="text-cmc-blue hover:text-cmc-blue-dark">
                 {t('viewAll')}
