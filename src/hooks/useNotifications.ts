@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Notification {
   id: string;
@@ -14,6 +16,61 @@ interface Notification {
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // جلب الطلبات المعلقة وإضافتها كإشعارات
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      if (!user) return;
+
+      try {
+        const { data: pendingRequests, error } = await supabase
+          .from('requests')
+          .select('id, type, submitted_at, data')
+          .eq('user_id', user.id)
+          .eq('status', 'pending')
+          .order('submitted_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching pending requests:', error);
+          return;
+        }
+
+        // تحويل الطلبات المعلقة إلى إشعارات
+        const pendingNotifications = pendingRequests?.map(request => {
+          const requestTypeMap = {
+            'vacation': 'طلب إجازة',
+            'work-certificate': 'طلب شهادة عمل',
+            'mission-order': 'طلب أمر مهمة'
+          };
+
+          const submittedDate = new Date(request.submitted_at);
+          const daysSinceSubmission = Math.floor((new Date().getTime() - submittedDate.getTime()) / (1000 * 60 * 60 * 24));
+
+          return {
+            id: `pending-${request.id}`,
+            title: `${requestTypeMap[request.type as keyof typeof requestTypeMap]} معلق`,
+            message: `تم تقديم الطلب منذ ${daysSinceSubmission} ${daysSinceSubmission === 1 ? 'يوم' : 'أيام'}`,
+            type: 'warning' as const,
+            timestamp: submittedDate,
+            read: false,
+          };
+        }) || [];
+
+        // دمج الإشعارات الجديدة مع الإشعارات الموجودة (بدون تكرار)
+        setNotifications(prev => {
+          const existingIds = prev.map(n => n.id);
+          const newNotifications = pendingNotifications.filter(n => !existingIds.includes(n.id));
+          return [...newNotifications, ...prev.filter(n => !n.id.startsWith('pending-'))];
+        });
+
+      } catch (error) {
+        console.error('Error in fetchPendingRequests:', error);
+      }
+    };
+
+    fetchPendingRequests();
+  }, [user]);
 
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>) => {
     const newNotification: Notification = {
