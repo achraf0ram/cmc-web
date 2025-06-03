@@ -54,40 +54,15 @@ export const Dashboard = () => {
     return `منذ ${diffDays} يوم`;
   };
 
-  // دمج الإشعارات الحقيقية مع الإشعارات الثابتة
-  const staticNotifications = [
-    {
-      id: "static-1",
-      title: "تم الموافقة على طلب الإجازة",
-      time: "منذ ساعتين",
-      type: "success",
-      read: true
-    },
-    {
-      id: "static-2", 
-      title: "تم إصدار شهادة العمل",
-      time: "منذ 3 ساعات",
-      type: "info",
-      read: true
-    },
-    {
-      id: "static-3",
-      title: "تذكير: تحديث البيانات الشخصية",
-      time: "منذ يوم",
-      type: "warning",
-      read: true
-    }
-  ];
-
-  const realNotifications = notifications.slice(0, 3).map(notif => ({
+  // Use only real notifications from the hook
+  const displayNotifications = notifications.slice(0, 5).map(notif => ({
     id: notif.id,
     title: notif.title,
+    message: notif.message,
     time: formatTimeAgo(notif.timestamp),
     type: notif.type,
     read: notif.read
   }));
-
-  const allNotifications = [...realNotifications, ...staticNotifications].slice(0, 5);
 
   return (
     <div className="w-full">
@@ -165,7 +140,7 @@ export const Dashboard = () => {
           </CardHeader>
           <CardContent className="p-4 md:p-6">
             <div className="space-y-3">
-              {allNotifications.map((notification) => (
+              {displayNotifications.map((notification) => (
                 <div 
                   key={notification.id} 
                   className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
@@ -184,7 +159,8 @@ export const Dashboard = () => {
                       <p className={`font-medium ${notification.read ? 'text-slate-600' : 'text-slate-800'}`}>
                         {notification.title}
                       </p>
-                      <p className="text-xs text-slate-500">{notification.time}</p>
+                      <p className="text-sm text-slate-500 mt-1">{notification.message}</p>
+                      <p className="text-xs text-slate-400">{notification.time}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -193,23 +169,21 @@ export const Dashboard = () => {
                         جديد
                       </Badge>
                     )}
-                    {notification.id.startsWith('notif-') && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeNotification(notification.id);
-                        }}
-                        className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeNotification(notification.id);
+                      }}
+                      className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               ))}
-              {allNotifications.length === 0 && (
+              {displayNotifications.length === 0 && (
                 <div className="text-center py-8 text-slate-500">
                   لا توجد إشعارات جديدة
                 </div>

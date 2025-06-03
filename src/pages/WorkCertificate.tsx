@@ -154,17 +154,17 @@ const WorkCertificate = () => {
       
       setIsSubmitted(true);
 
-      // إضافة إشعار نجاح
+      // إضافة إشعار نجاح مع تأكيد إرسال الإيميل
       addNotification({
         title: "تم الإرسال بنجاح",
-        message: "تم إرسال طلب شهادة العمل وسيتم مراجعته قريباً",
+        message: "تم إرسال طلب شهادة العمل إلى إيميل الإدارة وسيتم مراجعته قريباً. كما تم إرسال نسخة تأكيد إلى بريدك الإلكتروني.",
         type: "success"
       });
 
       // Show success toast
       toast({
         title: "تم بنجاح",
-        description: "تم إنشاء شهادة العمل وإرسالها للإدارة بنجاح",
+        description: "تم إنشاء شهادة العمل وإرسالها إلى إيميل الإدارة بنجاح",
         variant: "default",
         className: "bg-green-50 border-green-200",
       });

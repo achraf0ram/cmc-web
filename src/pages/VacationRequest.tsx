@@ -73,17 +73,17 @@ const VacationRequest = () => {
 
       setIsSubmitted(true);
       
-      // إضافة إشعار نجاح
+      // إضافة إشعار نجاح مع تأكيد إرسال الإيميل
       addNotification({
         title: "تم الإرسال بنجاح",
-        message: "تم إرسال طلب الإجازة وسيتم مراجعته قريباً",
+        message: "تم إرسال طلب الإجازة إلى إيميل الإدارة وسيتم مراجعته قريباً. كما تم إرسال نسخة تأكيد إلى بريدك الإلكتروني.",
         type: "success"
       });
 
       // Show success toast
       toast({
         title: "تم بنجاح",
-        description: "تم إرسال طلب الإجازة وتحميل PDF بنجاح",
+        description: "تم إرسال طلب الإجازة إلى إيميل الإدارة وتحميل PDF بنجاح",
         variant: "default",
         className: "bg-green-50 border-green-200",
       });
