@@ -99,15 +99,16 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // إرسال الإيميل للإدارة
+    // إرسال الإيميل للإدارة (مؤقتاً إلى إيميلك)
     const adminEmailResponse = await resend.emails.send({
       from: "CMC System <onboarding@resend.dev>",
-      to: ["20ramdani02@gmail.com"],
-      subject: subject,
+      to: ["achraframdani2@gmail.com"], // تم تغيير الإيميل إلى إيميلك
+      subject: `[طلب إدارة] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #0FA0CE 0%, #2E7D32 100%); padding: 20px; text-align: center; color: white;">
             <h1 style="margin: 0;">نظام إدارة الطلبات CMC</h1>
+            <p style="margin: 5px 0 0 0;">طلب مقدم للإدارة</p>
           </div>
           <div style="padding: 20px; background-color: #f9f9f9;">
             ${content}
