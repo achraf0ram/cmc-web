@@ -27,6 +27,8 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/hooks/useNotifications";
+import { sendRequestWithEmail } from "@/services/requestService";
 
 // Import the Arabic font data
 import { AmiriFont } from "../fonts/AmiriFont";
@@ -36,6 +38,7 @@ const MissionOrder = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { language, t } = useLanguage();
   const { toast } = useToast();
+  const { addNotification } = useNotifications();
 
   // تعريف الـ Schema للتحقق من صحة البيانات
   const formSchema = z.object({
@@ -75,35 +78,8 @@ const MissionOrder = () => {
     },
   });
 
-  // دالة للإرسال
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      setIsGenerating(true);
-      console.log(values);
-      await generatePDF(values);
-      setIsSubmitted(true);
-      
-      // Show success toast
-      toast({
-        title: "تم بنجاح",
-        description: "تم إنشاء أمر المهمة وتحميله بنجاح",
-        variant: "default",
-        className: "bg-green-50 border-green-200",
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   // دالة لتوليد PDF
-  const generatePDF = async (data: z.infer<typeof formSchema>) => {
+  const generatePDF = async (data: z.infer<typeof formSchema>): Promise<string> => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const currentDate = format(new Date(), "EEEE d MMMM yyyy", { locale: fr });
 
@@ -184,21 +160,15 @@ const MissionOrder = () => {
 
     // Row 4
     doc.rect(col1X, startY + rowHeight * 4, endX - col1X, rowHeight);
-   // النص الأساسي
-doc.text("Date de départ :", col1X + 5, startY + rowHeight * 4.5 + 2);
-
-// التاريخ - معدل ليكون قريباً من النص
-doc.text(format(data.startDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 4.5 + 2);
+    doc.text("Date de départ :", col1X + 5, startY + rowHeight * 4.5 + 2);
+    doc.text(format(data.startDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 4.5 + 2);
     doc.text("Heure :", col2X + 5, startY + rowHeight * 4.5 + 2);
     doc.text(data.startTime || "", col2X + 25, startY + rowHeight * 4.5 + 2);
 
     // Row 5
     doc.rect(col1X, startY + rowHeight * 5, endX - col1X, rowHeight);
-  // النص الأساسي
-doc.text("Date de retour :", col1X + 5, startY + rowHeight * 5.5 + 2);
-
-// التاريخ - نفس الإزاحة المستخدمة في "Date de départ"
-doc.text(format(data.endDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 5.5 + 2);
+    doc.text("Date de retour :", col1X + 5, startY + rowHeight * 5.5 + 2);
+    doc.text(format(data.endDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 5.5 + 2);
     doc.text("Heure :", col2X + 5, startY + rowHeight * 5.5 + 2);
     doc.text(data.endTime || "", col2X + 25, startY + rowHeight * 5.5 + 2);
 
@@ -235,8 +205,68 @@ doc.text(format(data.endDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 5.
     const noteY = visaY + visaSectionHeight + 5; // Adjusted vertical position
     doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, noteY);
 
-    // حفظ الـ PDF
+    // الحصول على base64 للإرسال عبر الإيميل
+    const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+    // حفظ الـ PDF للتحميل
     doc.save(`ordre_mission_${data.destination.replace(/\s+/g, '_')}.pdf`);
+
+    return pdfBase64;
+  };
+
+  // دالة للإرسال
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      setIsGenerating(true);
+      console.log("Generating PDF and sending request...", values);
+      
+      // توليد PDF والحصول على base64
+      const pdfBase64 = await generatePDF(values);
+      
+      // إرسال الطلب عبر الإيميل مع PDF
+      const emailResult = await sendRequestWithEmail({
+        type: 'mission-order',
+        data: values,
+        pdfBase64: pdfBase64,
+      });
+
+      if (!emailResult.success) {
+        throw new Error(emailResult.error || 'فشل في إرسال الطلب');
+      }
+
+      setIsSubmitted(true);
+      
+      // إضافة إشعار نجاح
+      addNotification({
+        title: "تم الإرسال بنجاح",
+        message: "تم إرسال طلب أمر المهمة إلى إيميل الإدارة وتم تحميل PDF بنجاح",
+        type: "success"
+      });
+
+      // Show success toast
+      toast({
+        title: "تم بنجاح",
+        description: "تم إرسال أمر المهمة إلى الإدارة وتحميل PDF بنجاح",
+        variant: "default",
+        className: "bg-green-50 border-green-200",
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      
+      addNotification({
+        title: "خطأ في الإرسال",
+        message: error instanceof Error ? error.message : "حدث خطأ أثناء معالجة الطلب",
+        type: "error"
+      });
+
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   if (isSubmitted) {

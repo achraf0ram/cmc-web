@@ -1,5 +1,5 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.lan"
 import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -99,10 +99,10 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // إرسال الإيميل للإدارة (مؤقتاً إلى إيميلك)
+    // إرسال الإيميل للإدارة - تم تغيير الإيميل إلى العنوان المطلوب
     const adminEmailResponse = await resend.emails.send({
       from: "CMC System <onboarding@resend.dev>",
-      to: ["achraframdani2@gmail.com"], // تم تغيير الإيميل إلى إيميلك
+      to: ["20ramdani02@gmail.com"], // تم تغيير الإيميل إلى العنوان المطلوب
       subject: `[طلب إدارة] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
