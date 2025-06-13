@@ -99,10 +99,10 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // إرسال الإيميل للإدارة - تم تغيير الإيميل إلى العنوان المطلوب
+    // إرسال الإيميل للإدارة - تم تغيير الإيميل إلى إيميلك المسجل
     const adminEmailResponse = await resend.emails.send({
       from: "CMC System <onboarding@resend.dev>",
-      to: ["20ramdani02@gmail.com"], // تم تغيير الإيميل إلى العنوان المطلوب
+      to: ["achraframdani2@gmail.com"], // تم تغيير الإيميل إلى إيميلك المسجل في Resend
       subject: `[طلب إدارة] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
