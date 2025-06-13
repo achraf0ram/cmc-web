@@ -27,9 +27,6 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
-import { sendRequestWithEmail } from "@/services/requestService";
-import { useNotifications } from "@/hooks/useNotifications";
-import { PDFHelper } from "@/utils/pdfUtils";
 
 // Import the Arabic font data
 import { AmiriFont } from "../fonts/AmiriFont";
@@ -39,9 +36,6 @@ const MissionOrder = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { language, t } = useLanguage();
   const { toast } = useToast();
-
-  // Import the notification hook  
-  const { addNotification } = useNotifications();
 
   // تعريف الـ Schema للتحقق من صحة البيانات
   const formSchema = z.object({
@@ -86,46 +80,18 @@ const MissionOrder = () => {
     try {
       setIsGenerating(true);
       console.log(values);
-      
-      // إنشاء PDF والحصول على base64
-      const pdfBase64 = await generatePDF(values);
-      
-      // إرسال الطلب عبر الإيميل
-      const emailResult = await sendRequestWithEmail({
-        type: 'mission-order',
-        data: values,
-        pdfBase64: pdfBase64,
-      });
-
-      if (!emailResult.success) {
-        throw new Error(emailResult.error || 'فشل في إرسال الطلب');
-      }
-
+      await generatePDF(values);
       setIsSubmitted(true);
       
-      // إضافة إشعار نجاح
-      addNotification({
-        title: "تم الإرسال بنجاح",
-        message: "تم إرسال طلب أمر المهمة وسيتم مراجعته قريباً",
-        type: "success"
-      });
-
       // Show success toast
       toast({
         title: "تم بنجاح",
-        description: "تم إنشاء أمر المهمة وإرساله للإدارة بنجاح",
+        description: "تم إنشاء أمر المهمة وتحميله بنجاح",
         variant: "default",
         className: "bg-green-50 border-green-200",
       });
     } catch (error) {
       console.error("Error:", error);
-      
-      addNotification({
-        title: "خطأ في الإرسال",
-        message: error instanceof Error ? error.message : "حدث خطأ أثناء معالجة الطلب",
-        type: "error"
-      });
-
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.",
@@ -136,44 +102,57 @@ const MissionOrder = () => {
     }
   };
 
-  // دالة لتوليد PDF مع إرجاع base64
-  const generatePDF = async (data: z.infer<typeof formSchema>): Promise<string> => {
-    const pdfHelper = new PDFHelper();
+  // دالة لتوليد PDF
+  const generatePDF = async (data: z.infer<typeof formSchema>) => {
+    const doc = new jsPDF('p', 'mm', 'a4');
     const currentDate = format(new Date(), "EEEE d MMMM yyyy", { locale: fr });
 
-    // إضافة الشعار
-    await pdfHelper.addLogo();
+    // رأس المستند
+    const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
+    
+    // Load and add logo
+    try {
+      const img = new Image();
+      img.src = logoPath;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject; // Handle potential loading errors
+      });
+      // Adjusted logo position and size to match the image
+      doc.addImage(img, "PNG", 6, 6, 98, 33); // Adjusted position and size
+    } catch (error) {
+      console.error("Error loading logo:", error);
+    }
 
-    // إضافة محتوى الوثيقة
-    pdfHelper.addText(`N/Réf : OFP/DR Casa Settat/          / N° :           …/2025`, 20, 50, { fontSize: 11 });
-    pdfHelper.addText(`Casablanca, le ${currentDate}`, 140, 50, { fontSize: 11 });
+    // Add Amiri font to PDF (if still needed for any Arabic text)
+    doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
+    doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
 
-    // العناوين
-    pdfHelper.addText("ORDRE DE MISSION", 105, 65, { 
-      align: "center", 
-      fontSize: 14, 
-      fontStyle: "bold" 
-    });
-    pdfHelper.addText("OFFICE DE LA FORMATION PROFESSIONNELLE", 105, 72, { 
-      align: "center", 
-      fontSize: 14, 
-      fontStyle: "bold" 
-    });
-    pdfHelper.addText("ET DE LA PROMOTION DU TRAVAIL", 105, 79, { 
-      align: "center", 
-      fontSize: 14, 
-      fontStyle: "bold" 
-    });
+    // Set font for Latin text (like French)
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    // Adjusted vertical and horizontal position based on image
+    doc.text("N/Réf : OFP/DR Casa Settat/          / N° :           …/2025", 20, 50); // Adjusted Y
+    doc.text(`Casablanca, le ${currentDate}`, 140, 50); // Adjusted X and Y
 
-    pdfHelper.addText("D E S I G N E", 105, 90, { 
-      align: "center", 
-      fontSize: 14, 
-      fontStyle: "bold" 
-    });
+    // العنوان
+    doc.setFont("helvetica", "bolditalic"); // Changed to bolditalic based on image
+    doc.setFontSize(14);
+    // Adjusted vertical position of titles
+    doc.text("ORDRE DE MISSION", 105, 65, { align: "center" }); // Centered and adjusted Y
+    doc.text("OFFICE DE LA FORMATION PROFESSIONNELLE", 105, 72, { align: "center" }); // Centered and adjusted Y
+    doc.text("ET DE LA PROMOTION DU TRAVAIL", 105, 79, { align: "center" }); // Centered and adjusted Y
 
-    // رسم الجدول وإضافة البيانات
-    const doc = pdfHelper.getDoc();
-    const startY = 95;
+    doc.setFont("helvetica", "bold"); // Bold for DESIGNE
+    doc.setFontSize(14);
+    doc.text("D E S I G N E", 105, 90, { align: "center" }); // Centered and adjusted Y
+
+    // تفاصيل المهمة
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    
+    // Drawing the table structure based on the image - Adjusted starting Y
+    const startY = 95; // Adjusted starting Y
     const col1X = 20;
     const col2X = 105;
     const endX = 190;
@@ -181,88 +160,83 @@ const MissionOrder = () => {
 
     // Header row
     doc.rect(col1X, startY, endX - col1X, rowHeight);
-    pdfHelper.addText("Monsieur/Madame :", col1X + 5, startY + rowHeight / 2 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.monsieurMadame || "", col1X + 50, startY + rowHeight / 2 + 2, { fontSize: 10 });
-    pdfHelper.addText("Matricule :", col2X + 5, startY + rowHeight / 2 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.matricule || "", col2X + 30, startY + rowHeight / 2 + 2, { fontSize: 10 });
+    doc.text("Monsieur/Madame :", col1X + 5, startY + rowHeight / 2 + 2);
+    doc.text(data.monsieurMadame || "", col1X + 50, startY + rowHeight / 2 + 2);
+    doc.text("Matricule :", col2X + 5, startY + rowHeight / 2 + 2);
+    doc.text(data.matricule || "", col2X + 30, startY + rowHeight / 2 + 2);
 
-    // باقي صفوف الجدول
+    // Row 1
     doc.rect(col1X, startY + rowHeight, endX - col1X, rowHeight);
-    pdfHelper.addText("De se rendre à           :", col1X + 5, startY + rowHeight * 1.5 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.destination, col1X + 50, startY + rowHeight * 1.5 + 2, { fontSize: 10 });
+    doc.text("De se rendre à           :", col1X + 5, startY + rowHeight * 1.5 + 2);
+    doc.text(data.destination, col1X + 50, startY + rowHeight * 1.5 + 2);
 
+    // Row 2
     doc.rect(col1X, startY + rowHeight * 2, endX - col1X, rowHeight);
-    pdfHelper.addText("Pour accomplir la mission suivante :", col1X + 5, startY + rowHeight * 2.5 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.purpose, col1X + 80, startY + rowHeight * 2.5 + 2, { fontSize: 10 });
+    doc.text("Pour accomplir la mission suivante :", col1X + 5, startY + rowHeight * 2.5 + 2);
+    doc.text(data.purpose, col1X + 80, startY + rowHeight * 2.5 + 2);
 
+    // Row 3
     doc.rect(col1X, startY + rowHeight * 3, endX - col1X, rowHeight);
-    pdfHelper.addText("Conducteur :", col1X + 5, startY + rowHeight * 3.5 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.conducteur || "", col1X + 40, startY + rowHeight * 3.5 + 2, { fontSize: 10 });
-    pdfHelper.addText("Matricule :", col2X + 5, startY + rowHeight * 3.5 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.conducteurMatricule || "", col2X + 30, startY + rowHeight * 3.5 + 2, { fontSize: 10 });
+    doc.text("Conducteur :", col1X + 5, startY + rowHeight * 3.5 + 2);
+    doc.text(data.conducteur || "", col1X + 40, startY + rowHeight * 3.5 + 2);
+    doc.text("Matricule :", col2X + 5, startY + rowHeight * 3.5 + 2);
+    doc.text(data.conducteurMatricule || "", col2X + 30, startY + rowHeight * 3.5 + 2);
 
+    // Row 4
     doc.rect(col1X, startY + rowHeight * 4, endX - col1X, rowHeight);
-    pdfHelper.addText("Date de départ :", col1X + 5, startY + rowHeight * 4.5 + 2, { fontSize: 10 });
-    pdfHelper.addText(format(data.startDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 4.5 + 2, { fontSize: 10 });
-    pdfHelper.addText("Heure :", col2X + 5, startY + rowHeight * 4.5 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.startTime || "", col2X + 25, startY + rowHeight * 4.5 + 2, { fontSize: 10 });
+   // النص الأساسي
+doc.text("Date de départ :", col1X + 5, startY + rowHeight * 4.5 + 2);
 
+// التاريخ - معدل ليكون قريباً من النص
+doc.text(format(data.startDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 4.5 + 2);
+    doc.text("Heure :", col2X + 5, startY + rowHeight * 4.5 + 2);
+    doc.text(data.startTime || "", col2X + 25, startY + rowHeight * 4.5 + 2);
+
+    // Row 5
     doc.rect(col1X, startY + rowHeight * 5, endX - col1X, rowHeight);
-    pdfHelper.addText("Date de retour :", col1X + 5, startY + rowHeight * 5.5 + 2, { fontSize: 10 });
-    pdfHelper.addText(format(data.endDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 5.5 + 2, { fontSize: 10 });
-    pdfHelper.addText("Heure :", col2X + 5, startY + rowHeight * 5.5 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.endTime || "", col2X + 25, startY + rowHeight * 5.5 + 2, { fontSize: 10 });
+  // النص الأساسي
+doc.text("Date de retour :", col1X + 5, startY + rowHeight * 5.5 + 2);
+
+// التاريخ - نفس الإزاحة المستخدمة في "Date de départ"
+doc.text(format(data.endDate, "yyyy-MM-dd"), col1X + 45, startY + rowHeight * 5.5 + 2);
+    doc.text("Heure :", col2X + 5, startY + rowHeight * 5.5 + 2);
+    doc.text(data.endTime || "", col2X + 25, startY + rowHeight * 5.5 + 2);
 
     // Row 6
-    const row6Height = 20;
+    const row6Height = 20; // Increased height for this row
     doc.rect(col1X, startY + rowHeight * 6, endX - col1X, row6Height);
-    pdfHelper.addText("L'intéressé(e) utilisera :", col1X + 5, startY + rowHeight * 6 + row6Height / 2 + 2, { fontSize: 10 });
-    pdfHelper.addText(data.additionalInfo || "", col1X + 60, startY + rowHeight * 6 + row6Height / 2 + 2, { fontSize: 10 });
+    doc.text("L'intéressé(e) utilisera :", col1X + 5, startY + rowHeight * 6 + row6Height / 2 + 2);
+    doc.text(data.additionalInfo || "", col1X + 60, startY + rowHeight * 6 + row6Height / 2 + 2);
 
-    // باقي أقسام الوثيقة...
-    const cadreY = startY + rowHeight * 6 + row6Height + 10;
+    // Cadre réservé à l'entité de destinations
+    const cadreY = startY + rowHeight * 6 + row6Height + 10; // Position below the table
+    doc.setFont("helvetica", "bold");
     doc.setFillColor(220, 220, 220);
     doc.rect(col1X, cadreY, endX - col1X, rowHeight, "F");
-    pdfHelper.addText("Cadre réservé à l'entité de destinations", col1X + (endX - col1X) / 2, cadreY + rowHeight / 2 + 2, { 
-      align: "center", 
-      fontSize: 10, 
-      fontStyle: "bold" 
-    });
+    doc.text("Cadre réservé à l'entité de destinations", col1X + (endX - col1X) / 2, cadreY + rowHeight / 2 + 2, { align: "center" });
 
     // Visa section
     const visaY = cadreY + rowHeight;
     const visaSectionHeight = 40;
+    doc.setFont("helvetica", "normal");
     doc.rect(col1X, visaY, endX - col1X, visaSectionHeight);
     doc.line(col2X, visaY, col2X, visaY + visaSectionHeight);
-    pdfHelper.addText("Visa d'arrivée", col1X + (col2X - col1X) / 2, visaY + rowHeight / 2 + 2, { 
-      align: "center", 
-      fontSize: 10 
-    });
-    pdfHelper.addText("Visa de départ", col2X + (endX - col2X) / 2, visaY + rowHeight / 2 + 2, { 
-      align: "center", 
-      fontSize: 10 
-    });
+    doc.text("Visa d'arrivée", col1X + (col2X - col1X) / 2, visaY + rowHeight / 2 + 2, { align: "center" });
+    doc.text("Visa de départ", col2X + (endX - col2X) / 2, visaY + rowHeight / 2 + 2, { align: "center" });
     doc.line(col1X, visaY + rowHeight, endX, visaY + rowHeight);
-    pdfHelper.addText("Date et Heure d'arrivée :", col1X + 5, visaY + rowHeight * 1.5 + 2, { fontSize: 10 });
-    pdfHelper.addText("Date et Heure de départ :", col2X + 5, visaY + rowHeight * 1.5 + 2, { fontSize: 10 });
-    pdfHelper.addText("Cachet et signature :", col1X + 5, visaY + rowHeight * 2.5 + 2, { fontSize: 10 });
-    pdfHelper.addText("Cachet et signature :", col2X + 5, visaY + rowHeight * 2.5 + 2, { fontSize: 10 });
+    doc.text("Date et Heure d'arrivée :", col1X + 5, visaY + rowHeight * 1.5 + 2);
+    doc.text("Date et Heure de départ :", col2X + 5, visaY + rowHeight * 1.5 + 2);
+    doc.text("Cachet et signature :", col1X + 5, visaY + rowHeight * 2.5 + 2);
+    doc.text("Cachet et signature :", col2X + 5, visaY + rowHeight * 2.5 + 2);
 
     // ملاحظة
-    const noteY = visaY + visaSectionHeight + 5;
-    pdfHelper.addText("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, noteY, { 
-      fontSize: 9, 
-      fontStyle: "bold" 
-    });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    const noteY = visaY + visaSectionHeight + 5; // Adjusted vertical position
+    doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, noteY);
 
-    // إضافة التذييل
-    pdfHelper.addFooters();
-
-    // حفظ الملف والحصول على base64
-    const pdfBase64 = pdfHelper.getBase64();
-    pdfHelper.save(`ordre_mission_${data.destination.replace(/\s+/g, '_')}.pdf`);
-    
-    return pdfBase64;
+    // حفظ الـ PDF
+    doc.save(`ordre_mission_${data.destination.replace(/\s+/g, '_')}.pdf`);
   };
 
   if (isSubmitted) {
