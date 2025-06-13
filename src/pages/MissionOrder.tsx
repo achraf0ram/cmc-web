@@ -80,6 +80,7 @@ const MissionOrder = () => {
 
   // دالة لتوليد PDF
   const generatePDF = async (data: z.infer<typeof formSchema>): Promise<string> => {
+    console.log("Starting PDF generation for mission order...");
     const doc = new jsPDF('p', 'mm', 'a4');
     const currentDate = format(new Date(), "EEEE d MMMM yyyy", { locale: fr });
 
@@ -92,43 +93,40 @@ const MissionOrder = () => {
       img.src = logoPath;
       await new Promise((resolve, reject) => {
         img.onload = resolve;
-        img.onerror = reject; // Handle potential loading errors
+        img.onerror = reject;
       });
-      // Adjusted logo position and size to match the image
-      doc.addImage(img, "PNG", 6, 6, 98, 33); // Adjusted position and size
+      doc.addImage(img, "PNG", 6, 6, 98, 33);
+      console.log("Logo added to PDF");
     } catch (error) {
       console.error("Error loading logo:", error);
     }
 
-    // Add Amiri font to PDF (if still needed for any Arabic text)
+    // Add Amiri font to PDF
     doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
     doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
 
-    // Set font for Latin text (like French)
+    // Set font for Latin text
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    // Adjusted vertical and horizontal position based on image
-    doc.text("N/Réf : OFP/DR Casa Settat/          / N° :           …/2025", 20, 50); // Adjusted Y
-    doc.text(`Casablanca, le ${currentDate}`, 140, 50); // Adjusted X and Y
+    doc.text("N/Réf : OFP/DR Casa Settat/          / N° :           …/2025", 20, 50);
+    doc.text(`Casablanca, le ${currentDate}`, 140, 50);
 
     // العنوان
-    doc.setFont("helvetica", "bolditalic"); // Changed to bolditalic based on image
+    doc.setFont("helvetica", "bolditalic");
     doc.setFontSize(14);
-    // Adjusted vertical position of titles
-    doc.text("ORDRE DE MISSION", 105, 65, { align: "center" }); // Centered and adjusted Y
-    doc.text("OFFICE DE LA FORMATION PROFESSIONNELLE", 105, 72, { align: "center" }); // Centered and adjusted Y
-    doc.text("ET DE LA PROMOTION DU TRAVAIL", 105, 79, { align: "center" }); // Centered and adjusted Y
+    doc.text("ORDRE DE MISSION", 105, 65, { align: "center" });
+    doc.text("OFFICE DE LA FORMATION PROFESSIONNELLE", 105, 72, { align: "center" });
+    doc.text("ET DE LA PROMOTION DU TRAVAIL", 105, 79, { align: "center" });
 
-    doc.setFont("helvetica", "bold"); // Bold for DESIGNE
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text("D E S I G N E", 105, 90, { align: "center" }); // Centered and adjusted Y
+    doc.text("D E S I G N E", 105, 90, { align: "center" });
 
     // تفاصيل المهمة
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     
-    // Drawing the table structure based on the image - Adjusted starting Y
-    const startY = 95; // Adjusted starting Y
+    const startY = 95;
     const col1X = 20;
     const col2X = 105;
     const endX = 190;
@@ -172,14 +170,13 @@ const MissionOrder = () => {
     doc.text("Heure :", col2X + 5, startY + rowHeight * 5.5 + 2);
     doc.text(data.endTime || "", col2X + 25, startY + rowHeight * 5.5 + 2);
 
-    // Row 6
-    const row6Height = 20; // Increased height for this row
+    const row6Height = 20;
     doc.rect(col1X, startY + rowHeight * 6, endX - col1X, row6Height);
     doc.text("L'intéressé(e) utilisera :", col1X + 5, startY + rowHeight * 6 + row6Height / 2 + 2);
     doc.text(data.additionalInfo || "", col1X + 60, startY + rowHeight * 6 + row6Height / 2 + 2);
 
     // Cadre réservé à l'entité de destinations
-    const cadreY = startY + rowHeight * 6 + row6Height + 10; // Position below the table
+    const cadreY = startY + rowHeight * 6 + row6Height + 10;
     doc.setFont("helvetica", "bold");
     doc.setFillColor(220, 220, 220);
     doc.rect(col1X, cadreY, endX - col1X, rowHeight, "F");
@@ -199,17 +196,18 @@ const MissionOrder = () => {
     doc.text("Cachet et signature :", col1X + 5, visaY + rowHeight * 2.5 + 2);
     doc.text("Cachet et signature :", col2X + 5, visaY + rowHeight * 2.5 + 2);
 
-    // ملاحظة
     doc.setFontSize(9);
     doc.setFont("helvetica", "italic");
-    const noteY = visaY + visaSectionHeight + 5; // Adjusted vertical position
+    const noteY = visaY + visaSectionHeight + 5;
     doc.text("NB : Le visa de départ est obligatoire pour les missions au-delà d'une journée.", 30, noteY);
 
     // الحصول على base64 للإرسال عبر الإيميل
     const pdfBase64 = doc.output('datauristring').split(',')[1];
+    console.log("PDF generated successfully, base64 length:", pdfBase64.length);
 
     // حفظ الـ PDF للتحميل
     doc.save(`ordre_mission_${data.destination.replace(/\s+/g, '_')}.pdf`);
+    console.log("PDF downloaded successfully");
 
     return pdfBase64;
   };
@@ -218,10 +216,11 @@ const MissionOrder = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsGenerating(true);
-      console.log("Generating PDF and sending request...", values);
+      console.log("Starting mission order submission...", values);
       
       // توليد PDF والحصول على base64
       const pdfBase64 = await generatePDF(values);
+      console.log("PDF base64 generated, sending email...");
       
       // إرسال الطلب عبر الإيميل مع PDF
       const emailResult = await sendRequestWithEmail({
@@ -229,6 +228,8 @@ const MissionOrder = () => {
         data: values,
         pdfBase64: pdfBase64,
       });
+
+      console.log("Email result:", emailResult);
 
       if (!emailResult.success) {
         throw new Error(emailResult.error || 'فشل في إرسال الطلب');
@@ -251,7 +252,7 @@ const MissionOrder = () => {
         className: "bg-green-50 border-green-200",
       });
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error in mission order submission:", error);
       
       addNotification({
         title: "خطأ في الإرسال",
