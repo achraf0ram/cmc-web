@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
@@ -111,6 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (fullName: string, email: string, password: string, phone?: string): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Get the current domain for email confirmation redirect
+      const redirectUrl = `${window.location.origin}/login`;
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -119,6 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             full_name: fullName,
             phone: phone || '',
           },
+          emailRedirectTo: redirectUrl,
         },
       });
 

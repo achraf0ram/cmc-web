@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Eye, EyeOff } from "lucide-react";
+import { UserPlus, Eye, EyeOff, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
@@ -35,6 +35,8 @@ export const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signup, isLoading } = useAuth();
@@ -62,22 +64,20 @@ export const SignUp = () => {
         values.fullName, 
         values.email, 
         values.password,
-        values.matricule + " - " + values.department // Store additional info in phone field temporarily
+        values.matricule + " - " + values.department
       );
       
       console.log("Signup result:", success);
       
       if (success) {
+        setUserEmail(values.email);
+        setEmailSent(true);
+        
         toast({
           title: "تم إنشاء الحساب بنجاح",
-          description: "يمكنك الآن تسجيل الدخول إلى حسابك",
+          description: "تم إرسال رسالة تأكيد إلى بريدك الإلكتروني",
           className: "bg-green-50 border-green-200",
         });
-        
-        // انتظار قصير ثم التنقل لصفحة تسجيل الدخول
-        setTimeout(() => {
-          navigate("/login");
-        }, 100);
       } else {
         throw new Error("فشل في إنشاء الحساب");
       }
@@ -107,6 +107,44 @@ export const SignUp = () => {
   };
 
   const isButtonDisabled = isLoading || isSubmitting;
+
+  // Email confirmation success screen
+  if (emailSent) {
+    return (
+      <div className="min-h-screen cmc-page-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card className="cmc-card">
+            <CardContent className="pt-6 pb-6 md:pt-8 md:pb-8">
+              <div className="flex flex-col items-center text-center gap-4 md:gap-6">
+                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-r from-cmc-blue-light to-cmc-green-light flex items-center justify-center shadow-lg">
+                  <Mail className="h-8 w-8 md:h-10 md:w-10 text-cmc-blue" />
+                </div>
+                <div>
+                  <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-slate-800">تحقق من بريدك الإلكتروني</h2>
+                  <p className="text-slate-600 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">
+                    تم إرسال رسالة تأكيد إلى <strong>{userEmail}</strong>
+                    <br />
+                    يرجى النقر على الرابط في الرسالة لتأكيد حسابك
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p className="text-blue-800 text-sm">
+                      <strong>ملاحظة:</strong> قد تجد الرسالة في مجلد الرسائل غير المرغوبة (Spam)
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => navigate("/login")}
+                    className="cmc-button-primary px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base w-full"
+                  >
+                    العودة لتسجيل الدخول
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen cmc-page-background flex items-center justify-center p-4">
