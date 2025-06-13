@@ -20,25 +20,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
-import jsPDF from "jspdf";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle } from "lucide-react";
-
-// Import the Arabic font data
-import { AmiriFont } from "../fonts/AmiriFont";
 import { useNotifications } from "@/hooks/useNotifications";
 import { sendRequestWithEmail } from "@/services/requestService";
+import { PDFHelper } from "@/utils/pdfUtils";
 
 const WorkCertificate = () => {
   const { t, language } = useLanguage();
   console.log('Current language:', language);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
   const { toast } = useToast();
-
-  // Import the notification hook
   const { addNotification } = useNotifications();
 
   // Define form schema inside the component to access the language context
@@ -69,77 +63,41 @@ const WorkCertificate = () => {
     try {
       setIsGenerating(true);
       
-      // Generate PDF
-      const doc = new jsPDF("p", "mm", "a4");
+      // إنشاء PDF باستخدام المكتبة الجديدة
+      const pdfHelper = new PDFHelper();
       const currentDate = format(new Date(), "dd/MM/yyyy");
 
-      // Load and add logo
-      try {
-        const img = new Image();
-        img.src = logoPath;
-        await new Promise((resolve) => {
-          img.onload = resolve;
-        });
-        doc.addImage(img, "PNG", 6, 6, 98, 33);
-      } catch (error) {
-        console.error("Error loading logo:", error);
-      }
+      // إضافة الشعار
+      await pdfHelper.addLogo();
 
-      // --- Arabic Font Setup ---
-      console.log("Adding Amiri font to VFS...");
-      doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
-      console.log("Amiri font added to VFS. Adding font to doc...");
-      doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-      console.log("Amiri font added to doc.");
-      
-      // Set font for Latin text (like French)
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      doc.text("N/Réf. : OFP/DR CASA SETTAT/DAAL/SRRH /N°", 20, 45);
-      doc.text(`Casablanca, le ${currentDate}`, 140, 45);
+      // إضافة محتوى الشهادة
+      pdfHelper.addText(`N/Réf. : OFP/DR CASA SETTAT/DAAL/SRRH /N°`, 20, 45, { fontSize: 12 });
+      pdfHelper.addText(`Casablanca, le ${currentDate}`, 140, 45, { fontSize: 12 });
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.text("ATTESTATION DE TRAVAIL", 75, 65);
+      pdfHelper.addText("ATTESTATION DE TRAVAIL", 105, 65, { 
+        align: "center", 
+        fontSize: 16, 
+        fontStyle: "bold" 
+      });
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      doc.text("Nous soussignés, Directeur Régional Casablanca-Settat de l'Office de la", 20, 75);
-      doc.text("Formation Professionnelle et de la Promotion du Travail (OFPPT), attestons", 20, 80);
-      doc.text("que :", 20, 85);
+      pdfHelper.addText("Nous soussignés, Directeur Régional Casablanca-Settat de l'Office de la", 20, 75, { fontSize: 12 });
+      pdfHelper.addText("Formation Professionnelle et de la Promotion du Travail (OFPPT), attestons", 20, 80, { fontSize: 12 });
+      pdfHelper.addText("que :", 20, 85, { fontSize: 12 });
 
-      doc.text(`Monsieur : ${data.fullName}`, 20, 95);
-      doc.text(`Matricule : ${data.matricule}`, 20, 105);
-      doc.text(`Grade : ${data.grade || ""}`, 20, 115);
-      doc.text(`Est employé au sein de notre organisme depuis le : ${data.hireDate || ""}`, 20, 125);
-      doc.text(`En qualité de : ${data.function || ""}`, 20, 135);
+      pdfHelper.addText(`Monsieur : ${data.fullName}`, 20, 95, { fontSize: 12 });
+      pdfHelper.addText(`Matricule : ${data.matricule}`, 20, 105, { fontSize: 12 });
+      pdfHelper.addText(`Grade : ${data.grade || ""}`, 20, 115, { fontSize: 12 });
+      pdfHelper.addText(`Est employé au sein de notre organisme depuis le : ${data.hireDate || ""}`, 20, 125, { fontSize: 12 });
+      pdfHelper.addText(`En qualité de : ${data.function || ""}`, 20, 135, { fontSize: 12 });
 
-      doc.text("La présente attestation est délivrée à l'intéressé pour servir et valoir ce que de droit.", 20, 165);
+      pdfHelper.addText("La présente attestation est délivrée à l'intéressé pour servir et valoir ce que de droit.", 20, 165, { fontSize: 12 });
 
-      // --- Set font for Arabic text ---
-      console.log("Setting font to Amiri...");
-      doc.setFont('Amiri', 'normal');
-      console.log("Font set to Amiri.");
-      
-      doc.setFontSize(9);
-      doc.text("المديرية الجهوية لجهة الدارالبيضاء – سطات", 190, 230, { align: "right" });
-      doc.text( " زنقة الكابورال إدريس اشباكو,50", 190, 234, { align: "right" });
-      doc.text("عين البرجة - الدار البيضاء", 190, 238, { align: "right" });
-      doc.text("الهاتف : 82 00 60 22 05 - الفاكس : 65 6039 22 05", 190, 242, { align: "right" });
+      // إضافة التذييل
+      pdfHelper.addFooters();
 
-      // Add French text for the footer on the left side
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.text("Direction Régionale CASABLANCA –SETTAT", 20, 230);
-      doc.text("50, rue Caporal Driss Chbakou", 20, 234);
-      doc.text("Ain Bordja-Casablanca", 20, 238);
-      doc.text("Tél :05 22 60 00 82 - Fax :05 22 6039 65", 20, 242);
-
-      // Convert PDF to base64
-      const pdfBase64 = doc.output('datauristring').split(',')[1];
-
-      // Save PDF
-      doc.save("attestation_de_travail.pdf");
+      // الحصول على base64 وحفظ الملف
+      const pdfBase64 = pdfHelper.getBase64();
+      pdfHelper.save("attestation_de_travail.pdf");
 
       // إرسال الطلب عبر الإيميل
       const emailResult = await sendRequestWithEmail({

@@ -51,18 +51,45 @@ export const translateToArabic = (frenchText: string): string => {
   return arabicText !== frenchText ? arabicText : frenchText;
 };
 
+// تحسين دالة تنسيق النص العربي للـ PDF
 export const formatArabicForPDF = (text: string): string => {
   if (!text || text.trim() === "") return "";
   
   try {
+    // ترجمة النص أولاً
     const arabicText = translateToArabic(text);
-    // Import Arabic reshaping libraries dynamically
+    
+    // استخدام المكتبات المثبتة بالفعل
     const reshaper = require("arabic-persian-reshaper");
     const bidi = require("bidi-js");
+    
+    // تشكيل النص العربي وتطبيق BIDI
     const shaped = reshaper.reshape(arabicText);
-    return bidi.from_string(shaped).toString();
+    const bidirectional = bidi.from_string(shaped);
+    
+    return bidirectional.toString();
   } catch (error) {
-    console.warn("Error formatting Arabic text:", error);
-    return text;
+    console.warn("Error formatting Arabic text for PDF:", error);
+    // في حالة الخطأ، إرجاع النص المترجم فقط
+    return translateToArabic(text);
   }
+};
+
+// دالة مساعدة لتحديد اتجاه النص
+export const isArabicText = (text: string): boolean => {
+  const arabicPattern = /[\u0600-\u06FF\u0750-\u077F]/;
+  return arabicPattern.test(text);
+};
+
+// دالة لتحسين عرض النص في PDF
+export const optimizeTextForPDF = (text: string): string => {
+  if (!text) return "";
+  
+  // إذا كان النص يحتوي على عربي، استخدم التنسيق المحسن
+  if (isArabicText(text)) {
+    return formatArabicForPDF(text);
+  }
+  
+  // إذا كان النص لاتيني، أرجعه كما هو
+  return text;
 };
