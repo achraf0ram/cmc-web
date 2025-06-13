@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "الاسم يجب أن يكون 3 أحرف على الأقل" }),
@@ -33,9 +34,10 @@ const formSchema = z.object({
 export const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signup, isLoading } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,30 +52,61 @@ export const SignUp = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    console.log("Signup attempt:", values);
+    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const success = await signup(
+        values.fullName, 
+        values.email, 
+        values.password,
+        values.matricule + " - " + values.department // Store additional info in phone field temporarily
+      );
       
-      console.log("Signup attempt:", values);
+      console.log("Signup result:", success);
       
-      toast({
-        title: "تم إنشاء الحساب بنجاح",
-        description: "يمكنك الآن تسجيل الدخول إلى حسابك",
-        className: "bg-green-50 border-green-200",
-      });
+      if (success) {
+        toast({
+          title: "تم إنشاء الحساب بنجاح",
+          description: "يمكنك الآن تسجيل الدخول إلى حسابك",
+          className: "bg-green-50 border-green-200",
+        });
+        
+        // انتظار قصير ثم التنقل لصفحة تسجيل الدخول
+        setTimeout(() => {
+          navigate("/login");
+        }, 100);
+      } else {
+        throw new Error("فشل في إنشاء الحساب");
+      }
+    } catch (error: any) {
+      console.error("Signup error:", error);
       
-      navigate("/login");
-    } catch (error) {
+      let errorMessage = "يرجى التحقق من البيانات والمحاولة مرة أخرى";
+      
+      if (error?.message) {
+        if (error.message.includes("User already registered")) {
+          errorMessage = "البريد الإلكتروني مسجل بالفعل";
+        } else if (error.message.includes("Invalid email")) {
+          errorMessage = "البريد الإلكتروني غير صحيح";
+        } else if (error.message.includes("Password should be")) {
+          errorMessage = "كلمة المرور ضعيفة، يرجى استخدام كلمة مرور أقوى";
+        }
+      }
+      
       toast({
         title: "خطأ في إنشاء الحساب",
-        description: "يرجى المحاولة مرة أخرى",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  const isButtonDisabled = isLoading || isSubmitting;
 
   return (
     <div className="min-h-screen cmc-page-background flex items-center justify-center p-4">
@@ -104,6 +137,7 @@ export const SignUp = () => {
                         <Input
                           placeholder="أدخل الاسم الكامل"
                           className="cmc-input"
+                          disabled={isButtonDisabled}
                           {...field}
                         />
                       </FormControl>
@@ -123,6 +157,7 @@ export const SignUp = () => {
                           type="email"
                           placeholder="example@ofppt.ma"
                           className="cmc-input"
+                          disabled={isButtonDisabled}
                           {...field}
                         />
                       </FormControl>
@@ -141,6 +176,7 @@ export const SignUp = () => {
                         <Input
                           placeholder="أدخل رقم التسجيل"
                           className="cmc-input"
+                          disabled={isButtonDisabled}
                           {...field}
                         />
                       </FormControl>
@@ -159,6 +195,7 @@ export const SignUp = () => {
                         <Input
                           placeholder="أدخل القسم"
                           className="cmc-input"
+                          disabled={isButtonDisabled}
                           {...field}
                         />
                       </FormControl>
@@ -179,6 +216,7 @@ export const SignUp = () => {
                             type={showPassword ? "text" : "password"}
                             placeholder="أدخل كلمة المرور"
                             className="cmc-input pr-10"
+                            disabled={isButtonDisabled}
                             {...field}
                           />
                           <Button
@@ -187,6 +225,7 @@ export const SignUp = () => {
                             size="sm"
                             className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                             onClick={() => setShowPassword(!showPassword)}
+                            disabled={isButtonDisabled}
                           >
                             {showPassword ? (
                               <EyeOff className="h-4 w-4 text-slate-400" />
@@ -213,6 +252,7 @@ export const SignUp = () => {
                             type={showConfirmPassword ? "text" : "password"}
                             placeholder="أعد إدخال كلمة المرور"
                             className="cmc-input pr-10"
+                            disabled={isButtonDisabled}
                             {...field}
                           />
                           <Button
@@ -221,6 +261,7 @@ export const SignUp = () => {
                             size="sm"
                             className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            disabled={isButtonDisabled}
                           >
                             {showConfirmPassword ? (
                               <EyeOff className="h-4 w-4 text-slate-400" />
@@ -238,9 +279,9 @@ export const SignUp = () => {
                 <Button
                   type="submit"
                   className="w-full cmc-button-primary py-3"
-                  disabled={isLoading}
+                  disabled={isButtonDisabled}
                 >
-                  {isLoading ? "جاري إنشاء الحساب..." : "إنشاء الحساب"}
+                  {isButtonDisabled ? "جاري إنشاء الحساب..." : "إنشاء الحساب"}
                 </Button>
 
                 <div className="text-center">
