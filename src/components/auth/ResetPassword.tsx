@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Lock, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   password: z.string().min(6, { message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }),
@@ -30,6 +31,7 @@ export const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -41,13 +43,32 @@ export const ResetPassword = () => {
     },
   });
 
+  useEffect(() => {
+    // التحقق من وجود access_token و refresh_token في URL
+    const accessToken = searchParams.get('access_token');
+    const refreshToken = searchParams.get('refresh_token');
+    
+    if (accessToken && refreshToken) {
+      // تعيين الجلسة باستخدام التوكنات
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+    }
+  }, [searchParams]);
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       console.log("Password reset:", values);
+      
+      const { error } = await supabase.auth.updateUser({
+        password: values.password
+      });
+
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "تم تحديث كلمة المرور",
@@ -55,11 +76,25 @@ export const ResetPassword = () => {
         className: "bg-green-50 border-green-200",
       });
       
+      // تسجيل الخروج وتوجيه المستخدم لتسجيل الدخول
+      await supabase.auth.signOut();
       navigate("/login");
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Password update error:", error);
+      
+      let errorMessage = "حدث خطأ أثناء تحديث كلمة المرور. يرجى المحاولة مرة أخرى";
+      
+      if (error?.message) {
+        if (error.message.includes("New password should be different")) {
+          errorMessage = "كلمة المرور الجديدة يجب أن تكون مختلفة عن القديمة";
+        } else if (error.message.includes("Password should be at least")) {
+          errorMessage = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+        }
+      }
+      
       toast({
         title: "خطأ",
-        description: "حدث خطأ أثناء تحديث كلمة المرور. يرجى المحاولة مرة أخرى",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

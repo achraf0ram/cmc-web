@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, ArrowRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email({ message: "البريد الإلكتروني غير صحيح" }),
@@ -26,6 +27,7 @@ export const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
   const { toast } = useToast();
+  const { resetPassword } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,21 +39,34 @@ export const ForgotPassword = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       console.log("Password reset request:", values);
       
-      setIsEmailSent(true);
-      toast({
-        title: "تم إرسال الرابط",
-        description: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
-        className: "bg-green-50 border-green-200",
-      });
-    } catch (error) {
+      const success = await resetPassword(values.email);
+      
+      if (success) {
+        setIsEmailSent(true);
+        toast({
+          title: "تم إرسال الرابط",
+          description: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
+          className: "bg-green-50 border-green-200",
+        });
+      } else {
+        throw new Error("فشل في إرسال البريد الإلكتروني");
+      }
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      
+      let errorMessage = "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى";
+      
+      if (error?.message) {
+        if (error.message.includes("not found") || error.message.includes("Invalid email")) {
+          errorMessage = "البريد الإلكتروني غير موجود";
+        }
+      }
+      
       toast({
         title: "خطأ",
-        description: "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -74,7 +89,7 @@ export const ForgotPassword = () => {
                   <p className="text-slate-600 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">
                     تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد.
                   </p>
-                  <Link to="/Login">
+                  <Link to="/login">
                     <Button className="cmc-button-primary px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base">
                       العودة إلى تسجيل الدخول
                     </Button>
@@ -136,7 +151,7 @@ export const ForgotPassword = () => {
 
                 <div className="text-center">
                   <Link
-                    to="/Login"
+                    to="/login"
                     className="inline-flex items-center gap-2 text-cmc-blue hover:text-cmc-blue-dark font-medium transition-colors"
                   >
                     <ArrowRight className="w-4 h-4" />
