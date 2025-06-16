@@ -1,141 +1,61 @@
 
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { MainLayout } from "./layouts/MainLayout";
-import Index from "./pages/Index";
-import WorkCertificate from "./pages/WorkCertificate";
-import MissionOrder from "./pages/MissionOrder";
-import VacationRequest from "./pages/VacationRequest";
-import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
-import SignInPage from "./pages/SignIn";
-import SignUpPage from "./pages/SignUp";
-import ResetPasswordPage from "./pages/ResetPassword";
-import ForgotPasswordPage from "./pages/ForgotPassword";
+import { MainLayout } from "@/layouts/MainLayout";
+import Index from "@/pages/Index";
+import VacationRequest from "@/pages/VacationRequest";
+import WorkCertificate from "@/pages/WorkCertificate";
+import MissionOrder from "@/pages/MissionOrder";
+import Settings from "@/pages/Settings";
+import SignInPage from "@/pages/SignIn";
+import SignUpPage from "@/pages/SignUp";
+import ForgotPasswordPage from "@/pages/ForgotPassword";
+import ResetPasswordPage from "@/pages/ResetPassword";
+import AdminPanel from "@/pages/AdminPanel";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const { t } = useLanguage();
-
-  if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
-  }
-
-  if (!isAuthenticated) {
-    console.log("User is not authenticated");
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-// Public route component (accessible only when not logged in)
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const { t } = useLanguage();
-
-  if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
-  }
-
-  if (isAuthenticated) {
-    console.log("User is authenticated");
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Auth routes */}
-              <Route
-                path='/login'
-                element={
-                  <PublicRoute>
-                    <SignInPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path='/register'
-                element={
-                  <PublicRoute>
-                    <SignUpPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path='/forgot-password'
-                element={
-                  <PublicRoute>
-                    <ForgotPasswordPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path='/reset-password'
-                element={
-                  <PublicRoute>
-                    <ResetPasswordPage />
-                  </PublicRoute>
-                }
-              />
-
-              {/* Protected routes */}
-              <Route
-                path='/'
-                element={
-                  <ProtectedRoute>
-                    <MainLayout />
-                  </ProtectedRoute>
-                }>
-                <Route
-                  index
-                  element={<Index />}
-                />
-                <Route
-                  path='work-certificate'
-                  element={<WorkCertificate />}
-                />
-                <Route
-                  path='mission-order'
-                  element={<MissionOrder />}
-                />
-                <Route
-                  path='vacation-request'
-                  element={<VacationRequest />}
-                />
-                <Route
-                  path='settings'
-                  element={<Settings />}
-                />
-              </Route>
-              <Route
-                path='*'
-                element={<NotFound />}
-              />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </LanguageProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <TooltipProvider>
+              <Router>
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+                  <Routes>
+                    <Route path="/login" element={<SignInPage />} />
+                    <Route path="/register" element={<SignUpPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/" element={<MainLayout />}>
+                      <Route index element={<Index />} />
+                      <Route path="vacation-request" element={<VacationRequest />} />
+                      <Route path="work-certificate" element={<WorkCertificate />} />
+                      <Route path="mission-order" element={<MissionOrder />} />
+                      <Route path="settings" element={<Settings />} />
+                      <Route path="admin" element={<AdminPanel />} />
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+                <Toaster />
+                <Sonner />
+              </Router>
+            </TooltipProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
