@@ -1,12 +1,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Building2, Settings, Activity, Bell, BarChart3 } from "lucide-react";
+import { Users, Building2, Settings, Activity, Bell, BarChart3, FileText } from "lucide-react";
 import { useCurrentUserRole } from "@/hooks/useUserRoles";
 import { UsersManagement } from "./UsersManagement";
 import { DepartmentsManagement } from "./DepartmentsManagement";
 import { SystemSettingsPanel } from "./SystemSettingsPanel";
 import { ActivityLogsPanel } from "./ActivityLogsPanel";
+import { AdminRequestsManagement } from "./AdminRequestsManagement";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -34,7 +35,7 @@ export const AdminDashboard = () => {
     <div className="container mx-auto p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">لوحة التحكم الإدارية</h1>
-        <p className="text-gray-600">إدارة النظام والمستخدمين والإعدادات</p>
+        <p className="text-gray-600">إدارة النظام والمستخدمين والطلبات والإعدادات</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -83,8 +84,12 @@ export const AdminDashboard = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="users" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="requests" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="requests" className="flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            إدارة الطلبات
+          </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             إدارة المستخدمين
@@ -102,6 +107,10 @@ export const AdminDashboard = () => {
             سجل النشاطات
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="requests">
+          <AdminRequestsManagement />
+        </TabsContent>
 
         <TabsContent value="users">
           <UsersManagement />

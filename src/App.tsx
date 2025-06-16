@@ -18,6 +18,7 @@ import SignUpPage from "@/pages/SignUp";
 import ForgotPasswordPage from "@/pages/ForgotPassword";
 import ResetPasswordPage from "@/pages/ResetPassword";
 import AdminPanel from "@/pages/AdminPanel";
+import UserDashboard from "@/pages/UserDashboard";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ function App() {
                       <Route path="mission-order" element={<MissionOrder />} />
                       <Route path="settings" element={<Settings />} />
                       <Route path="admin" element={<AdminPanel />} />
+                      <Route path="dashboard" element={<UserDashboard />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
