@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -35,7 +34,7 @@ export const useRequests = () => {
         .from('requests')
         .select(`
           *,
-          profiles!inner(full_name, email)
+          profiles!requests_user_id_fkey(full_name, email)
         `)
         .order('submitted_at', { ascending: false });
       
