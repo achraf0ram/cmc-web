@@ -79,7 +79,7 @@ export const Dashboard = () => {
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Enhanced Header */}
+        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -140,7 +140,7 @@ export const Dashboard = () => {
           </Card>
         )}
         
-        {/* Enhanced Stats Cards */}
+        {/* Stats Cards */}
         <div className="grid gap-6 grid-cols-1 md:grid-cols-3 mb-8">
           {stats.map((stat) => (
             <Card key={stat.title} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm">
@@ -173,7 +173,7 @@ export const Dashboard = () => {
           ))}
         </div>
 
-        {/* Enhanced Notifications */}
+        {/* Notifications */}
         <Card className="mb-8 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-lg">
             <CardTitle className="flex items-center justify-between">
@@ -246,7 +246,7 @@ export const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Enhanced Quick Actions */}
+        {/* Quick Actions */}
         <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-t-lg">
             <CardTitle className="text-center flex items-center justify-center gap-2">
