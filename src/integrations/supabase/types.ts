@@ -9,438 +9,165 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      activity_logs: {
-        Row: {
-          action: string
-          created_at: string | null
-          details: Json | null
-          id: string
-          ip_address: unknown | null
-          resource_id: string | null
-          resource_type: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          ip_address?: unknown | null
-          resource_id?: string | null
-          resource_type?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          ip_address?: unknown | null
-          resource_id?: string | null
-          resource_type?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      admin_settings: {
-        Row: {
-          admin_email: string
-          auto_approve_certificates: boolean | null
-          auto_approve_vacation: boolean | null
-          created_at: string | null
-          id: string
-          receives_notifications: boolean | null
-          signature_image_url: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          admin_email: string
-          auto_approve_certificates?: boolean | null
-          auto_approve_vacation?: boolean | null
-          created_at?: string | null
-          id?: string
-          receives_notifications?: boolean | null
-          signature_image_url?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          admin_email?: string
-          auto_approve_certificates?: boolean | null
-          auto_approve_vacation?: boolean | null
-          created_at?: string | null
-          id?: string
-          receives_notifications?: boolean | null
-          signature_image_url?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      departments: {
-        Row: {
-          code: string
-          created_at: string | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          manager_id: string | null
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          code: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          manager_id?: string | null
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          code?: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          manager_id?: string | null
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      notifications: {
-        Row: {
-          created_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          read_at: string | null
-          title: string
-          type: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          read_at?: string | null
-          title: string
-          type?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          read_at?: string | null
-          title?: string
-          type?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      positions: {
-        Row: {
-          created_at: string | null
-          department_id: string | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          level: number | null
-          title: string
-        }
-        Insert: {
-          created_at?: string | null
-          department_id?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          level?: number | null
-          title: string
-        }
-        Update: {
-          created_at?: string | null
-          department_id?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          level?: number | null
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "positions_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
+      admin_users: {
         Row: {
           created_at: string
-          department_id: string | null
-          email: string | null
-          employee_id: string | null
-          full_name: string | null
-          hire_date: string | null
           id: string
-          manager_id: string | null
-          phone: string | null
-          position_id: string | null
-          salary: number | null
-          status: string | null
-          updated_at: string
+          password_hash: string
+          username: string
         }
         Insert: {
           created_at?: string
-          department_id?: string | null
-          email?: string | null
-          employee_id?: string | null
-          full_name?: string | null
-          hire_date?: string | null
-          id: string
-          manager_id?: string | null
-          phone?: string | null
-          position_id?: string | null
-          salary?: number | null
-          status?: string | null
-          updated_at?: string
+          id?: string
+          password_hash: string
+          username: string
         }
         Update: {
           created_at?: string
-          department_id?: string | null
-          email?: string | null
-          employee_id?: string | null
-          full_name?: string | null
-          hire_date?: string | null
           id?: string
-          manager_id?: string | null
-          phone?: string | null
-          position_id?: string | null
-          salary?: number | null
-          status?: string | null
-          updated_at?: string
+          password_hash?: string
+          username?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_position_id_fkey"
-            columns: ["position_id"]
-            isOneToOne: false
-            referencedRelation: "positions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      request_status_history: {
+      parts_inventory: {
         Row: {
-          change_reason: string | null
-          changed_by: string | null
-          created_at: string | null
-          id: string
-          new_status: string
-          old_status: string | null
-          request_id: string
-        }
-        Insert: {
-          change_reason?: string | null
-          changed_by?: string | null
-          created_at?: string | null
-          id?: string
-          new_status: string
-          old_status?: string | null
-          request_id: string
-        }
-        Update: {
-          change_reason?: string | null
-          changed_by?: string | null
-          created_at?: string | null
-          id?: string
-          new_status?: string
-          old_status?: string | null
-          request_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "request_status_history_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "requests"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      requests: {
-        Row: {
-          admin_notes: string | null
-          approval_date: string | null
-          approval_workflow: Json | null
-          attachments: Json | null
+          category: string
           created_at: string
-          data: Json
-          department_id: string | null
           id: string
-          priority: string | null
-          rejection_reason: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
+          min_stock: number
+          name: string
+          price: number
           status: string
-          submitted_at: string
-          type: string
+          stock: number
           updated_at: string
-          user_id: string
         }
         Insert: {
-          admin_notes?: string | null
-          approval_date?: string | null
-          approval_workflow?: Json | null
-          attachments?: Json | null
+          category: string
           created_at?: string
-          data: Json
-          department_id?: string | null
           id?: string
-          priority?: string | null
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
+          min_stock?: number
+          name: string
+          price: number
           status?: string
-          submitted_at?: string
-          type: string
+          stock?: number
           updated_at?: string
-          user_id: string
         }
         Update: {
-          admin_notes?: string | null
-          approval_date?: string | null
-          approval_workflow?: Json | null
-          attachments?: Json | null
+          category?: string
           created_at?: string
-          data?: Json
-          department_id?: string | null
           id?: string
-          priority?: string | null
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
+          min_stock?: number
+          name?: string
+          price?: number
           status?: string
-          submitted_at?: string
-          type?: string
+          stock?: number
           updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "requests_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      system_settings: {
-        Row: {
-          category: string | null
-          description: string | null
-          id: string
-          key: string
-          updated_at: string | null
-          updated_by: string | null
-          value: Json
-        }
-        Insert: {
-          category?: string | null
-          description?: string | null
-          id?: string
-          key: string
-          updated_at?: string | null
-          updated_by?: string | null
-          value: Json
-        }
-        Update: {
-          category?: string | null
-          description?: string | null
-          id?: string
-          key?: string
-          updated_at?: string | null
-          updated_by?: string | null
-          value?: Json
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          assigned_at: string | null
-          assigned_by: string | null
-          id: string
-          is_active: boolean | null
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Insert: {
-          assigned_at?: string | null
-          assigned_by?: string | null
-          id?: string
-          is_active?: boolean | null
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Update: {
-          assigned_at?: string | null
-          assigned_by?: string | null
-          id?: string
-          is_active?: boolean | null
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-      vacation_balances: {
+      purchase_orders: {
         Row: {
           created_at: string
+          customer_name: string
           id: string
-          remaining_days: number | null
-          total_days: number
+          items: Json
+          phone: string
+          status: string
+          total: number
           updated_at: string
-          used_days: number
-          user_id: string
-          year: number
         }
         Insert: {
           created_at?: string
+          customer_name: string
           id?: string
-          remaining_days?: number | null
-          total_days?: number
+          items: Json
+          phone: string
+          status?: string
+          total: number
           updated_at?: string
-          used_days?: number
-          user_id: string
-          year?: number
         }
         Update: {
           created_at?: string
+          customer_name?: string
           id?: string
-          remaining_days?: number | null
-          total_days?: number
+          items?: Json
+          phone?: string
+          status?: string
+          total?: number
           updated_at?: string
-          used_days?: number
-          user_id?: string
-          year?: number
+        }
+        Relationships: []
+      }
+      repair_requests: {
+        Row: {
+          created_at: string
+          customer_name: string
+          device_model: string
+          estimated_cost: number | null
+          id: string
+          phone: string
+          problem: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          device_model: string
+          estimated_cost?: number | null
+          id?: string
+          phone: string
+          problem: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          device_model?: string
+          estimated_cost?: number | null
+          id?: string
+          phone?: string
+          problem?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      used_phones: {
+        Row: {
+          condition: string
+          created_at: string
+          customer_name: string | null
+          device_model: string
+          id: string
+          offer_price: number
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          condition: string
+          created_at?: string
+          customer_name?: string | null
+          device_model: string
+          id?: string
+          offer_price: number
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          customer_name?: string | null
+          device_model?: string
+          id?: string
+          offer_price?: number
+          phone?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -449,44 +176,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_admin_dashboard_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_user_roles: {
-        Args: { user_id: string }
-        Returns: {
-          role: Database["public"]["Enums"]["user_role"]
-        }[]
-      }
-      has_role: {
-        Args: {
-          user_id: string
-          role_name: Database["public"]["Enums"]["user_role"]
-        }
-        Returns: boolean
-      }
-      log_activity: {
-        Args: {
-          action_type: string
-          resource_type?: string
-          resource_id?: string
-          details?: Json
-        }
-        Returns: string
-      }
-      update_request_status: {
-        Args: {
-          request_id: string
-          new_status: string
-          admin_notes?: string
-          rejection_reason?: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      user_role: "admin" | "manager" | "employee" | "hr"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -601,8 +294,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      user_role: ["admin", "manager", "employee", "hr"],
-    },
+    Enums: {},
   },
 } as const
