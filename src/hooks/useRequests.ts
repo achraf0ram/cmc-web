@@ -35,12 +35,12 @@ export const useRequests = () => {
         .from('requests')
         .select(`
           *,
-          profiles(full_name, email)
+          profiles!inner(full_name, email)
         `)
         .order('submitted_at', { ascending: false });
       
       if (error) throw error;
-      return data as Request[];
+      return data;
     },
   });
 
