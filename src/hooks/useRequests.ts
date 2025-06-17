@@ -17,6 +17,10 @@ export interface Request {
   submitted_at: string;
   created_at: string;
   updated_at: string;
+  profiles?: {
+    full_name: string | null;
+    email: string | null;
+  };
 }
 
 export const useRequests = () => {
@@ -31,12 +35,12 @@ export const useRequests = () => {
         .from('requests')
         .select(`
           *,
-          profiles(full_name, email)
+          profiles!requests_user_id_fkey(full_name, email)
         `)
         .order('submitted_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as Request[];
     },
   });
 
