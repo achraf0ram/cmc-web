@@ -35,7 +35,7 @@ export const useRequests = () => {
         .from('requests')
         .select(`
           *,
-          profiles(full_name, email)
+          profiles!requests_user_id_profiles_id_fkey(full_name, email)
         `)
         .order('submitted_at', { ascending: false });
       
