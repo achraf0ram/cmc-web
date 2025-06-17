@@ -31,16 +31,32 @@ export const useRequests = () => {
   const { data: allRequests, isLoading: allRequestsLoading } = useQuery({
     queryKey: ['all-requests'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all requests
+      const { data: requestsData, error: requestsError } = await supabase
         .from('requests')
-        .select(`
-          *,
-          profiles(full_name, email)
-        `)
+        .select('*')
         .order('submitted_at', { ascending: false });
       
-      if (error) throw error;
-      return data as Request[];
+      if (requestsError) throw requestsError;
+      if (!requestsData) return [];
+
+      // Then get profiles for each request
+      const requestsWithProfiles = await Promise.all(
+        requestsData.map(async (request) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', request.user_id)
+            .single();
+          
+          return {
+            ...request,
+            profiles: profileData || null
+          };
+        })
+      );
+
+      return requestsWithProfiles as Request[];
     },
   });
 
