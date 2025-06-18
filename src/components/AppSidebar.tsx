@@ -5,7 +5,6 @@ import {
   MapPin,
   Settings,
   Home,
-  Shield,
 } from "lucide-react"
 
 import {
@@ -19,7 +18,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
-import { useCurrentUserRole } from "@/hooks/useUserRoles"
 
 // Menu items.
 const items = [
@@ -52,9 +50,6 @@ const items = [
 
 export function AppSidebar() {
   const { isAuthenticated } = useAuth()
-  const { data: userRoles } = useCurrentUserRole()
-  
-  const hasAdminAccess = userRoles?.some(r => r.role === 'admin' || r.role === 'hr')
 
   if (!isAuthenticated) {
     return null
@@ -77,16 +72,6 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              {hasAdminAccess && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href="/admin">
-                      <Shield />
-                      <span>لوحة التحكم</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

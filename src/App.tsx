@@ -17,7 +17,6 @@ import SignInPage from "@/pages/SignIn";
 import SignUpPage from "@/pages/SignUp";
 import ForgotPasswordPage from "@/pages/ForgotPassword";
 import ResetPasswordPage from "@/pages/ResetPassword";
-import AdminPanel from "@/pages/AdminPanel";
 import UserDashboard from "@/pages/UserDashboard";
 import NotFound from "@/pages/NotFound";
 
@@ -43,7 +42,6 @@ function App() {
                       <Route path="work-certificate" element={<WorkCertificate />} />
                       <Route path="mission-order" element={<MissionOrder />} />
                       <Route path="settings" element={<Settings />} />
-                      <Route path="admin" element={<AdminPanel />} />
                       <Route path="dashboard" element={<UserDashboard />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
