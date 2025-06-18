@@ -1,6 +1,7 @@
 
 import { AppHeader } from "@/components/AppHeader";
 import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,10 @@ export const MainLayout = () => {
         "flex-1 flex flex-col transition-all duration-300",
         "pt-16 md:pt-0"
       )}>
+        <div className="flex items-center gap-2 p-2 md:hidden">
+          <SidebarTrigger />
+        </div>
+        
         <AppHeader />
         
         <main className="flex-1 p-4 md:p-6">

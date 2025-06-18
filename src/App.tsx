@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -29,27 +30,29 @@ function App() {
         <ThemeProvider>
           <LanguageProvider>
             <TooltipProvider>
-              <Router>
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-                  <Routes>
-                    <Route path="/login" element={<SignInPage />} />
-                    <Route path="/register" element={<SignUpPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route path="/reset-password" element={<ResetPasswordPage />} />
-                    <Route path="/" element={<MainLayout />}>
-                      <Route index element={<Index />} />
-                      <Route path="vacation-request" element={<VacationRequest />} />
-                      <Route path="work-certificate" element={<WorkCertificate />} />
-                      <Route path="mission-order" element={<MissionOrder />} />
-                      <Route path="settings" element={<Settings />} />
-                      <Route path="dashboard" element={<UserDashboard />} />
-                    </Route>
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </div>
-                <Toaster />
-                <Sonner />
-              </Router>
+              <SidebarProvider>
+                <Router>
+                  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+                    <Routes>
+                      <Route path="/login" element={<SignInPage />} />
+                      <Route path="/register" element={<SignUpPage />} />
+                      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                      <Route path="/reset-password" element={<ResetPasswordPage />} />
+                      <Route path="/" element={<MainLayout />}>
+                        <Route index element={<Index />} />
+                        <Route path="vacation-request" element={<VacationRequest />} />
+                        <Route path="work-certificate" element={<WorkCertificate />} />
+                        <Route path="mission-order" element={<MissionOrder />} />
+                        <Route path="settings" element={<Settings />} />
+                        <Route path="dashboard" element={<UserDashboard />} />
+                      </Route>
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </div>
+                  <Toaster />
+                  <Sonner />
+                </Router>
+              </SidebarProvider>
             </TooltipProvider>
           </LanguageProvider>
         </ThemeProvider>
