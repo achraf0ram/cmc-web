@@ -20,7 +20,7 @@ export interface Request {
   profiles?: {
     full_name: string | null;
     email: string | null;
-  };
+  } | null;
 }
 
 export const useRequests = () => {
@@ -31,32 +31,23 @@ export const useRequests = () => {
   const { data: allRequests, isLoading: allRequestsLoading } = useQuery({
     queryKey: ['all-requests'],
     queryFn: async () => {
-      // First get all requests
-      const { data: requestsData, error: requestsError } = await supabase
+      const { data, error } = await supabase
         .from('requests')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `)
         .order('submitted_at', { ascending: false });
       
-      if (requestsError) throw requestsError;
-      if (!requestsData) return [];
-
-      // Then get profiles for each request
-      const requestsWithProfiles = await Promise.all(
-        requestsData.map(async (request) => {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', request.user_id)
-            .single();
-          
-          return {
-            ...request,
-            profiles: profileData || null
-          };
-        })
-      );
-
-      return requestsWithProfiles as Request[];
+      if (error) {
+        console.error('Error fetching requests:', error);
+        throw error;
+      }
+      
+      return data as Request[];
     },
   });
 
