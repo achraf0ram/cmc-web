@@ -12,7 +12,7 @@ export const MainLayout = () => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="min-h-screen flex w-full relative cmc-page-background">
+    <div className="min-h-screen flex w-full relative">
       <AppSidebar />
       
       <div className={cn(

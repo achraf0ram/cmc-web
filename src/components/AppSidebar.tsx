@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 
 // Menu items.
 const items = [
@@ -51,6 +51,7 @@ const items = [
 
 export function AppSidebar() {
   const { isAuthenticated } = useAuth()
+  const location = useLocation()
 
   if (!isAuthenticated) {
     return null
@@ -65,7 +66,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                     <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
