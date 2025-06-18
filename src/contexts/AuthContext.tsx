@@ -24,6 +24,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<boolean>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   updateUser: (userData: Partial<UserProfile>) => Promise<boolean>;
+  signInWithGoogle: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,6 +103,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (error) {
       console.error('خطأ في تسجيل الدخول:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async (): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) {
+        console.error('خطأ في تسجيل الدخول بـ Google:', error);
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('خطأ في تسجيل الدخول بـ Google:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -215,7 +240,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         resetPassword,
         register,
-        updateUser
+        updateUser,
+        signInWithGoogle
       }}
     >
       {children}

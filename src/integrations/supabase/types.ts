@@ -45,42 +45,6 @@ export type Database = {
         }
         Relationships: []
       }
-      admin_settings: {
-        Row: {
-          admin_email: string
-          auto_approve_certificates: boolean | null
-          auto_approve_vacation: boolean | null
-          created_at: string | null
-          id: string
-          receives_notifications: boolean | null
-          signature_image_url: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          admin_email: string
-          auto_approve_certificates?: boolean | null
-          auto_approve_vacation?: boolean | null
-          created_at?: string | null
-          id?: string
-          receives_notifications?: boolean | null
-          signature_image_url?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          admin_email?: string
-          auto_approve_certificates?: boolean | null
-          auto_approve_vacation?: boolean | null
-          created_at?: string | null
-          id?: string
-          receives_notifications?: boolean | null
-          signature_image_url?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       departments: {
         Row: {
           code: string
@@ -248,48 +212,8 @@ export type Database = {
           },
         ]
       }
-      request_status_history: {
-        Row: {
-          change_reason: string | null
-          changed_by: string | null
-          created_at: string | null
-          id: string
-          new_status: string
-          old_status: string | null
-          request_id: string
-        }
-        Insert: {
-          change_reason?: string | null
-          changed_by?: string | null
-          created_at?: string | null
-          id?: string
-          new_status: string
-          old_status?: string | null
-          request_id: string
-        }
-        Update: {
-          change_reason?: string | null
-          changed_by?: string | null
-          created_at?: string | null
-          id?: string
-          new_status?: string
-          old_status?: string | null
-          request_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "request_status_history_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "requests"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       requests: {
         Row: {
-          admin_notes: string | null
-          approval_date: string | null
           approval_workflow: Json | null
           attachments: Json | null
           created_at: string
@@ -297,7 +221,6 @@ export type Database = {
           department_id: string | null
           id: string
           priority: string | null
-          rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -307,8 +230,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          admin_notes?: string | null
-          approval_date?: string | null
           approval_workflow?: Json | null
           attachments?: Json | null
           created_at?: string
@@ -316,7 +237,6 @@ export type Database = {
           department_id?: string | null
           id?: string
           priority?: string | null
-          rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -326,8 +246,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          admin_notes?: string | null
-          approval_date?: string | null
           approval_workflow?: Json | null
           attachments?: Json | null
           created_at?: string
@@ -335,7 +253,6 @@ export type Database = {
           department_id?: string | null
           id?: string
           priority?: string | null
-          rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -449,10 +366,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_admin_dashboard_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
       get_user_roles: {
         Args: { user_id: string }
         Returns: {
@@ -474,15 +387,6 @@ export type Database = {
           details?: Json
         }
         Returns: string
-      }
-      update_request_status: {
-        Args: {
-          request_id: string
-          new_status: string
-          admin_notes?: string
-          rejection_reason?: string
-        }
-        Returns: boolean
       }
     }
     Enums: {
