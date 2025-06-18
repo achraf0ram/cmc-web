@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -53,13 +54,12 @@ export const AppSidebar = () => {
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => setIsMobileOpen(!isMobileOpen)}  // Toggle mobile sidebar visibility
+      onClick={() => setIsMobileOpen(!isMobileOpen)}
       className={cn(
         "fixed top-4 z-40 hover:bg-[#E8F5E9] text-[#2E7D32]",
         language === 'ar' ? 'right-4' : 'left-4'
       )}
     >
-      {/* Change icon to X when sidebar is open */}
       {isMobileOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
     </Button>
   );
@@ -114,7 +114,7 @@ export const AppSidebar = () => {
             <Link
               to={item.path}
               key={item.path}
-              onClick={() => isMobile && setIsMobileOpen(false)} // Close mobile sidebar when clicking on a menu item
+              onClick={() => isMobile && setIsMobileOpen(false)}
             >
               <Button
                 variant='ghost'
@@ -143,7 +143,7 @@ export const AppSidebar = () => {
               />
             </div>
             {!collapsed && (
-              <div className='text-sm'>{user?.name || "user"}</div>
+              <div className='text-sm'>{user?.name || "مستخدم"}</div>
             )}
           </div>
           <Button

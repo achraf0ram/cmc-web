@@ -32,7 +32,7 @@ function App() {
             <TooltipProvider>
               <SidebarProvider>
                 <Router>
-                  <div className="min-h-screen flex w-full bg-gradient-to-br from-blue-50 to-green-50">
+                  <div className="min-h-screen flex w-full">
                     <Routes>
                       <Route path="/login" element={<SignInPage />} />
                       <Route path="/register" element={<SignUpPage />} />

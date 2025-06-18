@@ -12,7 +12,7 @@ export const MainLayout = () => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="min-h-screen flex w-full relative">
+    <div className="min-h-screen flex w-full relative bg-gradient-to-br from-blue-50 to-green-50">
       <AppSidebar />
       
       <div className={cn(
