@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
@@ -24,7 +23,6 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<boolean>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   updateUser: (userData: Partial<UserProfile>) => Promise<boolean>;
-  signInWithGoogle: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -109,34 +107,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signInWithGoogle = async (): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) {
-        console.error('خطأ في تسجيل الدخول بـ Google:', error);
-        throw error;
-      }
-
-      return true;
-    } catch (error) {
-      console.error('خطأ في تسجيل الدخول بـ Google:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const signup = async (fullName: string, email: string, password: string, phone?: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       
+      // Get the current domain for email confirmation redirect
       const redirectUrl = `${window.location.origin}/login`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -240,8 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         resetPassword,
         register,
-        updateUser,
-        signInWithGoogle
+        updateUser
       }}
     >
       {children}

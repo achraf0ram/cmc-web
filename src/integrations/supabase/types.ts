@@ -9,218 +9,38 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      activity_logs: {
-        Row: {
-          action: string
-          created_at: string | null
-          details: Json | null
-          id: string
-          ip_address: unknown | null
-          resource_id: string | null
-          resource_type: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          ip_address?: unknown | null
-          resource_id?: string | null
-          resource_type?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          ip_address?: unknown | null
-          resource_id?: string | null
-          resource_type?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      departments: {
-        Row: {
-          code: string
-          created_at: string | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          manager_id: string | null
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          code: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          manager_id?: string | null
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          code?: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          manager_id?: string | null
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      notifications: {
-        Row: {
-          created_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          read_at: string | null
-          title: string
-          type: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          read_at?: string | null
-          title: string
-          type?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          read_at?: string | null
-          title?: string
-          type?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      positions: {
-        Row: {
-          created_at: string | null
-          department_id: string | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          level: number | null
-          title: string
-        }
-        Insert: {
-          created_at?: string | null
-          department_id?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          level?: number | null
-          title: string
-        }
-        Update: {
-          created_at?: string | null
-          department_id?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          level?: number | null
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "positions_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           created_at: string
-          department_id: string | null
           email: string | null
-          employee_id: string | null
           full_name: string | null
-          hire_date: string | null
           id: string
-          manager_id: string | null
           phone: string | null
-          position_id: string | null
-          salary: number | null
-          status: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
-          department_id?: string | null
           email?: string | null
-          employee_id?: string | null
           full_name?: string | null
-          hire_date?: string | null
           id: string
-          manager_id?: string | null
           phone?: string | null
-          position_id?: string | null
-          salary?: number | null
-          status?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
-          department_id?: string | null
           email?: string | null
-          employee_id?: string | null
           full_name?: string | null
-          hire_date?: string | null
           id?: string
-          manager_id?: string | null
           phone?: string | null
-          position_id?: string | null
-          salary?: number | null
-          status?: string | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_position_id_fkey"
-            columns: ["position_id"]
-            isOneToOne: false
-            referencedRelation: "positions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       requests: {
         Row: {
-          approval_workflow: Json | null
-          attachments: Json | null
           created_at: string
           data: Json
-          department_id: string | null
           id: string
-          priority: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -230,13 +50,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          approval_workflow?: Json | null
-          attachments?: Json | null
           created_at?: string
           data: Json
-          department_id?: string | null
           id?: string
-          priority?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -246,84 +62,15 @@ export type Database = {
           user_id: string
         }
         Update: {
-          approval_workflow?: Json | null
-          attachments?: Json | null
           created_at?: string
           data?: Json
-          department_id?: string | null
           id?: string
-          priority?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
           submitted_at?: string
           type?: string
           updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "requests_department_id_fkey"
-            columns: ["department_id"]
-            isOneToOne: false
-            referencedRelation: "departments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      system_settings: {
-        Row: {
-          category: string | null
-          description: string | null
-          id: string
-          key: string
-          updated_at: string | null
-          updated_by: string | null
-          value: Json
-        }
-        Insert: {
-          category?: string | null
-          description?: string | null
-          id?: string
-          key: string
-          updated_at?: string | null
-          updated_by?: string | null
-          value: Json
-        }
-        Update: {
-          category?: string | null
-          description?: string | null
-          id?: string
-          key?: string
-          updated_at?: string | null
-          updated_by?: string | null
-          value?: Json
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          assigned_at: string | null
-          assigned_by: string | null
-          id: string
-          is_active: boolean | null
-          role: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Insert: {
-          assigned_at?: string | null
-          assigned_by?: string | null
-          id?: string
-          is_active?: boolean | null
-          role?: Database["public"]["Enums"]["user_role"]
-          user_id: string
-        }
-        Update: {
-          assigned_at?: string | null
-          assigned_by?: string | null
-          id?: string
-          is_active?: boolean | null
-          role?: Database["public"]["Enums"]["user_role"]
           user_id?: string
         }
         Relationships: []
@@ -366,31 +113,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_user_roles: {
-        Args: { user_id: string }
-        Returns: {
-          role: Database["public"]["Enums"]["user_role"]
-        }[]
-      }
-      has_role: {
-        Args: {
-          user_id: string
-          role_name: Database["public"]["Enums"]["user_role"]
-        }
-        Returns: boolean
-      }
-      log_activity: {
-        Args: {
-          action_type: string
-          resource_type?: string
-          resource_id?: string
-          details?: Json
-        }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
-      user_role: "admin" | "manager" | "employee" | "hr"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -505,8 +231,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      user_role: ["admin", "manager", "employee", "hr"],
-    },
+    Enums: {},
   },
 } as const
