@@ -31,23 +31,40 @@ export const useRequests = () => {
   const { data: allRequests, isLoading: allRequestsLoading } = useQuery({
     queryKey: ['all-requests'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get requests
+      const { data: requestsData, error: requestsError } = await supabase
         .from('requests')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .order('submitted_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching requests:', error);
-        throw error;
+      if (requestsError) {
+        console.error('Error fetching requests:', requestsError);
+        throw requestsError;
       }
       
-      return data as Request[];
+      if (!requestsData) return [];
+
+      // Then get profiles for each request
+      const requestsWithProfiles = await Promise.all(
+        requestsData.map(async (request) => {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', request.user_id)
+            .maybeSingle();
+          
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+          }
+          
+          return {
+            ...request,
+            profiles: profileData || null
+          } as Request;
+        })
+      );
+
+      return requestsWithProfiles;
     },
   });
 
