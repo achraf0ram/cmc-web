@@ -3,30 +3,47 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { VacationFormData, vacationRequestSchema } from "@/types/vacationRequest";
+import { FormData, formSchema } from "@/types/vacationRequest";
 import PersonalInfoSection from "./PersonalInfoSection";
 import LeaveInfoSection from "./LeaveInfoSection";
+import { useState } from "react";
 
 interface VacationRequestFormProps {
-  onSubmit: (data: VacationFormData) => Promise<void>;
+  onSubmit: (data: FormData) => Promise<void>;
   isGenerating: boolean;
 }
 
 const VacationRequestForm = ({ onSubmit, isGenerating }: VacationRequestFormProps) => {
-  const form = useForm<VacationFormData>({
-    resolver: zodResolver(vacationRequestSchema),
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
       matricule: "",
+      echelle: "",
+      echelon: "",
       grade: "",
-      hireDate: "",
-      function: "",
+      fonction: "",
+      arabicFonction: "",
+      direction: "",
+      arabicDirection: "",
+      address: "",
+      arabicAddress: "",
+      phone: "",
       leaveType: "",
-      startDate: "",
-      endDate: "",
-      numberOfDays: 0,
-      reason: "",
-      additionalInfo: "",
+      customLeaveType: "",
+      arabicCustomLeaveType: "",
+      duration: "",
+      arabicDuration: "",
+      startDate: new Date(),
+      endDate: new Date(),
+      with: "",
+      arabicWith: "",
+      interim: "",
+      arabicInterim: "",
+      leaveMorocco: false,
+      signature: "",
     },
   });
 
@@ -52,7 +69,11 @@ const VacationRequestForm = ({ onSubmit, isGenerating }: VacationRequestFormProp
           <CardContent className="p-4 md:p-8">
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <PersonalInfoSection form={form} />
-              <LeaveInfoSection form={form} />
+              <LeaveInfoSection 
+                form={form} 
+                signaturePreview={signaturePreview}
+                setSignaturePreview={setSignaturePreview}
+              />
               
               <div className="flex justify-center pt-4 md:pt-6">
                 <Button 
