@@ -1,163 +1,165 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { FileText, ClipboardCheck, Calendar, User, TrendingUp, CheckCircle, Clock, AlertCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { BarChart3, Calendar, CheckCircle, AlertCircle } from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Dashboard = () => {
   const { t } = useLanguage();
-  const { profile, user } = useAuth();
+  const { pendingRequests, approvedRequests, vacationDaysRemaining, isLoading, error } = useDashboardData();
+  const { addNotification } = useNotifications();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-6 md:mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
+              <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-cmc-blue" />
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">{t('dashboard')}</h1>
+            <p className="text-slate-600 text-sm md:text-base">لوحة التحكم الرئيسية</p>
+          </div>
+          
+          <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3 mb-6 md:mb-8">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="cmc-card">
+                <CardHeader className="bg-gradient-to-r from-slate-200 to-slate-300 p-4 md:p-6 rounded-t-lg">
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-4 w-24" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="cmc-card max-w-md">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-slate-800 mb-2">خطأ في تحميل البيانات</h3>
+            <p className="text-slate-600">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const stats = [
     {
-      title: "إجمالي الطلبات",
-      value: "12",
-      icon: FileText,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50"
+      title: t('pendingRequests'),
+      value: pendingRequests.toString(),
+      description: t('awaitingApproval'),
+      icon: Calendar,
+      color: 'from-cmc-blue to-cmc-blue-dark'
     },
     {
-      title: "الطلبات المعتمدة",
-      value: "8",
+      title: t('approvedRequests'),
+      value: approvedRequests.toString(),
+      description: t('thisMonth'),
       icon: CheckCircle,
-      color: "text-green-600",
-      bgColor: "bg-green-50"
+      color: 'from-cmc-green to-emerald-600'
     },
     {
-      title: "قيد المراجعة",
-      value: "3",
-      icon: Clock,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50"
+      title: t('vacationDays'),
+      value: vacationDaysRemaining.toString(),
+      description: t('remaining'),
+      icon: BarChart3,
+      color: 'from-cmc-blue to-cmc-green'
     },
-    {
-      title: "مرفوضة",
-      value: "1",
-      icon: AlertCircle,
-      color: "text-red-600",
-      bgColor: "bg-red-50"
-    }
   ];
 
-  const quickActions = [
-    {
-      title: "شهادة عمل",
-      description: "طلب شهادة عمل جديدة",
-      icon: FileText,
-      path: "/work-certificate",
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      title: "أمر مهمة",
-      description: "إنشاء أمر مهمة جديد",
-      icon: ClipboardCheck,
-      path: "/mission-order",
-      color: "from-green-500 to-green-600"
-    },
-    {
-      title: "طلب إجازة",
-      description: "تقديم طلب إجازة",
-      icon: Calendar,
-      path: "/vacation-request",
-      color: "from-purple-500 to-purple-600"
-    }
-  ];
+  const handleQuickAction = (actionType: string) => {
+    const actionMessages = {
+      'vacation': 'تم النقر على طلب إجازة جديد',
+      'certificate': 'تم النقر على طلب شهادة عمل',
+      'mission': 'تم النقر على طلب أمر مهمة'
+    };
+
+    addNotification({
+      title: 'إجراء سريع',
+      message: actionMessages[actionType as keyof typeof actionMessages] || 'تم تنفيذ إجراء',
+      type: 'info'
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-2">
-            لوحة التحكم
-          </h1>
-          <p className="text-slate-600">
-            مرحباً {profile?.full_name || user?.email || "بك"}
-          </p>
+          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
+            <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-cmc-blue" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">{t('dashboard')}</h1>
+          <p className="text-slate-600 text-sm md:text-base">لوحة التحكم الرئيسية</p>
         </div>
-
+        
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index} className="shadow-lg border-0 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow duration-300">
-              <CardContent className="p-6">
+        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3 mb-6 md:mb-8">
+          {stats.map((stat) => (
+            <Card key={stat.title} className="cmc-card hover:shadow-lg transition-shadow duration-200">
+              <CardHeader className={`bg-gradient-to-r ${stat.color} text-white rounded-t-lg p-4 md:p-6`}>
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600 mb-1">
-                      {stat.title}
-                    </p>
-                    <p className="text-2xl font-bold text-slate-800">
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                  </div>
+                  <CardTitle className="text-base md:text-lg font-semibold">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className="w-5 h-5 md:w-6 md:h-6" />
                 </div>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6">
+                <div className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">{stat.value}</div>
+                <p className="text-xs md:text-sm text-slate-600">
+                  {stat.description}
+                </p>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Quick Actions */}
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-t-lg">
-            <CardTitle className="text-xl font-semibold text-center">
+        <Card className="cmc-card">
+          <CardHeader className="cmc-gradient text-white rounded-t-lg p-4 md:p-6">
+            <CardTitle className="text-lg md:text-xl font-semibold text-center">
               الإجراءات السريعة
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {quickActions.map((action, index) => (
-                <Link key={index} to={action.path}>
-                  <Card className="h-full cursor-pointer hover:shadow-lg transition-all duration-300 border border-slate-200 hover:border-slate-300">
-                    <CardContent className="p-6 text-center">
-                      <div className={`w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-r ${action.color} flex items-center justify-center`}>
-                        <action.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-slate-800 mb-2">
-                        {action.title}
-                      </h3>
-                      <p className="text-sm text-slate-600">
-                        {action.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Requests */}
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-t-lg">
-            <CardTitle className="text-xl font-semibold text-center">
-              الطلبات الأخيرة
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              {[
-                { type: "شهادة عمل", date: "2024-01-15", status: "معتمد", statusColor: "text-green-600 bg-green-50" },
-                { type: "أمر مهمة", date: "2024-01-12", status: "قيد المراجعة", statusColor: "text-yellow-600 bg-yellow-50" },
-                { type: "طلب إجازة", date: "2024-01-10", status: "معتمد", statusColor: "text-green-600 bg-green-50" }
-              ].map((request, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <FileText className="h-5 w-5 text-slate-500" />
-                    <div>
-                      <p className="font-medium text-slate-800">{request.type}</p>
-                      <p className="text-sm text-slate-600">{request.date}</p>
-                    </div>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${request.statusColor}`}>
-                    {request.status}
-                  </span>
-                </div>
-              ))}
+          <CardContent className="p-4 md:p-8">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+              <div 
+                onClick={() => handleQuickAction('vacation')}
+                className="text-center p-4 md:p-6 bg-gradient-to-br from-cmc-blue-light/50 to-cmc-blue-light/30 rounded-lg border border-cmc-blue/20 hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105"
+              >
+                <Calendar className="w-10 h-10 md:w-12 md:h-12 text-cmc-blue mx-auto mb-3 md:mb-4" />
+                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">طلب إجازة جديد</h3>
+                <p className="text-xs md:text-sm text-slate-600">تقديم طلب إجازة سنوية أو مرضية</p>
+              </div>
+              <div 
+                onClick={() => handleQuickAction('certificate')}
+                className="text-center p-4 md:p-6 bg-gradient-to-br from-cmc-green-light/50 to-cmc-green-light/30 rounded-lg border border-cmc-green/20 hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105"
+              >
+                <CheckCircle className="w-10 h-10 md:w-12 md:h-12 text-cmc-green mx-auto mb-3 md:mb-4" />
+                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">شهادة عمل</h3>
+                <p className="text-xs md:text-sm text-slate-600">طلب شهادة عمل أو راتب</p>
+              </div>
+              <div 
+                onClick={() => handleQuickAction('mission')}
+                className="text-center p-4 md:p-6 bg-gradient-to-br from-emerald-100/50 to-emerald-50/30 rounded-lg border border-emerald-200/50 hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105"
+              >
+                <BarChart3 className="w-10 h-10 md:w-12 md:h-12 text-emerald-600 mx-auto mb-3 md:mb-4" />
+                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">أمر مهمة</h3>
+                <p className="text-xs md:text-sm text-slate-600">تقديم طلب أمر مهمة</p>
+              </div>
             </div>
           </CardContent>
         </Card>

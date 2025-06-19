@@ -4,21 +4,23 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Outlet } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const MainLayout = () => {
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
   
   return (
-    <div className="min-h-screen flex w-full relative">
+    <div className="min-h-screen flex w-full relative cmc-page-background">
       <AppSidebar />
       
       <div className={cn(
-        "flex-1 flex flex-col transition-all duration-300 min-h-screen",
-        "md:mr-64"
+        "flex-1 flex flex-col transition-all duration-300",
+        "pt-16 md:pt-0"
       )}>
         <AppHeader />
         
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
       </div>
