@@ -308,7 +308,7 @@ const VacationRequest = () => {
     });
   };
 
-  const addContent = (doc: jsPDF, data: FormData, resolve: () => void) => {
+  const addContent = (doc: jsPDF, data: FormData, resolve: (value: string) => void) => {
     console.log("Adding PDF content.");
     
     // رأس الصفحة
