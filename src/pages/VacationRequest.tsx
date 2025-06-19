@@ -10,7 +10,7 @@ import { generateVacationPDF } from "@/utils/vacationPDF";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { sendRequestWithEmail } from "@/services/requestService";
 import { Mail } from "lucide-react";
 
 const VacationRequest = () => {
@@ -98,20 +98,14 @@ const VacationRequest = () => {
 
       console.log("Sending request with email service");
 
-      // إرسال الطلب عبر Supabase Edge Function
-      const { data: result, error } = await supabase.functions.invoke('send-request-email', {
-        body: {
-          type: 'vacation',
-          data: requestData,
-          pdfBase64: pdfBase64,
-        }
+      // إرسال الطلب مع الإيميل باستخدام نفس الطريقة المستخدمة في الطلبات الأخرى
+      const result = await sendRequestWithEmail({
+        type: 'vacation',
+        data: requestData,
+        pdfBase64: pdfBase64,
       });
 
-      if (error) {
-        throw error;
-      }
-
-      if (result && result.success) {
+      if (result.success) {
         console.log("Request sent successfully");
         toast({
           title: "تم الإرسال بنجاح",
@@ -123,7 +117,12 @@ const VacationRequest = () => {
         form.reset();
         setSignaturePreview(null);
       } else {
-        throw new Error("فشل في إرسال الطلب");
+        console.error("Failed to send request:", result.error);
+        toast({
+          title: "خطأ في الإرسال",
+          description: result.error || "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error in form submission:", error);
