@@ -1,13 +1,12 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { ar, fr } from "date-fns/locale";
-import { CalendarIcon, FileImage, CheckCircle } from "lucide-react";
+import { CalendarIcon, FileImage, CheckCircle, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -33,16 +32,17 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
 import { AmiriFont } from "../fonts/AmiriFont";
 import { AmiriBoldFont } from "../fonts/AmiriBoldFont";
 import jsPDF from "jspdf";
+import emailjs from 'emailjs-com';
 
 // Import Arabic reshaping libraries
 import * as reshaper from "arabic-persian-reshaper";
 const reshape = reshaper.reshape;
 import bidi from "bidi-js";
 
-// Define helper functions
 const translateToArabic = (frenchText: string): string => {
   if (!frenchText || frenchText.trim() === "") return "";
   
@@ -108,18 +108,15 @@ const formatArabicForPDF = (text: string): string => {
   }
 };
 
-// Export helper functions for use in the component
-export { translateToArabic, formatArabicForPDF };
-
 const VacationRequest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showCustomLeaveType, setShowCustomLeaveType] = useState(false);
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
+  const { toast } = useToast();
   const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
 
-  // Define form schema inside the component to access language
   const formSchema = z.object({
     fullName: z.string().min(3, { 
       message: language === 'ar' ? "يرجى إدخال الاسم الكامل" : "Veuillez entrer le nom complet" 
@@ -208,15 +205,73 @@ const VacationRequest = () => {
     }
   };
 
-  const onSubmit = async (values: FormData) => {
-    setIsSubmitted(true);
-    setIsGeneratingPDF(true);
-    await generatePDF(values);
-    setIsGeneratingPDF(false);
+  const sendEmail = async (pdfBase64: string, formData: any) => {
+    try {
+      // Initialize EmailJS
+      emailjs.init("XnirLJya11juqBcGt");
+
+      const templateParams = {
+        to_email: "cmc.rh.ram@gmail.com",
+        from_name: formData.fullName || "موظف",
+        subject: `طلب إجازة - ${formData.fullName}`,
+        message: `
+          طلب إجازة جديد:
+          
+          الاسم الكامل: ${formData.fullName}
+          الرقم المالي: ${formData.matricule}
+          نوع الإجازة: ${formData.leaveType}
+          تاريخ البداية: ${formData.startDate ? format(formData.startDate, "dd/MM/yyyy") : ''}
+          تاريخ النهاية: ${formData.endDate ? format(formData.endDate, "dd/MM/yyyy") : ''}
+          السبب: ${formData.duration}
+        `,
+        pdf_attachment: pdfBase64
+      };
+
+      const result = await emailjs.send(
+        "service_t3sn7ky",
+        "template_c2aqfac",
+        templateParams
+      );
+
+      console.log("Email sent successfully:", result);
+      
+      toast({
+        title: "تم الإرسال بنجاح",
+        description: "تم إرسال طلب الإجازة بنجاح إلى الإدارة",
+        className: "bg-green-50 border-green-200",
+      });
+
+    } catch (error) {
+      console.error("Error sending email:", error);
+      
+      toast({
+        title: "خطأ في الإرسال",
+        description: "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const generatePDF = async (data: FormData) => {
-    return new Promise<void>((resolve) => {
+  const onSubmit = async (values: FormData) => {
+    setIsGeneratingPDF(true);
+    try {
+      const pdfBase64 = await generatePDF(values);
+      await sendEmail(pdfBase64, values);
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Error processing request:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء معالجة الطلب",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const generatePDF = async (data: FormData): Promise<string> => {
+    return new Promise<string>((resolve) => {
       try {
         const doc = new jsPDF();
         
@@ -253,7 +308,6 @@ const VacationRequest = () => {
     });
   };
 
-  // Helper function to add content after logo loading
   const addContent = (doc: jsPDF, data: FormData, resolve: () => void) => {
     console.log("Adding PDF content.");
     
@@ -359,32 +413,32 @@ const VacationRequest = () => {
     
     doc.setFontSize(11);
     // المديرية
-const directionText = data.direction || '………………';
-const arabicDirectionText = data.arabicDirection || '………………';
-doc.setFont("helvetica", "normal");
-doc.text(`Direction : ${directionText}`, 20, currentY);
+    const directionText = data.direction || '………………';
+    const arabicDirectionText = data.arabicDirection || '………………';
+    doc.setFont("helvetica", "normal");
+    doc.text(`Direction : ${directionText}`, 20, currentY);
 
-doc.setFont("Amiri", "normal");
-const dirText = data.arabicDirection 
-    ? `${arabicDirectionText} :المديرية` 
-    : `${arabicDirectionText} :المديرية`;
-doc.text(dirText, 190, currentY, { align: "right" });
+    doc.setFont("Amiri", "normal");
+    const dirText = data.arabicDirection 
+        ? `${arabicDirectionText} :المديرية` 
+        : `${arabicDirectionText} :المديرية`;
+    doc.text(dirText, 190, currentY, { align: "right" });
 
-currentY += lineHeight;
+    currentY += lineHeight;
 
-// العنوان
-const addressText = data.address || '………………';
-const arabicAddressText = data.arabicAddress || '………………';
-doc.setFont("helvetica", "normal");
-doc.text(`Adresse : ${addressText}`, 20, currentY);
+    // العنوان
+    const addressText = data.address || '………………';
+    const arabicAddressText = data.arabicAddress || '………………';
+    doc.setFont("helvetica", "normal");
+    doc.text(`Adresse : ${addressText}`, 20, currentY);
 
-doc.setFont("Amiri", "normal");
-const addrText = data.arabicAddress 
-    ? `${arabicAddressText} :العنوان` 
-    : `${arabicAddressText} :العنوان`;
-doc.text(addrText, 190, currentY, { align: "right" });
+    doc.setFont("Amiri", "normal");
+    const addrText = data.arabicAddress 
+        ? `${arabicAddressText} :العنوان` 
+        : `${arabicAddressText} :العنوان`;
+    doc.text(addrText, 190, currentY, { align: "right" });
 
-currentY += lineHeight;
+    currentY += lineHeight;
     // الهاتف
     doc.setFont("helvetica", "normal");
     doc.text(`Téléphone : ${data.phone || '…………………………………'}`, 20, currentY);
@@ -393,22 +447,21 @@ currentY += lineHeight;
     currentY += lineHeight;
     
     // نوع الإجازة
-const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : data.leaveType;
-const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : translateToArabic(data.leaveType);
+    const leaveTypeToDisplay = data.leaveType === "Autre" ? data.customLeaveType : data.leaveType;
+    const arabicLeaveTypeToDisplay = data.leaveType === "Autre" ? data.arabicCustomLeaveType : translateToArabic(data.leaveType);
 
-// النص الفرنسي
-doc.setFont("helvetica", "normal");
-doc.text(`Nature de congé (2) : ${leaveTypeToDisplay || '…………………………………'}`, 20, currentY);
+    // النص الفرنسي
+    doc.setFont("helvetica", "normal");
+    doc.text(`Nature de congé (2) : ${leaveTypeToDisplay || '…………………………………'}`, 20, currentY);
 
-// النص العربي المعدل
-doc.setFont("Amiri", "normal");
-const arabicText = `نوع الإجازة )2(: ${arabicLeaveTypeToDisplay || '…………………………………'}`;
-doc.text(formatArabicForPDF(arabicText), 190, currentY, { 
-  align: "right",
+    // النص العربي المعدل
+    doc.setFont("Amiri", "normal");
+    const arabicText = `نوع الإجازة )2(: ${arabicLeaveTypeToDisplay || '…………………………………'}`;
+    doc.text(formatArabicForPDF(arabicText), 190, currentY, { 
+      align: "right",
+    });
 
-});
-
-currentY += lineHeight;
+    currentY += lineHeight;
     // المدة
     const durationText = data.duration || '…………………………………';
     const arabicDurationText = data.arabicDuration || translateToArabic(data.duration) || '…………………………………';
@@ -434,35 +487,34 @@ currentY += lineHeight;
     }
     
     // مع (3)
-if (data.with || data.arabicWith) {
-  const withText = data.with || '…………………………………';
-  const arabicWithText = data.arabicWith || '…………………………………';
-  doc.setFont("helvetica", "normal");
-  doc.text(`Avec (3) : ${withText}`, 20, currentY);
-  doc.setFont("Amiri", "normal");
-  const formattedArabicWith = `مع )3( : ${arabicWithText}`; // النص العربي مع النقط
-  doc.text(formattedArabicWith, 190, currentY, { align: "right" });
-  currentY += lineHeight;
-}
-// النيابة
-if (data.interim || data.arabicInterim) {
-  const interimText = data.interim || '…………………………………';
-  const arabicInterimText = data.arabicInterim || '…………………………………';
-  
-  // النص الفرنسي
-  doc.setFont("helvetica", "normal");
-  doc.text(`Intérim (Nom et Fonction) : ${interimText}`, 20, currentY);
-  
-  // النص العربي المعدل
-  doc.setFont("Amiri", "normal");
-  const formattedArabicInterim = `النيابة )الاسم والوظيفة(: ${arabicInterimText}`;
-  doc.text(formattedArabicInterim, 190, currentY, { 
-    align: "right",
-
-  });
-  
-  currentY += lineHeight;
-}
+    if (data.with || data.arabicWith) {
+      const withText = data.with || '…………………………………';
+      const arabicWithText = data.arabicWith || '…………………………………';
+      doc.setFont("helvetica", "normal");
+      doc.text(`Avec (3) : ${withText}`, 20, currentY);
+      doc.setFont("Amiri", "normal");
+      const formattedArabicWith = `مع )3( : ${arabicWithText}`; // النص العربي مع النقط
+      doc.text(formattedArabicWith, 190, currentY, { align: "right" });
+      currentY += lineHeight;
+    }
+    // النيابة
+    if (data.interim || data.arabicInterim) {
+      const interimText = data.interim || '…………………………………';
+      const arabicInterimText = data.arabicInterim || '…………………………………';
+      
+      // النص الفرنسي
+      doc.setFont("helvetica", "normal");
+      doc.text(`Intérim (Nom et Fonction) : ${interimText}`, 20, currentY);
+      
+      // النص العربي المعدل
+      doc.setFont("Amiri", "normal");
+      const formattedArabicInterim = `النيابة )الاسم والوظيفة(: ${arabicInterimText}`;
+      doc.text(formattedArabicInterim, 190, currentY, { 
+        align: "right",
+      });
+      
+      currentY += lineHeight;
+    }
     // مغادرة التراب الوطني
     if (data.leaveMorocco) {
       doc.setFont("helvetica", "normal");
@@ -472,64 +524,64 @@ if (data.interim || data.arabicInterim) {
       currentY += lineHeight;
     }
     
-      // التوقيعات مع خطوط تحتها
-  const signatureY = 212;
-  
-  // توقيع المعني بالأمر
-  doc.setFont("helvetica", "normal");
-  const signatureText = "Signature de l'intéressé";
-  doc.text(signatureText, 30, signatureY);
-  // خط تحت النص الفرنسي
-  const signatureWidth = doc.getTextWidth(signatureText);
-  doc.line(30, signatureY + 1, 30 + signatureWidth, signatureY + 1); // Adjusted Y position for line
-  
-  doc.setFont("Amiri", "normal");
-  const arabicSignature = "إمضاء المعني)ة( بالأمر";
-  doc.text(arabicSignature, 30, signatureY + 5);
-  // خط تحت النص العربي
-  const arabicSignatureWidth = doc.getTextWidth(arabicSignature);
-  doc.line(30, signatureY + 5 + 1, 30 + arabicSignatureWidth, signatureY + 5 + 1); // Adjusted Y position for line
+    // التوقيعات مع خطوط تحتها
+    const signatureY = 212;
+    
+    // توقيع المعني بالأمر
+    doc.setFont("helvetica", "normal");
+    const signatureText = "Signature de l'intéressé";
+    doc.text(signatureText, 30, signatureY);
+    // خط تحت النص الفرنسي
+    const signatureWidth = doc.getTextWidth(signatureText);
+    doc.line(30, signatureY + 1, 30 + signatureWidth, signatureY + 1); // Adjusted Y position for line
+    
+    doc.setFont("Amiri", "normal");
+    const arabicSignature = "إمضاء المعني)ة( بالأمر";
+    doc.text(arabicSignature, 30, signatureY + 5);
+    // خط تحت النص العربي
+    const arabicSignatureWidth = doc.getTextWidth(arabicSignature);
+    doc.line(30, signatureY + 5 + 1, 30 + arabicSignatureWidth, signatureY + 5 + 1); // Adjusted Y position for line
 
-  // رأي الرئيس المباشر
-  doc.setFont("helvetica", "normal","Bold");
-  const chefText = "Avis du Chef Immédiat";
-  doc.text(chefText, 85, signatureY);
-  // خط تحت النص الفرنسي
-  const chefWidth = doc.getTextWidth(chefText);
-  doc.line(85, signatureY + 1, 85 + chefWidth, signatureY + 1); // Adjusted Y position for line
-  
-  doc.setFont("Amiri", "normal");
-  const arabicChef = "رأي الرئيس المباشر";
-  doc.text(arabicChef, 85, signatureY + 5);
-  // خط تحت النص العربي
-  const arabicChefWidth = doc.getTextWidth(arabicChef);
-  doc.line(85, signatureY + 5 + 1, 85 + arabicChefWidth, signatureY + 5 + 1); // Adjusted Y position for line
+    // رأي الرئيس المباشر
+    doc.setFont("helvetica", "normal","Bold");
+    const chefText = "Avis du Chef Immédiat";
+    doc.text(chefText, 85, signatureY);
+    // خط تحت النص الفرنسي
+    const chefWidth = doc.getTextWidth(chefText);
+    doc.line(85, signatureY + 1, 85 + chefWidth, signatureY + 1); // Adjusted Y position for line
+    
+    doc.setFont("Amiri", "normal");
+    const arabicChef = "رأي الرئيس المباشر";
+    doc.text(arabicChef, 85, signatureY + 5);
+    // خط تحت النص العربي
+    const arabicChefWidth = doc.getTextWidth(arabicChef);
+    doc.line(85, signatureY + 5 + 1, 85 + arabicChefWidth, signatureY + 5 + 1); // Adjusted Y position for line
 
-  // رأي المدير
-  doc.setFont("helvetica", "normal");
-  const directorText = "Avis du Directeur";
-  doc.text(directorText, 150, signatureY);
-  // خط تحت النص الفرنسي
-  const directorWidth = doc.getTextWidth(directorText);
-  doc.line(150, signatureY + 1, 150 + directorWidth, signatureY + 1); // Adjusted Y position for line
-  
-  doc.setFont("Amiri", "normal");
-  const arabicDirector = "رأي المدير";
-  doc.text(arabicDirector, 150, signatureY + 5);
-  // خط تحت النص العربي
-  const arabicDirectorWidth = doc.getTextWidth(arabicDirector);
-  doc.line(150, signatureY + 5 + 1, 150 + arabicDirectorWidth, signatureY + 5 + 1); // Adjusted Y position for line
+    // رأي المدير
+    doc.setFont("helvetica", "normal");
+    const directorText = "Avis du Directeur";
+    doc.text(directorText, 150, signatureY);
+    // خط تحت النص الفرنسي
+    const directorWidth = doc.getTextWidth(directorText);
+    doc.line(150, signatureY + 1, 150 + directorWidth, signatureY + 1); // Adjusted Y position for line
+    
+    doc.setFont("Amiri", "normal");
+    const arabicDirector = "رأي المدير";
+    doc.text(arabicDirector, 150, signatureY + 5);
+    // خط تحت النص العربي
+    const arabicDirectorWidth = doc.getTextWidth(arabicDirector);
+    doc.line(150, signatureY + 5 + 1, 150 + arabicDirectorWidth, signatureY + 5 + 1); // Adjusted Y position for line
 
-  console.log("Signature preview value before adding image:", signaturePreview ? "Has data" : "No data", signaturePreview ? `Data URL starts with: ${signaturePreview.substring(0, 30)}` : "");
+    console.log("Signature preview value before adding image:", signaturePreview ? "Has data" : "No data", signaturePreview ? `Data URL starts with: ${signaturePreview.substring(0, 30)}` : "");
 
-  if (signaturePreview) {
-    const imgType = signaturePreview.startsWith("data:image/png") ? "PNG" : "JPEG";
-    try {
-      doc.addImage(signaturePreview, imgType, 30, signatureY + 15, 40, 20);
-    } catch (error) {
-      console.error("Error adding signature image:", error);
+    if (signaturePreview) {
+      const imgType = signaturePreview.startsWith("data:image/png") ? "PNG" : "JPEG";
+      try {
+        doc.addImage(signaturePreview, imgType, 30, signatureY + 15, 40, 20);
+      } catch (error) {
+        console.error("Error adding signature image:", error);
+      }
     }
-  }
 
     let notesY = 250;
     doc.setFontSize(9);
@@ -551,67 +603,67 @@ if (data.interim || data.arabicInterim) {
     doc.setFontSize(8);
     
 
-const frenchNotes = [
-  "Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir",
-  "obtenu sa décision de congé le cas échéant il sera considéré en",
-  "abandon de poste.",
-  "(1) La demande doit être déposée 8 jours avant la date demandée",
-  "(2) Nature de congé : Administratif - Mariage - Naissance - Exceptionnel",
-  "(3) Si l'intéressé projette de quitter le territoire Marocain il faut qu'il",
-  'le mentionne "Quitter le territoire Marocain"'
-];
+    const frenchNotes = [
+      "Aucun agent n'est autorisé à quitter le lieu de son travail avant d'avoir",
+      "obtenu sa décision de congé le cas échéant il sera considéré en",
+      "abandon de poste.",
+      "(1) La demande doit être déposée 8 jours avant la date demandée",
+      "(2) Nature de congé : Administratif - Mariage - Naissance - Exceptionnel",
+      "(3) Si l'intéressé projette de quitter le territoire Marocain il faut qu'il",
+      'le mentionne "Quitter le territoire Marocain"'
+    ];
 
-const arabicNotes = [
-  "يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب",
-  "نوع الإجازة: إدارية - زواج - ازدياد - استثنائية",
-  "إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة",
-  " 'مغادرة التراب الوطني'",
-];
+    const arabicNotes = [
+      "يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب",
+      "نوع الإجازة: إدارية - زواج - ازدياد - استثنائية",
+      "إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة",
+      " 'مغادرة التراب الوطني'",
+    ];
 
-const arabicHeader = [
-  "لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة و إلا اعتبر في",
-  ".وضعية تخلي عن العمل"
-];
+    const arabicHeader = [
+      "لا يسمح لأي مستخدم بمغادرة العمل إلا بعد توصله بمقرر الإجازة و إلا اعتبر في",
+      ".وضعية تخلي عن العمل"
+    ];
 
-const numbers = ["(1)", "(2)", "(3)", " "];
+    const numbers = ["(1)", "(2)", "(3)", " "];
 
-// طباعة النصوص الفرنسية
-doc.setFont("helvetica", "normal");
-let currentLineY = notesY;
+    // طباعة النصوص الفرنسية
+    doc.setFont("helvetica", "normal");
+    let currentLineY = notesY;
 
-frenchNotes.forEach(line => {
-  doc.text(line, 10, currentLineY); // يسار
-  currentLineY += 5;
-});
+    frenchNotes.forEach(line => {
+      doc.text(line, 10, currentLineY); // يسار
+      currentLineY += 5;
+    });
 
-// طباعة النصوص العربية
-doc.setFont("Amiri", "normal");
-currentLineY = notesY;
+    // طباعة النصوص العربية
+    doc.setFont("Amiri", "normal");
+    currentLineY = notesY;
 
-// طباعة السطرين الأوائل بدون أرقام
-arabicHeader.forEach(line => {
-  doc.text(line, 200, currentLineY, {
-    align: "right",
-  });
-  currentLineY += 5;
-});
+    // طباعة السطرين الأوائل بدون أرقام
+    arabicHeader.forEach(line => {
+      doc.text(line, 200, currentLineY, {
+        align: "right",
+      });
+      currentLineY += 5;
+    });
 
-// طباعة النصوص مع الأرقام مفصولة
-for (let i = 0; i < arabicNotes.length; i++) {
-  // الرقم في أقصى اليمين
-  doc.text(numbers[i], 200, currentLineY, {
-    align: "right",
-  });
+    // طباعة النصوص مع الأرقام مفصولة
+    for (let i = 0; i < arabicNotes.length; i++) {
+      // الرقم في أقصى اليمين
+      doc.text(numbers[i], 200, currentLineY, {
+        align: "right",
+      });
 
-  // النص بجانبه
-  doc.text(arabicNotes[i], 195, currentLineY, {
-    align: "right",
-  });
+      // النص بجانبه
+      doc.text(arabicNotes[i], 195, currentLineY, {
+        align: "right",
+      });
 
-  currentLineY += 5;
-}
+      currentLineY += 5;
+    }
 
-// تحميل PDF
+    // تحميل PDF
 
     // حفظ الملف
     if (data.fullName) {
@@ -619,8 +671,8 @@ for (let i = 0; i < arabicNotes.length; i++) {
     } else {
       doc.save(`demande_conge.pdf`);
     }
-    console.log("PDF saved.");
-    resolve();
+    console.log("PDF generated successfully");
+    resolve(doc.output('datauristring').split(',')[1]);
   };
 
   return (
@@ -1311,17 +1363,18 @@ for (let i = 0; i < arabicNotes.length; i++) {
                       )}
                     />
 
-                    {/* Submit Button */}
+                    {/* Submit Button - Modified to include email functionality */}
                     <div className="flex justify-center pt-4 md:pt-6">
                       <Button 
                         type="submit" 
                         className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                         disabled={isGeneratingPDF}
                       >
+                        <Mail className="mr-2 h-4 w-4" />
                         {isGeneratingPDF ? (
                           <div className="flex items-center">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            {language === 'ar' ? 'جاري إنشاء الملف...' : 'Génération en cours...'}
+                            {language === 'ar' ? 'جاري الإرسال...' : 'Envoi en cours...'}
                           </div>
                         ) : (
                           <>
@@ -1339,16 +1392,17 @@ for (let i = 0; i < arabicNotes.length; i++) {
                   <CheckCircle className="h-8 w-8 md:h-10 md:w-10 text-white" />
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold text-slate-800 mb-2">
-                  {language === 'ar' ? 'تم إنشاء الطلب بنجاح!' : 'Demande générée avec succès!'}
+                  {language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!'}
                 </h3>
                 <p className="text-slate-600 mb-6">
-                  {language === 'ar' ? 'تم تحميل ملف PDF لطلب الإجازة' : 'Le fichier PDF de votre demande a été téléchargé'}
+                  {language === 'ar' ? 'تم إرسال طلب الإجازة إلى الإدارة وتحميل نسخة PDF' : 'La demande a été envoyée à l\'administration et le PDF téléchargé'}
                 </p>
                 <Button 
                   onClick={() => {
                     setIsSubmitted(false);
                     form.reset();
                     setShowCustomLeaveType(false);
+                    setSignaturePreview(null);
                   }}
                   className="border-blue-500 text-blue-600 hover:bg-blue-50 px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base"
                 >
