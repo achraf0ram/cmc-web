@@ -25,7 +25,7 @@ const VacationRequest = () => {
         fullName: values.fullName,
         matricule: values.matricule,
         grade: values.grade || "",
-        hireDate: values.hireDate || "",
+        hireDate: format(new Date(), "yyyy-MM-dd"), // استخدام تاريخ حالي إذا لم يكن متوفر
         function: values.fonction || "",
         leaveType: values.leaveType,
         startDate: format(values.startDate, "yyyy-MM-dd"),

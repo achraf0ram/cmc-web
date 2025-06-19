@@ -2,11 +2,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { FormData, formSchema } from "@/types/vacationRequest";
 import PersonalInfoSection from "./PersonalInfoSection";
 import LeaveInfoSection from "./LeaveInfoSection";
-import { useState } from "react";
+import VacationEmailSender from "../VacationEmailSender";
+import { generateVacationPDF } from "@/utils/vacationPDF";
+import { format } from "date-fns";
+import { useState, useEffect } from "react";
 
 interface VacationRequestFormProps {
   onSubmit: (data: FormData) => Promise<void>;
@@ -15,6 +17,7 @@ interface VacationRequestFormProps {
 
 const VacationRequestForm = ({ onSubmit, isGenerating }: VacationRequestFormProps) => {
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const [pdfBase64, setPdfBase64] = useState<string>("");
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -47,6 +50,38 @@ const VacationRequestForm = ({ onSubmit, isGenerating }: VacationRequestFormProp
     },
   });
 
+  // Watch form values to generate PDF when data changes
+  const watchedValues = form.watch();
+
+  useEffect(() => {
+    const generatePDF = async () => {
+      if (watchedValues.fullName && watchedValues.matricule && watchedValues.leaveType) {
+        try {
+          const pdfData = {
+            fullName: watchedValues.fullName,
+            matricule: watchedValues.matricule,
+            grade: watchedValues.grade || "",
+            hireDate: format(new Date(), "yyyy-MM-dd"),
+            function: watchedValues.fonction || "",
+            leaveType: watchedValues.leaveType,
+            startDate: format(watchedValues.startDate, "yyyy-MM-dd"),
+            endDate: format(watchedValues.endDate, "yyyy-MM-dd"),
+            numberOfDays: Math.ceil((watchedValues.endDate.getTime() - watchedValues.startDate.getTime()) / (1000 * 60 * 60 * 24)),
+            reason: watchedValues.duration || "طلب إجازة",
+            additionalInfo: watchedValues.arabicDuration || "",
+          };
+          
+          const base64 = await generateVacationPDF(pdfData);
+          setPdfBase64(base64);
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+        }
+      }
+    };
+
+    generatePDF();
+  }, [watchedValues]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 p-4">
       <div className="max-w-4xl mx-auto">
@@ -76,13 +111,11 @@ const VacationRequestForm = ({ onSubmit, isGenerating }: VacationRequestFormProp
               />
               
               <div className="flex justify-center pt-4 md:pt-6">
-                <Button 
-                  type="submit" 
-                  disabled={isGenerating}
-                  className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  {isGenerating ? "جاري المعالجة..." : "إرسال وتحميل PDF"}
-                </Button>
+                <VacationEmailSender 
+                  pdfBase64={pdfBase64}
+                  formData={watchedValues}
+                  isGenerating={isGenerating}
+                />
               </div>
             </form>
           </CardContent>
