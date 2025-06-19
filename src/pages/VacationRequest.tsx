@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +29,7 @@ const VacationRequest = () => {
     fullName: z.string().min(2, "الاسم الكامل مطلوب"),
     matricule: z.string().min(1, "الرقم التسجيلي مطلوب"),
     grade: z.string().optional(),
-    function: z.string().optional(),
+    fonction: z.string().optional(),
     leaveType: z.string().min(1, "نوع الإجازة مطلوب"),
     customLeaveType: z.string().optional(),
     arabicCustomLeaveType: z.string().optional(),
@@ -56,7 +55,7 @@ const VacationRequest = () => {
       fullName: "",
       matricule: "",
       grade: "",
-      function: "",
+      fonction: "",
       leaveType: "",
       customLeaveType: "",
       arabicCustomLeaveType: "",
@@ -95,7 +94,7 @@ const VacationRequest = () => {
       pdfHelper.addText(`Nom et Prénom : ${data.fullName}`, 20, 120, { fontSize: 12 });
       pdfHelper.addText(`Matricule : ${data.matricule}`, 20, 130, { fontSize: 12 });
       pdfHelper.addText(`Grade : ${data.grade || ""}`, 20, 140, { fontSize: 12 });
-      pdfHelper.addText(`Fonction : ${data.function || ""}`, 20, 150, { fontSize: 12 });
+      pdfHelper.addText(`Fonction : ${data.fonction || ""}`, 20, 150, { fontSize: 12 });
 
       const leaveTypeDisplay = data.leaveType === "Autre" ? 
         (data.customLeaveType || data.arabicCustomLeaveType) : 
