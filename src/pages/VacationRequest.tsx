@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
 import {
   Form,
   FormControl,
@@ -36,7 +35,6 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AmiriFont } from "../fonts/AmiriFont";
 import { AmiriBoldFont } from "../fonts/AmiriBoldFont";
-import { sendRequestWithEmail } from "@/services/requestService";
 import jsPDF from "jspdf";
 
 // Import Arabic reshaping libraries
@@ -211,71 +209,14 @@ const VacationRequest = () => {
   };
 
   const onSubmit = async (values: FormData) => {
+    setIsSubmitted(true);
     setIsGeneratingPDF(true);
-    
-    try {
-      // Generate PDF
-      const pdfBase64 = await generatePDF(values);
-      
-      // Prepare request data
-      const requestData = {
-        type: 'vacation' as const,
-        data: {
-          fullName: values.fullName,
-          arabicFullName: values.arabicFullName,
-          matricule: values.matricule,
-          echelle: values.echelle,
-          echelon: values.echelon,
-          grade: values.grade,
-          fonction: values.fonction,
-          arabicFonction: values.arabicFonction,
-          direction: values.direction,
-          arabicDirection: values.arabicDirection,
-          address: values.address,
-          arabicAddress: values.arabicAddress,
-          phone: values.phone,
-          leaveType: values.leaveType,
-          customLeaveType: values.customLeaveType,
-          arabicCustomLeaveType: values.arabicCustomLeaveType,
-          duration: values.duration,
-          arabicDuration: values.arabicDuration,
-          startDate: values.startDate?.toISOString(),
-          endDate: values.endDate?.toISOString(),
-          numberOfDays: calculateDays(values.startDate!, values.endDate!),
-          with: values.with,
-          arabicWith: values.arabicWith,
-          interim: values.interim,
-          arabicInterim: values.arabicInterim,
-          leaveMorocco: values.leaveMorocco,
-          reason: `${values.leaveType}${values.customLeaveType ? ` - ${values.customLeaveType}` : ''}`
-        },
-        pdfBase64
-      };
-
-      // Send request with email
-      const result = await sendRequestWithEmail(requestData);
-      
-      if (result.success) {
-        setIsSubmitted(true);
-        toast.success(language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!');
-      } else {
-        toast.error(result.error || (language === 'ar' ? 'حدث خطأ في الإرسال' : 'Erreur lors de l\'envoi'));
-      }
-    } catch (error) {
-      console.error('Error submitting vacation request:', error);
-      toast.error(language === 'ar' ? 'حدث خطأ غير متوقع' : 'Une erreur inattendue s\'est produite');
-    } finally {
-      setIsGeneratingPDF(false);
-    }
+    await generatePDF(values);
+    setIsGeneratingPDF(false);
   };
 
-  const calculateDays = (startDate: Date, endDate: Date): number => {
-    const timeDiff = endDate.getTime() - startDate.getTime();
-    return Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
-  };
-
-  const generatePDF = async (data: FormData): Promise<string> => {
-    return new Promise<string>((resolve) => {
+  const generatePDF = async (data: FormData) => {
+    return new Promise<void>((resolve) => {
       try {
         const doc = new jsPDF();
         
@@ -313,7 +254,7 @@ const VacationRequest = () => {
   };
 
   // Helper function to add content after logo loading
-  const addContent = (doc: jsPDF, data: FormData, resolve: (value: string) => void) => {
+  const addContent = (doc: jsPDF, data: FormData, resolve: () => void) => {
     console.log("Adding PDF content.");
     
     // رأس الصفحة
@@ -624,7 +565,7 @@ const arabicNotes = [
   "يجب تقديم الطلب 8 أيام قبل التاريخ المطلوب",
   "نوع الإجازة: إدارية - زواج - ازدياد - استثنائية",
   "إذا كان المعني بالأمر يرغب في مغادرة التراب الوطني فعليه أن يحدد ذلك بإضافة",
-  " 'مغادرة التراب الوطني'"
+  " 'مغادرة التراب الوطني'",
 ];
 
 const arabicHeader = [
@@ -670,9 +611,16 @@ for (let i = 0; i < arabicNotes.length; i++) {
   currentLineY += 5;
 }
 
-    // Return base64 instead of saving
-    const pdfBase64 = doc.output('datauristring').split(',')[1];
-    resolve(pdfBase64);
+// تحميل PDF
+
+    // حفظ الملف
+    if (data.fullName) {
+      doc.save(`demande_conge_${data.fullName}.pdf`);
+    } else {
+      doc.save(`demande_conge.pdf`);
+    }
+    console.log("PDF saved.");
+    resolve();
   };
 
   return (
@@ -1373,11 +1321,11 @@ for (let i = 0; i < arabicNotes.length; i++) {
                         {isGeneratingPDF ? (
                           <div className="flex items-center">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            {language === 'ar' ? 'جاري إرسال الطلب...' : 'Envoi en cours...'}
+                            {language === 'ar' ? 'جاري إنشاء الملف...' : 'Génération en cours...'}
                           </div>
                         ) : (
                           <>
-                            {language === 'ar' ? 'إرسال الطلب' : 'Envoyer la demande'}
+                            {language === 'ar' ? 'إرسال وتحميل PDF' : 'Envoyer et télécharger le PDF'}
                           </>
                         )}
                       </Button>
@@ -1391,10 +1339,10 @@ for (let i = 0; i < arabicNotes.length; i++) {
                   <CheckCircle className="h-8 w-8 md:h-10 md:w-10 text-white" />
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold text-slate-800 mb-2">
-                  {language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!'}
+                  {language === 'ar' ? 'تم إنشاء الطلب بنجاح!' : 'Demande générée avec succès!'}
                 </h3>
                 <p className="text-slate-600 mb-6">
-                  {language === 'ar' ? 'سيتم مراجعة طلبك وإرسال رد قريباً' : 'Votre demande sera examinée et vous recevrez une réponse bientôt'}
+                  {language === 'ar' ? 'تم تحميل ملف PDF لطلب الإجازة' : 'Le fichier PDF de votre demande a été téléchargé'}
                 </p>
                 <Button 
                   onClick={() => {
