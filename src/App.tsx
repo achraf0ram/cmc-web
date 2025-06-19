@@ -3,9 +3,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { MainLayout } from "./layouts/MainLayout";
 import Index from "./pages/Index";
 import WorkCertificate from "./pages/WorkCertificate";
@@ -23,14 +24,16 @@ const queryClient = new QueryClient();
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  const { t } = useLanguage();
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-lg">جاري التحميل...</div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
-    console.log("User is not authenticated");
     return <Navigate to="/login" replace />;
   }
 
@@ -40,14 +43,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Public route component (accessible only when not logged in)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  const { t } = useLanguage();
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-lg">جاري التحميل...</div>
+      </div>
+    );
   }
 
   if (isAuthenticated) {
-    console.log("User is authenticated");
     return <Navigate to="/" replace />;
   }
 
@@ -59,79 +64,65 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Auth routes */}
-              <Route
-                path='/login'
-                element={
-                  <PublicRoute>
-                    <SignInPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path='/register'
-                element={
-                  <PublicRoute>
-                    <SignUpPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path='/forgot-password'
-                element={
-                  <PublicRoute>
-                    <ForgotPasswordPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path='/reset-password'
-                element={
-                  <PublicRoute>
-                    <ResetPasswordPage />
-                  </PublicRoute>
-                }
-              />
+          <SidebarProvider>
+            <Router>
+              <div className="min-h-screen flex w-full">
+                <Toaster />
+                <Sonner />
+                <Routes>
+                  {/* Auth routes */}
+                  <Route
+                    path='/login'
+                    element={
+                      <PublicRoute>
+                        <SignInPage />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route
+                    path='/register'
+                    element={
+                      <PublicRoute>
+                        <SignUpPage />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route
+                    path='/forgot-password'
+                    element={
+                      <PublicRoute>
+                        <ForgotPasswordPage />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route
+                    path='/reset-password'
+                    element={
+                      <PublicRoute>
+                        <ResetPasswordPage />
+                      </PublicRoute>
+                    }
+                  />
 
-              {/* Protected routes */}
-              <Route
-                path='/'
-                element={
-                  <ProtectedRoute>
-                    <MainLayout />
-                  </ProtectedRoute>
-                }>
-                <Route
-                  index
-                  element={<Index />}
-                />
-                <Route
-                  path='work-certificate'
-                  element={<WorkCertificate />}
-                />
-                <Route
-                  path='mission-order'
-                  element={<MissionOrder />}
-                />
-                <Route
-                  path='vacation-request'
-                  element={<VacationRequest />}
-                />
-                <Route
-                  path='settings'
-                  element={<Settings />}
-                />
-              </Route>
-              <Route
-                path='*'
-                element={<NotFound />}
-              />
-            </Routes>
-          </BrowserRouter>
+                  {/* Protected routes */}
+                  <Route
+                    path='/'
+                    element={
+                      <ProtectedRoute>
+                        <MainLayout />
+                      </ProtectedRoute>
+                    }>
+                    <Route index element={<Index />} />
+                    <Route path='work-certificate' element={<WorkCertificate />} />
+                    <Route path='mission-order' element={<MissionOrder />} />
+                    <Route path='vacation-request' element={<VacationRequest />} />
+                    <Route path='settings' element={<Settings />} />
+                  </Route>
+                  <Route path='*' element={<NotFound />} />
+                </Routes>
+              </div>
+            </Router>
+          </SidebarProvider>
         </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>

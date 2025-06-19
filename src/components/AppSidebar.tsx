@@ -24,7 +24,7 @@ export const AppSidebar = () => {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { logout, profile } = useAuth();
+  const { logout, user, profile } = useAuth();
   const navigate = useNavigate();
   
 
@@ -36,9 +36,13 @@ export const AppSidebar = () => {
     { icon: Settings, name: 'settings', path: "/settings" },
   ];
 
-  const handleSignOut = () => {
-    logout();
-    navigate("/login", { replace: true });
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   const chevronIcon = language === 'ar' ? 
@@ -55,32 +59,31 @@ export const AppSidebar = () => {
       size="icon"
       onClick={() => setIsMobileOpen(!isMobileOpen)}
       className={cn(
-        "fixed top-4 z-50 hover:bg-[#E8F5E9] text-[#2E7D32]",
+        "fixed top-4 z-40 hover:bg-[#E8F5E9] text-[#2E7D32]",
         language === 'ar' ? 'right-4' : 'left-4'
       )}
     >
-      {isMobileOpen ? (
-        language === 'ar' ? <ChevronRight size={24} /> : <ChevronLeft size={24} />
-      ) : (
-        <Menu size={24} />
-      )}
+      {isMobileOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
     </Button>
   );
 
-  // Show toggle button for desktop when sidebar is collapsed
   const DesktopToggle = () => (
     <Button
       variant="ghost"
       size="icon"
       onClick={() => setCollapsed(false)}
       className={cn(
-        "fixed top-4 z-50 hover:bg-[#E8F5E9] text-[#2E7D32]",
+        "fixed top-4 z-40 hover:bg-[#E8F5E9] text-[#2E7D32]",
         language === 'ar' ? 'right-4' : 'left-4'
       )}
     >
       <Menu size={24} />
     </Button>
   );
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <>
@@ -90,7 +93,6 @@ export const AppSidebar = () => {
         className={cn(
           "fixed top-0 h-screen bg-white shadow-lg flex flex-col transition-all duration-300 z-40 border-r",
           collapsed ? "w-64" : "w-64",
-          // Hide completely when collapsed on desktop
           !isMobile && collapsed && "hidden",
           isMobile
             ? isMobileOpen
@@ -157,7 +159,7 @@ export const AppSidebar = () => {
                 className='text-[#2E7D32]'
               />
             </div>
-            <div className='text-sm'>{profile?.full_name || "المستخدم"}</div>
+            <div className='text-sm'>{profile?.full_name || user?.email || "مستخدم"}</div>
           </div>
           <Button
             variant='ghost'
