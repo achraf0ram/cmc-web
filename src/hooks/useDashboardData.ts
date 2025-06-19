@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNotifications } from '@/hooks/useNotifications';
 
 interface DashboardData {
   pendingRequests: number;
@@ -10,7 +9,6 @@ interface DashboardData {
   vacationDaysRemaining: number;
   isLoading: boolean;
   error: string | null;
-  lastUpdate: Date | null;
 }
 
 export const useDashboardData = (): DashboardData => {
@@ -20,16 +18,14 @@ export const useDashboardData = (): DashboardData => {
     vacationDaysRemaining: 0,
     isLoading: true,
     error: null,
-    lastUpdate: null,
   });
 
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) {
-        setData(prev => ({ ...prev, isLoading: false, error: 'المستخدم غير مسجل الدخول' }));
+        setData(prev => ({ ...prev, isLoading: false, error: 'User not authenticated' }));
         return;
       }
 
@@ -39,7 +35,7 @@ export const useDashboardData = (): DashboardData => {
         // جلب الطلبات المعلقة
         const { data: pendingRequestsData, error: pendingError } = await supabase
           .from('requests')
-          .select('id, type, submitted_at')
+          .select('id')
           .eq('user_id', user.id)
           .eq('status', 'pending');
 
@@ -51,7 +47,7 @@ export const useDashboardData = (): DashboardData => {
         
         const { data: approvedRequestsData, error: approvedError } = await supabase
           .from('requests')
-          .select('id, type, reviewed_at')
+          .select('id')
           .eq('user_id', user.id)
           .eq('status', 'approved')
           .gte('reviewed_at', firstDayOfMonth.toISOString());
@@ -62,7 +58,7 @@ export const useDashboardData = (): DashboardData => {
         const currentYear = new Date().getFullYear();
         const { data: vacationData, error: vacationError } = await supabase
           .from('vacation_balances')
-          .select('remaining_days, used_days, total_days')
+          .select('remaining_days')
           .eq('user_id', user.id)
           .eq('year', currentYear)
           .maybeSingle();
@@ -85,47 +81,16 @@ export const useDashboardData = (): DashboardData => {
             console.error('Error creating vacation balance:', insertError);
           }
         } else {
-          remainingDays = (vacationData.total_days - vacationData.used_days) || 30;
+          remainingDays = vacationData.remaining_days || 30;
         }
 
-        const newData = {
+        setData({
           pendingRequests: pendingRequestsData?.length || 0,
           approvedRequests: approvedRequestsData?.length || 0,
           vacationDaysRemaining: remainingDays,
           isLoading: false,
           error: null,
-          lastUpdate: new Date(),
-        };
-
-        setData(newData);
-
-        // إضافة إشعار إذا كان هناك طلبات معلقة جديدة
-        if (pendingRequestsData && pendingRequestsData.length > 0) {
-          const oldestPending = pendingRequestsData.sort((a, b) => 
-            new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime()
-          )[0];
-          
-          const daysSinceSubmission = Math.floor(
-            (new Date().getTime() - new Date(oldestPending.submitted_at).getTime()) / (1000 * 60 * 60 * 24)
-          );
-
-          if (daysSinceSubmission >= 3) {
-            addNotification({
-              title: 'تذكير: طلبات معلقة',
-              message: `لديك ${pendingRequestsData.length} طلب معلق منذ ${daysSinceSubmission} أيام`,
-              type: 'warning'
-            });
-          }
-        }
-
-        // إضافة إشعار إذا كان رصيد الإجازات منخفض
-        if (remainingDays <= 5 && remainingDays > 0) {
-          addNotification({
-            title: 'تنبيه: رصيد إجازات منخفض',
-            message: `تبقى لديك ${remainingDays} أيام إجازة فقط`,
-            type: 'warning'
-          });
-        }
+        });
 
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -138,46 +103,7 @@ export const useDashboardData = (): DashboardData => {
     };
 
     fetchDashboardData();
-
-    // إعداد التحديث التلقائي كل 5 دقائق
-    const interval = setInterval(fetchDashboardData, 5 * 60 * 1000);
-
-    // إعداد مستمع للتحديثات الفورية من Supabase
-    const channel = supabase
-      .channel('dashboard-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'requests',
-          filter: `user_id=eq.${user?.id}`
-        },
-        () => {
-          console.log('Request status changed, refreshing dashboard');
-          fetchDashboardData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'vacation_balances',
-          filter: `user_id=eq.${user?.id}`
-        },
-        () => {
-          console.log('Vacation balance changed, refreshing dashboard');
-          fetchDashboardData();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      clearInterval(interval);
-      supabase.removeChannel(channel);
-    };
-  }, [user, addNotification]);
+  }, [user]);
 
   return data;
 };

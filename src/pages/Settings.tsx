@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,7 +26,6 @@ import { Loader2 } from "lucide-react";
 const profileFormSchema = z.object({
   full_name: z.string().min(2, "الاسم يجب أن يكون أكثر من حرفين"),
   phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
-  employee_id: z.string().optional(),
 });
 
 const notificationsFormSchema = z.object({
@@ -47,41 +46,13 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useLanguage();
-  const { user } = useAuth();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const { profile, updateUser, user } = useAuth();
   
-  // Fetch user profile data
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-          return;
-        }
-
-        setUserProfile(data);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
-    };
-
-    fetchProfile();
-  }, [user]);
-
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
-    values: {
-      full_name: userProfile?.full_name || "",
-      phone: userProfile?.phone || "",
-      employee_id: userProfile?.employee_id || "",
+    defaultValues: {
+      full_name: profile?.full_name || "",
+      phone: profile?.phone || "",
     },
   });
 
@@ -107,33 +78,24 @@ const Settings = () => {
       setIsLoading(true);
       console.log("Updating profile:", values);
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: values.full_name,
-          phone: values.phone,
-          employee_id: values.employee_id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user?.id);
-
-      if (error) {
-        throw error;
-      }
-
-      // Update local state
-      setUserProfile(prev => ({
-        ...prev,
+      const success = await updateUser({
+        id: user?.id || "",
         full_name: values.full_name,
         phone: values.phone,
-        employee_id: values.employee_id,
-      }));
-
-      toast({
-        title: "تم التحديث بنجاح",
-        description: "تم تحديث المعلومات الشخصية بنجاح",
-        className: "bg-green-50 border-green-200",
+        email: user?.email || "",
+        created_at: "",
+        updated_at: "",
       });
+
+      if (success) {
+        toast({
+          title: "تم التحديث بنجاح",
+          description: "تم تحديث المعلومات الشخصية بنجاح",
+          className: "bg-green-50 border-green-200",
+        });
+      } else {
+        throw new Error("فشل في تحديث المعلومات");
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
@@ -190,14 +152,6 @@ const Settings = () => {
     }
   }
 
-  if (!userProfile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 p-4 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 p-4">
       <div className="max-w-4xl mx-auto">
@@ -206,7 +160,6 @@ const Settings = () => {
           <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-2">
             الإعدادات
           </h1>
-          <p className="text-slate-600">مرحباً {userProfile.full_name || user?.email}</p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
@@ -269,30 +222,6 @@ const Settings = () => {
                           </FormItem>
                         )}
                       />
-
-                      <FormField
-                        control={profileForm.control}
-                        name="employee_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">رقم الموظف</FormLabel>
-                            <FormControl>
-                              <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="flex flex-col space-y-2">
-                        <label className="text-slate-700 font-medium">البريد الإلكتروني</label>
-                        <Input 
-                          value={user?.email || ''} 
-                          disabled 
-                          className="bg-gray-100 border-gray-300" 
-                        />
-                        <p className="text-xs text-slate-500">لا يمكن تغيير البريد الإلكتروني</p>
-                      </div>
                     </div>
                     
                     <div className="flex justify-end">
