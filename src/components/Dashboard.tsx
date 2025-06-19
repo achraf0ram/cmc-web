@@ -2,28 +2,49 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BarChart3, Calendar, CheckCircle } from "lucide-react";
+import { useDashboardData } from "@/hooks/useDashboardData";
 
 export const Dashboard = () => {
   const { t } = useLanguage();
+  const { pendingRequests, approvedRequests, vacationDaysRemaining, isLoading, error } = useDashboardData();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cmc-blue"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-red-600 mb-2">خطأ في تحميل البيانات</h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   const stats = [
     {
       title: t('pendingRequests'),
-      value: '5',
+      value: pendingRequests.toString(),
       description: t('awaitingApproval'),
       icon: Calendar,
       color: 'from-cmc-blue to-cmc-blue-dark'
     },
     {
       title: t('approvedRequests'),
-      value: '12',
+      value: approvedRequests.toString(),
       description: t('thisMonth'),
       icon: CheckCircle,
       color: 'from-cmc-green to-emerald-600'
     },
     {
       title: t('vacationDays'),
-      value: '15',
+      value: vacationDaysRemaining.toString(),
       description: t('remaining'),
       icon: BarChart3,
       color: 'from-cmc-blue to-cmc-green'
