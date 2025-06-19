@@ -72,7 +72,7 @@ const App = () => (
                 <Routes>
                   {/* Auth routes */}
                   <Route
-                    path='/login'
+                    path="/login"
                     element={
                       <PublicRoute>
                         <SignInPage />
@@ -80,7 +80,7 @@ const App = () => (
                     }
                   />
                   <Route
-                    path='/register'
+                    path="/register"
                     element={
                       <PublicRoute>
                         <SignUpPage />
@@ -88,7 +88,7 @@ const App = () => (
                     }
                   />
                   <Route
-                    path='/forgot-password'
+                    path="/forgot-password"
                     element={
                       <PublicRoute>
                         <ForgotPasswordPage />
@@ -96,7 +96,7 @@ const App = () => (
                     }
                   />
                   <Route
-                    path='/reset-password'
+                    path="/reset-password"
                     element={
                       <PublicRoute>
                         <ResetPasswordPage />
@@ -106,19 +106,20 @@ const App = () => (
 
                   {/* Protected routes */}
                   <Route
-                    path='/'
+                    path="/"
                     element={
                       <ProtectedRoute>
                         <MainLayout />
                       </ProtectedRoute>
-                    }>
+                    }
+                  >
                     <Route index element={<Index />} />
-                    <Route path='work-certificate' element={<WorkCertificate />} />
-                    <Route path='mission-order' element={<MissionOrder />} />
-                    <Route path='vacation-request' element={<VacationRequest />} />
-                    <Route path='settings' element={<Settings />} />
+                    <Route path="work-certificate" element={<WorkCertificate />} />
+                    <Route path="mission-order" element={<MissionOrder />} />
+                    <Route path="vacation-request" element={<VacationRequest />} />
+                    <Route path="settings" element={<Settings />} />
                   </Route>
-                  <Route path='*' element={<NotFound />} />
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>
             </Router>
