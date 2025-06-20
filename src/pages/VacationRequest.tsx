@@ -37,6 +37,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { AmiriFont } from "../fonts/AmiriFont";
 import { AmiriBoldFont } from "../fonts/AmiriBoldFont";
 import { sendRequestWithEmail } from "@/services/requestService";
+import { SuccessMessage } from "@/components/SuccessMessage";
 import jsPDF from "jspdf";
 
 // Import Arabic reshaping libraries
@@ -215,52 +216,70 @@ const VacationRequest = () => {
     
     try {
       // Generate PDF
-      const pdfBase64 = await generatePDF(values);
+      const pdfBlob = await generatePDF(values);
       
-      // Prepare request data
-      const requestData = {
-        type: 'vacation' as const,
-        data: {
-          fullName: values.fullName,
-          arabicFullName: values.arabicFullName,
-          matricule: values.matricule,
-          echelle: values.echelle,
-          echelon: values.echelon,
-          grade: values.grade,
-          fonction: values.fonction,
-          arabicFonction: values.arabicFonction,
-          direction: values.direction,
-          arabicDirection: values.arabicDirection,
-          address: values.address,
-          arabicAddress: values.arabicAddress,
-          phone: values.phone,
-          leaveType: values.leaveType,
-          customLeaveType: values.customLeaveType,
-          arabicCustomLeaveType: values.arabicCustomLeaveType,
-          duration: values.duration,
-          arabicDuration: values.arabicDuration,
-          startDate: values.startDate?.toISOString(),
-          endDate: values.endDate?.toISOString(),
-          numberOfDays: calculateDays(values.startDate!, values.endDate!),
-          with: values.with,
-          arabicWith: values.arabicWith,
-          interim: values.interim,
-          arabicInterim: values.arabicInterim,
-          leaveMorocco: values.leaveMorocco,
-          reason: `${values.leaveType}${values.customLeaveType ? ` - ${values.customLeaveType}` : ''}`
-        },
-        pdfBase64
-      };
+      // Download PDF for user
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = downloadUrl;
+      downloadLink.download = `demande_conge_${values.fullName.replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(downloadUrl);
 
-      // Send request with email
-      const result = await sendRequestWithEmail(requestData);
+      // Convert to base64 for email
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = (reader.result as string).split(',')[1];
+        
+        // Prepare request data
+        const requestData = {
+          type: 'vacation' as const,
+          data: {
+            fullName: values.fullName,
+            arabicFullName: values.arabicFullName,
+            matricule: values.matricule,
+            echelle: values.echelle,
+            echelon: values.echelon,
+            grade: values.grade,
+            fonction: values.fonction,
+            arabicFonction: values.arabicFonction,
+            direction: values.direction,
+            arabicDirection: values.arabicDirection,
+            address: values.address,
+            arabicAddress: values.arabicAddress,
+            phone: values.phone,
+            leaveType: values.leaveType,
+            customLeaveType: values.customLeaveType,
+            arabicCustomLeaveType: values.arabicCustomLeaveType,
+            duration: values.duration,
+            arabicDuration: values.arabicDuration,
+            startDate: values.startDate?.toISOString(),
+            endDate: values.endDate?.toISOString(),
+            numberOfDays: calculateDays(values.startDate!, values.endDate!),
+            with: values.with,
+            arabicWith: values.arabicWith,
+            interim: values.interim,
+            arabicInterim: values.arabicInterim,
+            leaveMorocco: values.leaveMorocco,
+            reason: `${values.leaveType}${values.customLeaveType ? ` - ${values.customLeaveType}` : ''}`
+          },
+          pdfBase64: base64String
+        };
+
+        // Send request with email
+        const result = await sendRequestWithEmail(requestData);
+        
+        if (result.success) {
+          setIsSubmitted(true);
+          toast.success(language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!');
+        } else {
+          toast.error(result.error || (language === 'ar' ? 'حدث خطأ في الإرسال' : 'Erreur lors de l\'envoi'));
+        }
+      };
+      reader.readAsDataURL(pdfBlob);
       
-      if (result.success) {
-        setIsSubmitted(true);
-        toast.success(language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!');
-      } else {
-        toast.error(result.error || (language === 'ar' ? 'حدث خطأ في الإرسال' : 'Erreur lors de l\'envoi'));
-      }
     } catch (error) {
       console.error('Error submitting vacation request:', error);
       toast.error(language === 'ar' ? 'حدث خطأ غير متوقع' : 'Une erreur inattendue s\'est produite');
@@ -274,8 +293,8 @@ const VacationRequest = () => {
     return Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
   };
 
-  const generatePDF = async (data: FormData): Promise<string> => {
-    return new Promise<string>((resolve) => {
+  const generatePDF = async (data: FormData): Promise<Blob> => {
+    return new Promise<Blob>((resolve) => {
       try {
         const doc = new jsPDF();
         
@@ -313,7 +332,7 @@ const VacationRequest = () => {
   };
 
   // Helper function to add content after logo loading
-  const addContent = (doc: jsPDF, data: FormData, resolve: (value: string) => void) => {
+  const addContent = (doc: jsPDF, data: FormData, resolve: (value: Blob) => void) => {
     console.log("Adding PDF content.");
     
     // رأس الصفحة
@@ -670,9 +689,16 @@ for (let i = 0; i < arabicNotes.length; i++) {
   currentLineY += 5;
 }
 
-    // Return base64 instead of saving
-    const pdfBase64 = doc.output('datauristring').split(',')[1];
-    resolve(pdfBase64);
+    // Return blob instead of base64
+    const pdfBlob = doc.output('blob');
+    resolve(pdfBlob);
+  };
+
+  const handleReset = () => {
+    setIsSubmitted(false);
+    form.reset();
+    setShowCustomLeaveType(false);
+    setSignaturePreview(null);
   };
 
   return (
@@ -688,15 +714,15 @@ for (let i = 0; i < arabicNotes.length; i++) {
           </p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-t-lg p-4 md:p-6">
-            <CardTitle className="text-lg md:text-xl font-semibold text-center">
-              {language === 'ar' ? 'معلومات طلب الإجازة' : 'Informations de la demande'}
-            </CardTitle>
-          </CardHeader>
+        {!isSubmitted ? (
+          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-t-lg p-4 md:p-6">
+              <CardTitle className="text-lg md:text-xl font-semibold text-center">
+                {language === 'ar' ? 'معلومات طلب الإجازة' : 'Informations de la demande'}
+              </CardTitle>
+            </CardHeader>
 
-          <CardContent className="p-4 md:p-8">
-            {!isSubmitted ? (
+            <CardContent className="p-4 md:p-8">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
                   {/* Personal Information Section */}
@@ -1385,31 +1411,16 @@ for (let i = 0; i < arabicNotes.length; i++) {
                   </div>
                 </form>
               </Form>
-            ) : (
-              <div className="text-center py-12">
-                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-r from-blue-600 to-green-600 flex items-center justify-center shadow-lg mx-auto mb-4">
-                  <CheckCircle className="h-8 w-8 md:h-10 md:w-10 text-white" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-slate-800 mb-2">
-                  {language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!'}
-                </h3>
-                <p className="text-slate-600 mb-6">
-                  {language === 'ar' ? 'سيتم مراجعة طلبك وإرسال رد قريباً' : 'Votre demande sera examinée et vous recevrez une réponse bientôt'}
-                </p>
-                <Button 
-                  onClick={() => {
-                    setIsSubmitted(false);
-                    form.reset();
-                    setShowCustomLeaveType(false);
-                  }}
-                  className="border-blue-500 text-blue-600 hover:bg-blue-50 px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base"
-                >
-                  {language === 'ar' ? 'طلب جديد' : 'Nouvelle demande'}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <SuccessMessage
+            title={language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!'}
+            description={language === 'ar' ? 'تم تحميل ملف PDF وإرسال طلبك. سيتم مراجعة طلبك وإرسال رد قريباً.' : 'Le fichier PDF a été téléchargé et votre demande envoyée. Votre demande sera examinée et vous recevrez une réponse bientôt.'}
+            buttonText={language === 'ar' ? 'طلب جديد' : 'Nouvelle demande'}
+            onReset={handleReset}
+          />
+        )}
       </div>
     </div>
   );
