@@ -26,7 +26,7 @@ const VacationRequest = () => {
         matricule: values.matricule,
         grade: values.grade || "",
         hireDate: "", // This field doesn't exist in the current form
-        function: values.fonction || "",
+        fonction: values.fonction || "",
         leaveType: values.leaveType,
         startDate: format(values.startDate, "yyyy-MM-dd"),
         endDate: format(values.endDate, "yyyy-MM-dd"),
@@ -37,7 +37,23 @@ const VacationRequest = () => {
       
       // توليد PDF والحصول على base64
       const pdfBase64 = await generateVacationPDF(pdfData);
-      console.log("PDF base64 generated, sending email...");
+      console.log("PDF base64 generated, downloading PDF and sending email...");
+      
+      // تحميل PDF للمستخدم
+      const pdfBlob = new Blob([Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0))], {
+        type: 'application/pdf'
+      });
+      
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `طلب_إجازة_${values.fullName.replace(/\s+/g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(downloadUrl);
+      
+      console.log("PDF downloaded successfully, now sending email...");
       
       // إرسال الطلب عبر الإيميل مع PDF
       const emailResult = await sendRequestWithEmail({
@@ -56,15 +72,15 @@ const VacationRequest = () => {
       
       // إضافة إشعار نجاح
       addNotification({
-        title: "تم الإرسال بنجاح",
-        message: "تم إرسال طلب الإجازة إلى إيميل الإدارة وتم تحميل PDF بنجاح",
+        title: "تم الإرسال والتحميل بنجاح",
+        message: "تم تحميل PDF وإرسال طلب الإجازة إلى إيميل الإدارة بنجاح",
         type: "success"
       });
 
       // Show success toast
       toast({
         title: "تم بنجاح",
-        description: "تم إرسال طلب الإجازة إلى الإدارة وتحميل PDF بنجاح",
+        description: "تم تحميل PDF وإرسال طلب الإجازة إلى الإدارة بنجاح",
         variant: "default",
         className: "bg-green-50 border-green-200",
       });
@@ -90,8 +106,8 @@ const VacationRequest = () => {
   if (isSubmitted) {
     return (
       <SuccessMessage 
-        title="تم الإرسال بنجاح"
-        description="تم إرسال طلب الإجازة إلى الإدارة بنجاح"
+        title="تم الإرسال والتحميل بنجاح"
+        description="تم تحميل PDF وإرسال طلب الإجازة إلى الإدارة بنجاح"
         buttonText="طلب جديد"
         onReset={() => setIsSubmitted(false)}
       />
