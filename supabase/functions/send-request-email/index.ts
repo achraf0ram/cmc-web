@@ -27,65 +27,67 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending email for request type:", type);
 
-    // إنشاء محتوى الإيميل حسب نوع الطلب
+    // إنشاء محتوى الإيميل بالفرنسية للإدارة
     let subject = "";
-    let content = "";
+    let adminContent = "";
 
     switch (type) {
       case "vacation":
-        subject = "طلب إجازة جديد";
-        content = `
-          <h2>طلب إجازة جديد</h2>
-          <p><strong>الاسم:</strong> ${userName}</p>
-          <p><strong>الإيميل:</strong> ${userEmail}</p>
-          <p><strong>نوع الإجازة:</strong> ${data.leaveType}</p>
-          <p><strong>تاريخ البداية:</strong> ${data.startDate}</p>
-          <p><strong>تاريخ النهاية:</strong> ${data.endDate}</p>
-          <p><strong>عدد الأيام:</strong> ${data.numberOfDays}</p>
-          <p><strong>السبب:</strong> ${data.reason}</p>
+        subject = "Nouvelle demande de congé";
+        adminContent = `
+          <h2>Nouvelle demande de congé</h2>
+          <p><strong>Nom complet:</strong> ${data.fullName}</p>
+          <p><strong>Matricule:</strong> ${data.matricule}</p>
+          <p><strong>Email:</strong> ${userEmail}</p>
+          <p><strong>Type de congé:</strong> ${data.leaveType}</p>
+          <p><strong>Date de début:</strong> ${data.startDate}</p>
+          <p><strong>Date de fin:</strong> ${data.endDate}</p>
+          <p><strong>Durée:</strong> ${data.duration}</p>
+          <p><strong>Fonction:</strong> ${data.fonction || "Non spécifiée"}</p>
+          <p><strong>Direction:</strong> ${data.direction || "Non spécifiée"}</p>
+          <p><strong>Adresse:</strong> ${data.address || "Non spécifiée"}</p>
+          <p><strong>Téléphone:</strong> ${data.phone || "Non spécifié"}</p>
         `;
         break;
       case "work-certificate":
-        subject = "طلب شهادة عمل جديد";
-        content = `
-          <h2>طلب شهادة عمل جديد</h2>
-          <p><strong>الاسم:</strong> ${userName}</p>
-          <p><strong>الإيميل:</strong> ${userEmail}</p>
-          <p><strong>الاسم الكامل:</strong> ${data.fullName}</p>
-          <p><strong>الرقم التسجيلي:</strong> ${data.matricule}</p>
-          <p><strong>الرتبة:</strong> ${data.grade || "غير محدد"}</p>
-          <p><strong>تاريخ التوظيف:</strong> ${data.hireDate || "غير محدد"}</p>
-          <p><strong>الوظيفة:</strong> ${data.function || "غير محدد"}</p>
-          <p><strong>الغرض:</strong> ${data.purpose}</p>
-          <p><strong>معلومات إضافية:</strong> ${data.additionalInfo || "لا توجد"}</p>
+        subject = "Nouvelle demande d'attestation de travail";
+        adminContent = `
+          <h2>Nouvelle demande d'attestation de travail</h2>
+          <p><strong>Nom complet:</strong> ${data.fullName}</p>
+          <p><strong>Matricule:</strong> ${data.matricule}</p>
+          <p><strong>Email:</strong> ${userEmail}</p>
+          <p><strong>Grade:</strong> ${data.grade || "Non spécifié"}</p>
+          <p><strong>Date d'embauche:</strong> ${data.hireDate || "Non spécifiée"}</p>
+          <p><strong>Fonction:</strong> ${data.function || "Non spécifiée"}</p>
+          <p><strong>Objectif:</strong> ${data.purpose}</p>
+          <p><strong>Informations supplémentaires:</strong> ${data.additionalInfo || "Aucune"}</p>
         `;
         break;
       case "mission-order":
-        subject = "طلب أمر مهمة جديد";
-        content = `
-          <h2>طلب أمر مهمة جديد</h2>
-          <p><strong>الاسم:</strong> ${userName}</p>
-          <p><strong>الإيميل:</strong> ${userEmail}</p>
-          <p><strong>السيد/السيدة:</strong> ${data.monsieurMadame}</p>
-          <p><strong>الرقم التسجيلي:</strong> ${data.matricule}</p>
-          <p><strong>الوجهة:</strong> ${data.destination}</p>
-          <p><strong>الغرض:</strong> ${data.purpose}</p>
-          <p><strong>تاريخ البداية:</strong> ${data.startDate}</p>
-          <p><strong>تاريخ النهاية:</strong> ${data.endDate}</p>
-          <p><strong>وقت البداية:</strong> ${data.startTime || "غير محدد"}</p>
-          <p><strong>وقت النهاية:</strong> ${data.endTime || "غير محدد"}</p>
-          <p><strong>السائق:</strong> ${data.conducteur || "غير محدد"}</p>
-          <p><strong>رقم تسجيل السائق:</strong> ${data.conducteurMatricule || "غير محدد"}</p>
-          <p><strong>معلومات إضافية:</strong> ${data.additionalInfo || "لا توجد"}</p>
+        subject = "Nouvelle demande d'ordre de mission";
+        adminContent = `
+          <h2>Nouvelle demande d'ordre de mission</h2>
+          <p><strong>Nom:</strong> ${data.monsieurMadame}</p>
+          <p><strong>Matricule:</strong> ${data.matricule}</p>
+          <p><strong>Email:</strong> ${userEmail}</p>
+          <p><strong>Destination:</strong> ${data.destination}</p>
+          <p><strong>Objectif:</strong> ${data.purpose}</p>
+          <p><strong>Date de début:</strong> ${data.startDate}</p>
+          <p><strong>Date de fin:</strong> ${data.endDate}</p>
+          <p><strong>Heure de début:</strong> ${data.startTime || "Non spécifiée"}</p>
+          <p><strong>Heure de fin:</strong> ${data.endTime || "Non spécifiée"}</p>
+          <p><strong>Conducteur:</strong> ${data.conducteur || "Non spécifié"}</p>
+          <p><strong>Matricule conducteur:</strong> ${data.conducteurMatricule || "Non spécifié"}</p>
+          <p><strong>Informations supplémentaires:</strong> ${data.additionalInfo || "Aucune"}</p>
         `;
         break;
       default:
-        subject = "طلب جديد";
-        content = `
-          <h2>طلب جديد</h2>
-          <p><strong>الاسم:</strong> ${userName}</p>
-          <p><strong>الإيميل:</strong> ${userEmail}</p>
-          <p><strong>البيانات:</strong> ${JSON.stringify(data, null, 2)}</p>
+        subject = "Nouvelle demande";
+        adminContent = `
+          <h2>Nouvelle demande</h2>
+          <p><strong>Nom:</strong> ${userName}</p>
+          <p><strong>Email:</strong> ${userEmail}</p>
+          <p><strong>Données:</strong> ${JSON.stringify(data, null, 2)}</p>
         `;
     }
 
@@ -99,22 +101,22 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // إرسال الإيميل للإدارة - تم تغيير الإيميل إلى إيميلك المسجل
+    // إرسال الإيميل للإدارة بالفرنسية
     const adminEmailResponse = await resend.emails.send({
       from: "CMC System <onboarding@resend.dev>",
-      to: ["achraframdani2@gmail.com"], // تم تغيير الإيميل إلى إيميلك المسجل في Resend
-      subject: `[طلب إدارة] ${subject}`,
+      to: ["achraframdani2@gmail.com"],
+      subject: `[Administration] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #0FA0CE 0%, #2E7D32 100%); padding: 20px; text-align: center; color: white;">
-            <h1 style="margin: 0;">نظام إدارة الطلبات CMC</h1>
-            <p style="margin: 5px 0 0 0;">طلب مقدم للإدارة</p>
+            <h1 style="margin: 0;">Système de Gestion des Demandes CMC</h1>
+            <p style="margin: 5px 0 0 0;">Demande soumise à l'administration</p>
           </div>
           <div style="padding: 20px; background-color: #f9f9f9;">
-            ${content}
+            ${adminContent}
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
             <p style="color: #666; font-size: 12px;">
-              تم إرسال هذا الإيميل تلقائياً من نظام إدارة الطلبات CMC
+              Cet email a été envoyé automatiquement par le système de gestion des demandes CMC
             </p>
           </div>
         </div>
@@ -124,11 +126,32 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Admin email sent:", adminEmailResponse);
 
-    // إرسال إيميل تأكيد للمستخدم
+    // إرسال إيميل تأكيد للمستخدم بالعربية
+    let userSubject = "";
+    let userMessage = "";
+    
+    switch (type) {
+      case "vacation":
+        userSubject = "تأكيد استلام طلب الإجازة";
+        userMessage = "تم استلام طلب الإجازة الخاص بك بنجاح. سيتم مراجعته من قبل الإدارة قريباً.";
+        break;
+      case "work-certificate":
+        userSubject = "تأكيد استلام طلب شهادة العمل";
+        userMessage = "تم استلام طلب شهادة العمل الخاص بك بنجاح. سيتم مراجعته من قبل الإدارة قريباً.";
+        break;
+      case "mission-order":
+        userSubject = "تأكيد استلام طلب أمر المهمة";
+        userMessage = "تم استلام طلب أمر المهمة الخاص بك بنجاح. سيتم مراجعته من قبل الإدارة قريباً.";
+        break;
+      default:
+        userSubject = "تأكيد استلام الطلب";
+        userMessage = "تم استلام طلبك بنجاح. سيتم مراجعته من قبل الإدارة قريباً.";
+    }
+
     const userEmailResponse = await resend.emails.send({
       from: "CMC System <onboarding@resend.dev>",
       to: [userEmail],
-      subject: `تأكيد استلام ${subject}`,
+      subject: userSubject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #0FA0CE 0%, #2E7D32 100%); padding: 20px; text-align: center; color: white;">
@@ -136,8 +159,8 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
           <div style="padding: 20px; background-color: #f9f9f9;">
             <h2 style="color: #2E7D32;">مرحباً ${userName}</h2>
-            <p>تم استلام طلبك بنجاح وسيتم مراجعته من قبل الإدارة.</p>
-            <p><strong>نوع الطلب:</strong> ${subject}</p>
+            <p>${userMessage}</p>
+            <p>تم إرسال المستند PDF المرفق إلى الإدارة للمراجعة.</p>
             <p><strong>تاريخ الإرسال:</strong> ${new Date().toLocaleDateString('ar-SA')}</p>
             <div style="background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0;">
               <p style="margin: 0; color: #2E7D32;"><strong>ملاحظة:</strong> سيتم التواصل معك قريباً بخصوص حالة طلبك.</p>
@@ -149,6 +172,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>
       `,
+      attachments: attachments,
     });
 
     console.log("User confirmation email sent:", userEmailResponse);
