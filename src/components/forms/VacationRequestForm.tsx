@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 import { FormData, formSchema } from "@/types/vacationRequest";
 import PersonalInfoSection from "./PersonalInfoSection";
 import LeaveInfoSection from "./LeaveInfoSection";
@@ -67,24 +68,26 @@ const VacationRequestForm = ({ onSubmit, isGenerating }: VacationRequestFormProp
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-8">
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <PersonalInfoSection form={form} />
-              <LeaveInfoSection 
-                form={form} 
-                signaturePreview={signaturePreview}
-                setSignaturePreview={setSignaturePreview}
-              />
-              
-              <div className="flex justify-center pt-4 md:pt-6">
-                <Button 
-                  type="submit" 
-                  disabled={isGenerating}
-                  className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  {isGenerating ? "جاري المعالجة..." : "إرسال وتحميل PDF"}
-                </Button>
-              </div>
-            </form>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <PersonalInfoSection form={form} />
+                <LeaveInfoSection 
+                  form={form} 
+                  signaturePreview={signaturePreview}
+                  setSignaturePreview={setSignaturePreview}
+                />
+                
+                <div className="flex justify-center pt-4 md:pt-6">
+                  <Button 
+                    type="submit" 
+                    disabled={isGenerating}
+                    className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    {isGenerating ? "جاري المعالجة..." : "إرسال وتحميل PDF"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       </div>
