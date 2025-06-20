@@ -39,10 +39,14 @@ const VacationRequest = () => {
       const pdfBase64 = await generateVacationPDF(pdfData);
       console.log("PDF base64 generated, downloading PDF and sending email...");
       
-      // تحميل PDF للمستخدم
-      const pdfBlob = new Blob([Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0))], {
-        type: 'application/pdf'
-      });
+      // تحميل PDF للمستخدم - إصلاح المشكلة
+      const byteCharacters = atob(pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
       
       const downloadUrl = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
@@ -72,15 +76,15 @@ const VacationRequest = () => {
       
       // إضافة إشعار نجاح
       addNotification({
-        title: "تم الإرسال والتحميل بنجاح",
-        message: "تم تحميل PDF وإرسال طلب الإجازة إلى إيميل الإدارة بنجاح",
+        title: "تم إرسال طلب الإجازة بنجاح",
+        message: "تم إرسال طلبك وسيتم الرد عليك قريباً",
         type: "success"
       });
 
       // Show success toast
       toast({
         title: "تم بنجاح",
-        description: "تم تحميل PDF وإرسال طلب الإجازة إلى الإدارة بنجاح",
+        description: "تم إرسال طلب الإجازة بنجاح",
         variant: "default",
         className: "bg-green-50 border-green-200",
       });
@@ -106,8 +110,8 @@ const VacationRequest = () => {
   if (isSubmitted) {
     return (
       <SuccessMessage 
-        title="تم الإرسال والتحميل بنجاح"
-        description="تم تحميل PDF وإرسال طلب الإجازة إلى الإدارة بنجاح"
+        title="تم إرسال طلب الإجازة بنجاح"
+        description="تم إرسال طلبك وسيتم الرد عليك قريباً"
         buttonText="طلب جديد"
         onReset={() => setIsSubmitted(false)}
       />
