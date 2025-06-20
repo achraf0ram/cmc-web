@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const vacationRequestSchema = z.object({
@@ -42,6 +43,7 @@ export const formSchema = z.object({
   arabicInterim: z.string().optional(),
   leaveMorocco: z.boolean().optional(),
   signature: z.union([z.instanceof(File), z.string()]).optional(),
+  hireDate: z.string().optional(),
 });
 
 export type FormData = z.infer<typeof formSchema>;

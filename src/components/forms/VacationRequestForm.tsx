@@ -47,6 +47,7 @@ const VacationRequestForm = ({ onSubmit, isGenerating }: VacationRequestFormProp
       arabicInterim: "",
       leaveMorocco: false,
       signature: "",
+      hireDate: "",
     },
   });
 
@@ -61,7 +62,7 @@ const VacationRequestForm = ({ onSubmit, isGenerating }: VacationRequestFormProp
             fullName: watchedValues.fullName,
             matricule: watchedValues.matricule,
             grade: watchedValues.grade || "",
-            hireDate: format(new Date(), "yyyy-MM-dd"),
+            hireDate: watchedValues.hireDate || format(new Date(), "yyyy-MM-dd"),
             function: watchedValues.fonction || "",
             leaveType: watchedValues.leaveType,
             startDate: format(watchedValues.startDate, "yyyy-MM-dd"),
