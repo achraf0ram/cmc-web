@@ -1,20 +1,5 @@
+
 import { z } from "zod";
-
-export const vacationRequestSchema = z.object({
-  fullName: z.string().min(3, { message: "يرجى إدخال الاسم الكامل" }),
-  matricule: z.string().min(1, { message: "يرجى إدخال الرقم المالي" }),
-  grade: z.string().min(1, { message: "يرجى إدخال الرتبة" }),
-  hireDate: z.string().min(1, { message: "يرجى إدخال تاريخ التوظيف" }),
-  function: z.string().min(1, { message: "يرجى إدخال الوظيفة" }),
-  leaveType: z.string().min(1, { message: "يرجى اختيار نوع الإجازة" }),
-  startDate: z.string().min(1, { message: "يرجى تحديد تاريخ البداية" }),
-  endDate: z.string().min(1, { message: "يرجى تحديد تاريخ النهاية" }),
-  numberOfDays: z.number().min(1, { message: "يرجى تحديد عدد الأيام" }),
-  reason: z.string().min(1, { message: "يرجى إدخال السبب" }),
-  additionalInfo: z.string().optional(),
-});
-
-export type VacationFormData = z.infer<typeof vacationRequestSchema>;
 
 export const formSchema = z.object({
   fullName: z.string().min(3, { message: "يرجى إدخال الاسم الكامل" }),
