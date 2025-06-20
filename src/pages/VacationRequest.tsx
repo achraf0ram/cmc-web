@@ -1,6 +1,6 @@
 
-import PersonalInfoSection from "@/components/forms/PersonalInfoSection";
-import LeaveInfoSection from "@/components/forms/LeaveInfoSection";
+import { PersonalInfoSection } from "@/components/forms/PersonalInfoSection";
+import { LeaveInfoSection } from "@/components/forms/LeaveInfoSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
@@ -147,11 +147,7 @@ const VacationRequest = () => {
                 
                 <Separator className="my-8" />
                 
-                <LeaveInfoSection 
-                  form={form}
-                  signaturePreview={signaturePreview}
-                  setSignaturePreview={setSignaturePreview}
-                />
+                <LeaveInfoSection form={form} />
                 
                 <div className="flex justify-center pt-6">
                   <Button 
