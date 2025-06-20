@@ -1,71 +1,84 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import VacationRequestForm from "@/components/forms/VacationRequestForm";
-import { FormData } from "@/types/vacationRequest";
-import { SuccessMessage } from "@/components/SuccessMessage";
+import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/hooks/useNotifications";
+import { sendRequestWithEmail } from "@/services/requestService";
 import { generateVacationPDF } from "@/utils/vacationPDF";
-import { format } from "date-fns";
+import VacationRequestForm from "@/components/forms/VacationRequestForm";
+import { VacationFormData } from "@/types/vacationRequest";
+import SuccessMessage from "@/components/SuccessMessage";
 
 const VacationRequest = () => {
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const navigate = useNavigate();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
+  const { addNotification } = useNotifications();
 
-  const handleSubmit = async (data: FormData) => {
+  const handleSubmit = async (values: VacationFormData) => {
     try {
       setIsGenerating(true);
+      console.log("Starting vacation request submission...", values);
       
-      // Generate PDF with form data
-      const pdfData = {
-        fullName: data.fullName,
-        matricule: data.matricule,
-        grade: data.grade || "",
-        hireDate: data.hireDate || format(new Date(), "yyyy-MM-dd"),
-        function: data.fonction || "",
-        leaveType: data.leaveType,
-        startDate: format(data.startDate, "yyyy-MM-dd"),
-        endDate: format(data.endDate, "yyyy-MM-dd"),
-        numberOfDays: Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24)),
-        reason: data.duration || "طلب إجازة",
-        additionalInfo: data.arabicDuration || "",
-      };
+      // توليد PDF والحصول على base64
+      const pdfBase64 = await generateVacationPDF(values);
+      console.log("PDF base64 generated, sending email...");
+      
+      // إرسال الطلب عبر الإيميل مع PDF
+      const emailResult = await sendRequestWithEmail({
+        type: 'vacation',
+        data: values,
+        pdfBase64: pdfBase64,
+      });
 
-      // Send the request to the email service (VacationEmailSender handles this)
-      console.log("Vacation request submitted:", data);
-      
+      console.log("Email result:", emailResult);
+
+      if (!emailResult.success) {
+        throw new Error(emailResult.error || 'فشل في إرسال الطلب');
+      }
+
       setIsSubmitted(true);
-      toast.success("تم إرسال طلب الإجازة بنجاح!");
+      
+      // إضافة إشعار نجاح
+      addNotification({
+        title: "تم الإرسال بنجاح",
+        message: "تم إرسال طلب الإجازة إلى إيميل الإدارة وتم تحميل PDF بنجاح",
+        type: "success"
+      });
+
+      // Show success toast
+      toast({
+        title: "تم بنجاح",
+        description: "تم إرسال طلب الإجازة إلى الإدارة وتحميل PDF بنجاح",
+        variant: "default",
+        className: "bg-green-50 border-green-200",
+      });
     } catch (error) {
-      console.error("Error submitting vacation request:", error);
-      toast.error("حدث خطأ في إرسال الطلب");
+      console.error("Error in vacation request submission:", error);
+      
+      addNotification({
+        title: "خطأ في الإرسال",
+        message: error instanceof Error ? error.message : "حدث خطأ أثناء معالجة الطلب",
+        type: "error"
+      });
+
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء معالجة الطلب. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleReset = () => {
-    setIsSubmitted(false);
-  };
-
   if (isSubmitted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 p-4 flex items-center justify-center">
-        <SuccessMessage
-          title="تم إرسال طلب الإجازة بنجاح"
-          description="تم إرسال طلبك إلى الإدارة وسيتم مراجعته قريباً. ستصلك رسالة بالنتيجة."
-          buttonText="إرسال طلب جديد"
-          onReset={handleReset}
-        />
-      </div>
-    );
+    return <SuccessMessage onNewRequest={() => setIsSubmitted(false)} />;
   }
 
   return (
     <VacationRequestForm 
       onSubmit={handleSubmit} 
-      isGenerating={isGenerating}
+      isGenerating={isGenerating} 
     />
   );
 };

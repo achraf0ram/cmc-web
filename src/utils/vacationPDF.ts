@@ -1,5 +1,6 @@
 
 import { jsPDF } from "jspdf";
+import { format } from "date-fns";
 
 export class VacationPDFHelper {
   private doc: jsPDF;
@@ -63,7 +64,7 @@ export class VacationPDFHelper {
   }
 }
 
-// Function to generate vacation PDF and return base64
+// New function to generate vacation PDF and return base64
 export const generateVacationPDF = async (values: any): Promise<string> => {
   console.log("Generating vacation PDF with values:", values);
   
