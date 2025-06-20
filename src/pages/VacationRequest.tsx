@@ -25,7 +25,7 @@ const VacationRequest = () => {
         fullName: values.fullName,
         matricule: values.matricule,
         grade: values.grade || "",
-        hireDate: values.hireDate || "",
+        hireDate: "", // This field doesn't exist in the current form
         function: values.fonction || "",
         leaveType: values.leaveType,
         startDate: format(values.startDate, "yyyy-MM-dd"),
