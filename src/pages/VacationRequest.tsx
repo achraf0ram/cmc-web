@@ -118,7 +118,6 @@ const VacationRequest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCustomLeaveType, setShowCustomLeaveType] = useState(false);
   const { language, t } = useLanguage();
   const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
@@ -215,10 +214,6 @@ const VacationRequest = () => {
   const onSubmit = async (values: FormData) => {
     setIsGeneratingPDF(true);
     
-    // Show success immediately for better UX
-    setIsSubmitted(true);
-    toast.success(language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!');
-    
     try {
       // Generate PDF
       const pdfBlob = await generatePDF(values);
@@ -276,8 +271,10 @@ const VacationRequest = () => {
         // Send request with email
         const result = await sendRequestWithEmail(requestData);
         
-        if (!result.success) {
-          console.error('Email sending failed:', result.error);
+        if (result.success) {
+          setIsSubmitted(true);
+          toast.success(language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!');
+        } else {
           toast.error(result.error || (language === 'ar' ? 'حدث خطأ في الإرسال' : 'Erreur lors de l\'envoi'));
         }
       };
@@ -702,7 +699,6 @@ for (let i = 0; i < arabicNotes.length; i++) {
     form.reset();
     setShowCustomLeaveType(false);
     setSignaturePreview(null);
-    setIsSubmitting(false);
   };
 
   return (
@@ -1418,32 +1414,12 @@ for (let i = 0; i < arabicNotes.length; i++) {
             </CardContent>
           </Card>
         ) : (
-          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-            <CardContent className="pt-6 pb-6 md:pt-8 md:pb-8">
-              <div className="flex flex-col items-center text-center gap-4 md:gap-6">
-                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
-                  <CheckCircle className="h-8 w-8 md:h-10 md:w-10 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-slate-800">
-                    {language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!'}
-                  </h2>
-                  <p className="text-slate-600 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">
-                    {language === 'ar' ? 
-                      'تم تحميل ملف PDF وإرسال طلبك. سيتم مراجعة طلبك وإرسال رد قريباً.' : 
-                      'Le fichier PDF a été téléchargé et votre demande envoyée. Votre demande sera examinée et vous recevrez une réponse bientôt.'
-                    }
-                  </p>
-                  <Button 
-                    onClick={handleReset}
-                    className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    {language === 'ar' ? 'طلب جديد' : 'Nouvelle demande'}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <SuccessMessage
+            title={language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!'}
+            description={language === 'ar' ? 'تم تحميل ملف PDF وإرسال طلبك. سيتم مراجعة طلبك وإرسال رد قريباً.' : 'Le fichier PDF a été téléchargé et votre demande envoyée. Votre demande sera examinée et vous recevrez une réponse bientôt.'}
+            buttonText={language === 'ar' ? 'طلب جديد' : 'Nouvelle demande'}
+            onReset={handleReset}
+          />
         )}
       </div>
     </div>
