@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import PersonalInfoSection from "@/components/forms/PersonalInfoSection";
 import LeaveInfoSection from "@/components/forms/LeaveInfoSection";
@@ -153,17 +154,125 @@ export default function VacationRequest() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 md:p-8 space-y-8">
-            <PersonalInfoSection 
-              personalInfo={personalInfo}
-              onChange={handlePersonalInfoChange}
-            />
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-blue-200 pb-2">
+                المعلومات الشخصية
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">الاسم الكامل *</label>
+                  <input
+                    type="text"
+                    value={personalInfo.fullName}
+                    onChange={(e) => handlePersonalInfoChange({...personalInfo, fullName: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="أدخل الاسم الكامل"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">رقم الموظف *</label>
+                  <input
+                    type="text"
+                    value={personalInfo.employeeId}
+                    onChange={(e) => handlePersonalInfoChange({...personalInfo, employeeId: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="أدخل رقم الموظف"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
+                  <input
+                    type="text"
+                    value={personalInfo.phoneNumber}
+                    onChange={(e) => handlePersonalInfoChange({...personalInfo, phoneNumber: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="أدخل رقم الهاتف"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">المنصب</label>
+                  <input
+                    type="text"
+                    value={personalInfo.position}
+                    onChange={(e) => handlePersonalInfoChange({...personalInfo, position: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="أدخل المنصب"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">القسم</label>
+                  <input
+                    type="text"
+                    value={personalInfo.department}
+                    onChange={(e) => handlePersonalInfoChange({...personalInfo, department: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="أدخل القسم"
+                  />
+                </div>
+              </div>
+            </div>
             
             <Separator className="my-6" />
             
-            <LeaveInfoSection 
-              leaveInfo={leaveInfo}
-              onChange={handleLeaveInfoChange}
-            />
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-green-200 pb-2">
+                معلومات الإجازة
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">نوع الإجازة *</label>
+                  <select
+                    value={leaveInfo.leaveType}
+                    onChange={(e) => handleLeaveInfoChange({...leaveInfo, leaveType: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">اختر نوع الإجازة</option>
+                    <option value="سنوية">إجازة سنوية</option>
+                    <option value="مرضية">إجازة مرضية</option>
+                    <option value="طارئة">إجازة طارئة</option>
+                    <option value="أمومة">إجازة أمومة</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">عدد الأيام *</label>
+                  <input
+                    type="number"
+                    value={leaveInfo.numberOfDays}
+                    onChange={(e) => handleLeaveInfoChange({...leaveInfo, numberOfDays: parseInt(e.target.value) || 0})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="أدخل عدد الأيام"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">تاريخ البداية *</label>
+                  <input
+                    type="date"
+                    value={leaveInfo.startDate}
+                    onChange={(e) => handleLeaveInfoChange({...leaveInfo, startDate: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">تاريخ النهاية *</label>
+                  <input
+                    type="date"
+                    value={leaveInfo.endDate}
+                    onChange={(e) => handleLeaveInfoChange({...leaveInfo, endDate: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">سبب الإجازة</label>
+                  <textarea
+                    value={leaveInfo.reason}
+                    onChange={(e) => handleLeaveInfoChange({...leaveInfo, reason: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3}
+                    placeholder="أدخل سبب الإجازة"
+                  />
+                </div>
+              </div>
+            </div>
             
             <div className="flex justify-center pt-6">
               <Button

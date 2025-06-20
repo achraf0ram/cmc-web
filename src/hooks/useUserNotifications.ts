@@ -41,7 +41,8 @@ export const useUserNotifications = () => {
         },
         (payload) => {
           console.log('New notification received:', payload);
-          setNotifications(prev => [payload.new as UserNotification, ...prev]);
+          const newNotification = payload.new as UserNotification;
+          setNotifications(prev => [newNotification, ...prev]);
         }
       )
       .on(
@@ -54,8 +55,9 @@ export const useUserNotifications = () => {
         },
         (payload) => {
           console.log('Notification updated:', payload);
+          const updatedNotification = payload.new as UserNotification;
           setNotifications(prev => 
-            prev.map(n => n.id === payload.new.id ? payload.new as UserNotification : n)
+            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
           );
         }
       )
@@ -83,7 +85,19 @@ export const useUserNotifications = () => {
         return;
       }
 
-      setNotifications(data || []);
+      // تحويل البيانات لضمان التطابق مع النوع المطلوب
+      const typedNotifications: UserNotification[] = (data || []).map(item => ({
+        id: item.id,
+        title: item.title,
+        message: item.message,
+        type: item.type as 'info' | 'success' | 'warning' | 'error',
+        is_read: item.is_read,
+        request_id: item.request_id,
+        created_at: item.created_at,
+        read_at: item.read_at
+      }));
+
+      setNotifications(typedNotifications);
     } catch (error) {
       console.error('Error in fetchNotifications:', error);
     } finally {
