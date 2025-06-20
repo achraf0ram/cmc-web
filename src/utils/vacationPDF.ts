@@ -63,3 +63,90 @@ export class VacationPDFHelper {
     this.doc.save(filename);
   }
 }
+
+export const generateVacationPDF = async (data: any): Promise<string> => {
+  const helper = new VacationPDFHelper();
+  
+  // Add header/logo
+  await helper.addLogo();
+  
+  // Add title
+  helper.addText("DEMANDE DE CONGÉ", 105, 80, { fontSize: 16, fontStyle: "bold", align: "center" });
+  
+  let yPosition = 100;
+  
+  // Personal information
+  helper.addText("INFORMATIONS PERSONNELLES", 20, yPosition, { fontSize: 14, fontStyle: "bold" });
+  yPosition += 10;
+  
+  helper.addText(`Nom et Prénom: ${data.fullName || ""}`, 20, yPosition);
+  yPosition += 8;
+  
+  helper.addText(`Matricule: ${data.matricule || ""}`, 20, yPosition);
+  yPosition += 8;
+  
+  if (data.fonction) {
+    helper.addText(`Fonction: ${data.fonction}`, 20, yPosition);
+    yPosition += 8;
+  }
+  
+  if (data.direction) {
+    helper.addText(`Direction: ${data.direction}`, 20, yPosition);
+    yPosition += 8;
+  }
+  
+  if (data.phone) {
+    helper.addText(`Téléphone: ${data.phone}`, 20, yPosition);
+    yPosition += 8;
+  }
+  
+  yPosition += 10;
+  
+  // Leave information
+  helper.addText("INFORMATIONS DE CONGÉ", 20, yPosition, { fontSize: 14, fontStyle: "bold" });
+  yPosition += 10;
+  
+  helper.addText(`Nature de congé: ${data.leaveType || ""}`, 20, yPosition);
+  yPosition += 8;
+  
+  if (data.customLeaveType) {
+    helper.addText(`Type personnalisé: ${data.customLeaveType}`, 20, yPosition);
+    yPosition += 8;
+  }
+  
+  helper.addText(`Durée: ${data.duration || ""}`, 20, yPosition);
+  yPosition += 8;
+  
+  if (data.startDate) {
+    helper.addText(`Date de début: ${format(new Date(data.startDate), "dd/MM/yyyy")}`, 20, yPosition);
+    yPosition += 8;
+  }
+  
+  if (data.endDate) {
+    helper.addText(`Date de fin: ${format(new Date(data.endDate), "dd/MM/yyyy")}`, 20, yPosition);
+    yPosition += 8;
+  }
+  
+  if (data.with) {
+    helper.addText(`Avec: ${data.with}`, 20, yPosition);
+    yPosition += 8;
+  }
+  
+  if (data.interim) {
+    helper.addText(`Intérim: ${data.interim}`, 20, yPosition);
+    yPosition += 8;
+  }
+  
+  if (data.leaveMorocco) {
+    helper.addText("Quitter le territoire Marocain: Oui", 20, yPosition);
+    yPosition += 8;
+  }
+  
+  // Add date
+  helper.addText(`Date de la demande: ${format(new Date(), "dd/MM/yyyy")}`, 20, yPosition + 20);
+  
+  // Add footers
+  helper.addFooters();
+  
+  return helper.getBase64();
+};
