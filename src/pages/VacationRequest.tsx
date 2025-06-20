@@ -5,8 +5,9 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { sendRequestWithEmail } from "@/services/requestService";
 import { generateVacationPDF } from "@/utils/vacationPDF";
 import VacationRequestForm from "@/components/forms/VacationRequestForm";
-import { VacationFormData } from "@/types/vacationRequest";
-import SuccessMessage from "@/components/SuccessMessage";
+import { FormData } from "@/types/vacationRequest";
+import { SuccessMessage } from "@/components/SuccessMessage";
+import { format } from "date-fns";
 
 const VacationRequest = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -14,19 +15,34 @@ const VacationRequest = () => {
   const { toast } = useToast();
   const { addNotification } = useNotifications();
 
-  const handleSubmit = async (values: VacationFormData) => {
+  const handleSubmit = async (values: FormData) => {
     try {
       setIsGenerating(true);
       console.log("Starting vacation request submission...", values);
       
+      // تحويل البيانات للتنسيق المطلوب للـ PDF
+      const pdfData = {
+        fullName: values.fullName,
+        matricule: values.matricule,
+        grade: values.grade || "",
+        hireDate: values.hireDate || "",
+        function: values.fonction || "",
+        leaveType: values.leaveType,
+        startDate: format(values.startDate, "yyyy-MM-dd"),
+        endDate: format(values.endDate, "yyyy-MM-dd"),
+        numberOfDays: Math.ceil((values.endDate.getTime() - values.startDate.getTime()) / (1000 * 60 * 60 * 24)),
+        reason: values.duration || "طلب إجازة",
+        additionalInfo: values.arabicDuration || "",
+      };
+      
       // توليد PDF والحصول على base64
-      const pdfBase64 = await generateVacationPDF(values);
+      const pdfBase64 = await generateVacationPDF(pdfData);
       console.log("PDF base64 generated, sending email...");
       
       // إرسال الطلب عبر الإيميل مع PDF
       const emailResult = await sendRequestWithEmail({
         type: 'vacation',
-        data: values,
+        data: pdfData,
         pdfBase64: pdfBase64,
       });
 
@@ -72,7 +88,14 @@ const VacationRequest = () => {
   };
 
   if (isSubmitted) {
-    return <SuccessMessage onNewRequest={() => setIsSubmitted(false)} />;
+    return (
+      <SuccessMessage 
+        title="تم الإرسال بنجاح"
+        description="تم إرسال طلب الإجازة إلى الإدارة بنجاح"
+        buttonText="طلب جديد"
+        onReset={() => setIsSubmitted(false)}
+      />
+    );
   }
 
   return (
