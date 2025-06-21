@@ -5,55 +5,75 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { PersonalInfoSection } from '@/components/forms/PersonalInfoSection';
-import { LeaveInfoSection } from '@/components/forms/LeaveInfoSection';
-import { vacationFormSchema, type VacationFormData } from '@/utils/vacationPDF';
-import { submitVacationRequest } from '@/services/requestService';
+import PersonalInfoSection from '@/components/forms/PersonalInfoSection';
+import LeaveInfoSection from '@/components/forms/LeaveInfoSection';
+import { formSchema, type FormData } from '@/types/vacationRequest';
+import { sendRequestWithEmail } from '@/services/requestService';
+import { generateVacationPDF } from '@/utils/pdfGenerator';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const VacationRequest = () => {
   const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const form = useForm<VacationFormData>({
-    resolver: zodResolver(vacationFormSchema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      // Personal info
       fullName: '',
-      employeeId: '',
-      phoneNumber: '',
-      position: '',
-      department: '',
-      
-      // Leave info
+      matricule: '',
+      echelle: '',
+      echelon: '',
+      grade: '',
+      fonction: '',
+      arabicFonction: '',
+      direction: '',
+      arabicDirection: '',
+      address: '',
+      arabicAddress: '',
+      phone: '',
       leaveType: '',
-      startDate: '',
-      endDate: '',
-      numberOfDays: 0,
-      reason: '',
+      customLeaveType: '',
+      arabicCustomLeaveType: '',
+      duration: '',
+      arabicDuration: '',
+      startDate: undefined,
+      endDate: undefined,
+      with: '',
+      arabicWith: '',
+      interim: '',
+      arabicInterim: '',
+      leaveMorocco: false,
+      signature: undefined,
     },
   });
 
-  const onSubmit = async (data: VacationFormData) => {
+  const onSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
       
-      // Convert string dates to Date objects for the PDF generation
-      const vacationData = {
-        ...data,
-        startDate: new Date(data.startDate),
-        endDate: new Date(data.endDate),
-      };
+      // Generate PDF
+      const pdfBase64 = await generateVacationPDF(data);
       
-      await submitVacationRequest(vacationData);
-      
-      toast({
-        title: t('success'),
-        description: t('requestSubmitted'),
+      // Send request
+      const result = await sendRequestWithEmail({
+        type: 'vacation',
+        data: data,
+        pdfBase64: pdfBase64,
       });
       
-      form.reset();
+      if (result.success) {
+        toast({
+          title: t('success'),
+          description: t('requestSubmitted'),
+        });
+        
+        form.reset();
+        setSignaturePreview(null);
+      } else {
+        throw new Error(result.error || 'Unknown error');
+      }
     } catch (error) {
       console.error('Error submitting vacation request:', error);
       toast({
@@ -82,6 +102,8 @@ const VacationRequest = () => {
             
             <LeaveInfoSection 
               form={form}
+              signaturePreview={signaturePreview}
+              setSignaturePreview={setSignaturePreview}
             />
 
             <div className="flex justify-end">
