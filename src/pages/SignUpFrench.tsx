@@ -20,6 +20,7 @@ import { UserPlus, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
+  fullName: z.string().min(2, { message: "Le nom complet doit contenir au moins 2 caractères" }),
   email: z.string().email({ message: "Email invalide" }),
   password: z.string().min(6, { message: "Le mot de passe doit contenir au moins 6 caractères" }),
   confirmPassword: z.string(),
@@ -34,11 +35,12 @@ const SignUpFrench = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signUp, isLoading } = useAuth();
+  const { signup, isLoading } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -52,7 +54,7 @@ const SignUpFrench = () => {
     console.log("Signup attempt:", values);
     
     try {
-      const success = await signUp(values.email, values.password);
+      const success = await signup(values.fullName, values.email, values.password);
       console.log("Signup result:", success);
       
       if (success) {
@@ -123,6 +125,25 @@ const SignUpFrench = () => {
           <CardContent className="p-6 md:p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium">Nom complet</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Votre nom complet"
+                          className="h-12 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                          disabled={isButtonDisabled}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="email"
