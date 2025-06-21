@@ -18,18 +18,20 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { LogIn, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const formSchema = z.object({
-  email: z.string().email({ message: "البريد الإلكتروني غير صحيح" }),
-  password: z.string().min(6, { message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }),
-});
-
-export const SignIn = () => {
+const SignIn = () => {
+  const { t, language } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { login, isLoading } = useAuth();
+
+  const formSchema = z.object({
+    email: z.string().email({ message: t('invalidEmail') }),
+    password: z.string().min(6, { message: t('passwordMinLength') }),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,35 +53,34 @@ export const SignIn = () => {
       
       if (success) {
         toast({
-          title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك في منصة CMC",
+          title: t('loginSuccess'),
+          description: t('welcomeMessage'),
           className: "bg-green-50 border-green-200",
         });
         
-        // انتظار قصير لضمان تحديث الحالة قبل التنقل
         setTimeout(() => {
           navigate("/", { replace: true });
         }, 100);
       } else {
-        throw new Error("فشل في تسجيل الدخول");
+        throw new Error(t('loginFailed'));
       }
     } catch (error: any) {
       console.error("Login error:", error);
       
-      let errorMessage = "يرجى التحقق من البيانات والمحاولة مرة أخرى";
+      let errorMessage = t('loginErrorDefault');
       
       if (error?.message) {
         if (error.message.includes("Invalid login credentials")) {
-          errorMessage = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+          errorMessage = t('invalidCredentials');
         } else if (error.message.includes("Email not confirmed")) {
-          errorMessage = "يرجى تأكيد البريد الإلكتروني أولاً";
+          errorMessage = t('emailNotConfirmed');
         } else if (error.message.includes("Too many requests")) {
-          errorMessage = "محاولات كثيرة، يرجى المحاولة لاحقاً";
+          errorMessage = t('tooManyRequests');
         }
       }
       
       toast({
-        title: "خطأ في تسجيل الدخول",
+        title: t('loginError'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -98,8 +99,8 @@ export const SignIn = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
             <LogIn className="w-8 h-8 text-cmc-blue" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">تسجيل الدخول</h1>
-          <p className="text-slate-600">أدخل بياناتك للوصول إلى حسابك</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">{t('signIn')}</h1>
+          <p className="text-slate-600">{t('signInDescription')}</p>
         </div>
 
         <Card className="cmc-card">
@@ -114,13 +115,14 @@ export const SignIn = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">البريد الإلكتروني</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">{t('email')}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="example@ofppt.ma"
+                          placeholder={t('emailPlaceholder')}
                           className="cmc-input"
                           disabled={isButtonDisabled}
+                          dir={language === 'ar' ? 'rtl' : 'ltr'}
                           {...field}
                         />
                       </FormControl>
@@ -134,21 +136,22 @@ export const SignIn = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">كلمة المرور</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">{t('password')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="أدخل كلمة المرور"
+                            placeholder={t('passwordPlaceholder')}
                             className="cmc-input pr-10"
                             disabled={isButtonDisabled}
+                            dir={language === 'ar' ? 'rtl' : 'ltr'}
                             {...field}
                           />
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            className={`absolute ${language === 'ar' ? 'right-0' : 'left-0'} top-0 h-full px-3 py-2 hover:bg-transparent`}
                             onClick={() => setShowPassword(!showPassword)}
                             disabled={isButtonDisabled}
                           >
@@ -170,7 +173,7 @@ export const SignIn = () => {
                     to="/forgot-password"
                     className="text-sm text-cmc-blue hover:text-cmc-blue-dark transition-colors"
                   >
-                    نسيت كلمة المرور؟
+                    {t('forgotPassword')}
                   </Link>
                 </div>
 
@@ -179,16 +182,16 @@ export const SignIn = () => {
                   className="w-full cmc-button-primary py-3"
                   disabled={isButtonDisabled}
                 >
-                  {isButtonDisabled ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                  {isButtonDisabled ? t('signingIn') : t('signIn')}
                 </Button>
 
                 <div className="text-center">
-                  <span className="text-slate-600">ليس لديك حساب؟ </span>
+                  <span className="text-slate-600">{t('noAccount')} </span>
                   <Link
                     to="/register"
                     className="text-cmc-blue hover:text-cmc-blue-dark font-medium transition-colors"
                   >
-                    إنشاء حساب جديد
+                    {t('createAccount')}
                   </Link>
                 </div>
               </form>
@@ -199,3 +202,5 @@ export const SignIn = () => {
     </div>
   );
 };
+
+export { SignIn };

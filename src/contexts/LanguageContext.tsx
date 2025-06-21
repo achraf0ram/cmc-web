@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState } from 'react';
 
 type Language = 'ar' | 'fr';
@@ -150,7 +149,27 @@ const translations: Translations = {
     error: "خطأ",
     success: "نجح",
     warning: "تحذير",
-    info: "معلومات"
+    info: "معلومات",
+    // ترجمات تسجيل الدخول
+    signIn: "تسجيل الدخول",
+    signInDescription: "أدخل بياناتك للوصول إلى حسابك",
+    password: "كلمة المرور",
+    emailPlaceholder: "example@ofppt.ma",
+    passwordPlaceholder: "أدخل كلمة المرور",
+    forgotPassword: "نسيت كلمة المرور؟",
+    signingIn: "جاري تسجيل الدخول...",
+    noAccount: "ليس لديك حساب؟",
+    createAccount: "إنشاء حساب جديد",
+    loginSuccess: "تم تسجيل الدخول بنجاح",
+    welcomeMessage: "مرحباً بك في منصة CMC",
+    loginFailed: "فشل في تسجيل الدخول",
+    loginErrorDefault: "يرجى التحقق من البيانات والمحاولة مرة أخرى",
+    invalidCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    emailNotConfirmed: "يرجى تأكيد البريد الإلكتروني أولاً",
+    tooManyRequests: "محاولات كثيرة، يرجى المحاولة لاحقاً",
+    loginError: "خطأ في تسجيل الدخول",
+    invalidEmail: "البريد الإلكتروني غير صحيح",
+    passwordMinLength: "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
   },
   fr: {
     home: "Accueil",
@@ -292,7 +311,27 @@ const translations: Translations = {
     error: "Erreur",
     success: "Succès",
     warning: "Avertissement",
-    info: "Information"
+    info: "Information",
+    // ترجمات تسجيل الدخول بالفرنسية
+    signIn: "Se connecter",
+    signInDescription: "Entrez vos informations pour accéder à votre compte",
+    password: "Mot de passe",
+    emailPlaceholder: "exemple@ofppt.ma",
+    passwordPlaceholder: "Entrez votre mot de passe",
+    forgotPassword: "Mot de passe oublié ?",
+    signingIn: "Connexion en cours...",
+    noAccount: "Vous n'avez pas de compte ?",
+    createAccount: "Créer un nouveau compte",
+    loginSuccess: "Connexion réussie",
+    welcomeMessage: "Bienvenue sur la plateforme CMC",
+    loginFailed: "Échec de la connexion",
+    loginErrorDefault: "Veuillez vérifier vos données et réessayer",
+    invalidCredentials: "Email ou mot de passe incorrect",
+    emailNotConfirmed: "Veuillez d'abord confirmer votre email",
+    tooManyRequests: "Trop de tentatives, veuillez réessayer plus tard",
+    loginError: "Erreur de connexion",
+    invalidEmail: "Email invalide",
+    passwordMinLength: "Le mot de passe doit contenir au moins 6 caractères"
   }
 };
 
