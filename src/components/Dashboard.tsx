@@ -20,7 +20,7 @@ export const Dashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-red-600 mb-2">خطأ في تحميل البيانات</h2>
+          <h2 className="text-xl font-bold text-red-600 mb-2">{t('dataLoadError')}</h2>
           <p className="text-gray-600">{error}</p>
         </div>
       </div>
@@ -60,7 +60,7 @@ export const Dashboard = () => {
             <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-cmc-blue" />
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">{t('dashboard')}</h1>
-          <p className="text-slate-600 text-sm md:text-base">لوحة التحكم الرئيسية</p>
+          <p className="text-slate-600 text-sm md:text-base">{t('dashboard')}</p>
         </div>
         
         {/* Stats Cards */}
@@ -89,25 +89,25 @@ export const Dashboard = () => {
         <Card className="cmc-card">
           <CardHeader className="cmc-gradient text-white rounded-t-lg p-4 md:p-6">
             <CardTitle className="text-lg md:text-xl font-semibold text-center">
-              الإجراءات السريعة
+              {t('quickActions')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-8">
             <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
               <div className="text-center p-4 md:p-6 bg-gradient-to-br from-cmc-blue-light/50 to-cmc-blue-light/30 rounded-lg border border-cmc-blue/20 hover:shadow-lg transition-all duration-200 cursor-pointer">
                 <Calendar className="w-10 h-10 md:w-12 md:h-12 text-cmc-blue mx-auto mb-3 md:mb-4" />
-                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">طلب إجازة جديد</h3>
-                <p className="text-xs md:text-sm text-slate-600">تقديم طلب إجازة سنوية أو مرضية</p>
+                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">{t('newVacationRequest')}</h3>
+                <p className="text-xs md:text-sm text-slate-600">{t('newVacationRequestDesc')}</p>
               </div>
               <div className="text-center p-4 md:p-6 bg-gradient-to-br from-cmc-green-light/50 to-cmc-green-light/30 rounded-lg border border-cmc-green/20 hover:shadow-lg transition-all duration-200 cursor-pointer">
                 <CheckCircle className="w-10 h-10 md:w-12 md:h-12 text-cmc-green mx-auto mb-3 md:mb-4" />
-                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">شهادة عمل</h3>
-                <p className="text-xs md:text-sm text-slate-600">طلب شهادة عمل أو راتب</p>
+                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">{t('workCertificate')}</h3>
+                <p className="text-xs md:text-sm text-slate-600">{t('workCertificateDesc')}</p>
               </div>
               <div className="text-center p-4 md:p-6 bg-gradient-to-br from-emerald-100/50 to-emerald-50/30 rounded-lg border border-emerald-200/50 hover:shadow-lg transition-all duration-200 cursor-pointer">
                 <BarChart3 className="w-10 h-10 md:w-12 md:h-12 text-emerald-600 mx-auto mb-3 md:mb-4" />
-                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">أمر مهمة</h3>
-                <p className="text-xs md:text-sm text-slate-600">تقديم طلب أمر مهمة</p>
+                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">{t('missionOrder')}</h3>
+                <p className="text-xs md:text-sm text-slate-600">{t('missionOrderDesc')}</p>
               </div>
             </div>
           </CardContent>

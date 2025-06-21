@@ -10,12 +10,12 @@ interface PersonalInfoSectionProps {
 }
 
 const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-800 border-b border-blue-200 pb-2">
-        {language === 'ar' ? 'المعلومات الشخصية' : 'Informations Personnelles'}
+        {t('personalInfo')}
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -25,12 +25,12 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'الاسم الكامل' : 'Nom & Prénom'} *
+                {t('fullName')} *
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل الاسم الكامل' : 'Entrez le nom complet'}
+                  placeholder={t('fullNamePlaceholder')}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -45,12 +45,12 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'الرقم المالي' : 'Matricule'} *
+                {t('matricule')} *
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل الرقم المالي' : 'Entrez le matricule'}
+                  placeholder={t('matriculePlaceholder')}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -65,12 +65,12 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'الرتبة' : 'Échelle'}
+                {t('echelle')}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل الرتبة' : 'Entrez l\'échelle'}
+                  placeholder={t('echellePlaceholder')}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -85,12 +85,12 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'السلم' : 'Échelon'}
+                {t('echelon')}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل السلم' : 'Entrez l\'échelon'}
+                  placeholder={t('echelonPlaceholder')}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -105,12 +105,12 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'الدرجة' : 'Grade'}
+                {t('grade')}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل الدرجة' : 'Entrez le grade'}
+                  placeholder={t('gradePlaceholder')}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -125,12 +125,12 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'الهاتف' : 'Téléphone'}
+                {t('phone')}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل رقم الهاتف' : 'Entrez le numéro de téléphone'}
+                  placeholder={t('phonePlaceholder')}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -147,13 +147,17 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                Fonction (Français)
+                {language === 'ar' ? 'الوظيفة (العربية)' : 'Fonction (Français)'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Entrez la fonction en français"
-                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  placeholder={language === 'ar' ? t('fonctionPlaceholder') : 'Entrez la fonction en français'}
+                  className={language === 'ar' ? 
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  }
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
               </FormControl>
               <FormMessage />
@@ -167,14 +171,17 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                الوظيفة (العربية)
+                {language === 'ar' ? 'الوظيفة (الفرنسية)' : 'Fonction (Arabe)'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="أدخل الوظيفة بالعربية"
-                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  dir="rtl"
+                  placeholder={language === 'ar' ? 'أدخل الوظيفة بالفرنسية' : 'Entrez la fonction en arabe'}
+                  className={language === 'ar' ? 
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  }
+                  dir={language === 'ar' ? 'ltr' : 'rtl'}
                 />
               </FormControl>
               <FormMessage />
@@ -190,13 +197,17 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                Direction (Français)
+                {language === 'ar' ? 'المديرية (العربية)' : 'Direction (Français)'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Entrez la direction en français"
-                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  placeholder={language === 'ar' ? t('directionPlaceholder') : 'Entrez la direction en français'}
+                  className={language === 'ar' ? 
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  }
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
               </FormControl>
               <FormMessage />
@@ -210,14 +221,17 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                المديرية (العربية)
+                {language === 'ar' ? 'المديرية (الفرنسية)' : 'Direction (Arabe)'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="أدخل المديرية بالعربية"
-                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  dir="rtl"
+                  placeholder={language === 'ar' ? 'أدخل المديرية بالفرنسية' : 'Entrez la direction en arabe'}
+                  className={language === 'ar' ? 
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  }
+                  dir={language === 'ar' ? 'ltr' : 'rtl'}
                 />
               </FormControl>
               <FormMessage />
@@ -233,13 +247,17 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                Adresse (Français)
+                {language === 'ar' ? 'العنوان (العربية)' : 'Adresse (Français)'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Entrez l'adresse en français"
-                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  placeholder={language === 'ar' ? t('addressPlaceholder') : 'Entrez l\'adresse en français'}
+                  className={language === 'ar' ? 
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  }
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
               </FormControl>
               <FormMessage />
@@ -253,14 +271,17 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                العنوان (العربية)
+                {language === 'ar' ? 'العنوان (الفرنسية)' : 'Adresse (Arabe)'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="أدخل العنوان بالعربية"
-                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  dir="rtl"
+                  placeholder={language === 'ar' ? 'أدخل العنوان بالفرنسية' : 'Entrez l\'adresse en arabe'}
+                  className={language === 'ar' ? 
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  }
+                  dir={language === 'ar' ? 'ltr' : 'rtl'}
                 />
               </FormControl>
               <FormMessage />
