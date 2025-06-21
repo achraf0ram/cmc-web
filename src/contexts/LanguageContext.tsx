@@ -31,6 +31,8 @@ const translations: Translations = {
     startDate: "تاريخ البداية",
     endDate: "تاريخ النهاية",
     submit: "إرسال",
+    submitting: "جاري الإرسال...",
+    submitRequest: "إرسال الطلب",
     cancel: "إلغاء",
     signatureUpload: "رفع التوقيع",
     reason: "السبب",
@@ -169,7 +171,8 @@ const translations: Translations = {
     tooManyRequests: "محاولات كثيرة، يرجى المحاولة لاحقاً",
     loginError: "خطأ في تسجيل الدخول",
     invalidEmail: "البريد الإلكتروني غير صحيح",
-    passwordMinLength: "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+    passwordMinLength: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+    submitError: "حدث خطأ أثناء إرسال الطلب"
   },
   fr: {
     home: "Accueil",
@@ -193,6 +196,8 @@ const translations: Translations = {
     startDate: "Date de début",
     endDate: "Date de fin",
     submit: "Soumettre",
+    submitting: "Soumission en cours...",
+    submitRequest: "Soumettre la demande",
     cancel: "Annuler",
     signatureUpload: "Télécharger la signature",
     reason: "Raison",
@@ -331,7 +336,8 @@ const translations: Translations = {
     tooManyRequests: "Trop de tentatives, veuillez réessayer plus tard",
     loginError: "Erreur de connexion",
     invalidEmail: "Email invalide",
-    passwordMinLength: "Le mot de passe doit contenir au moins 6 caractères"
+    passwordMinLength: "Le mot de passe doit contenir au moins 6 caractères",
+    submitError: "Une erreur s'est produite lors de la soumission de la demande"
   }
 };
 
