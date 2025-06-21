@@ -15,6 +15,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
+import SignInFrench from "./pages/SignInFrench";
+import SignUpFrench from "./pages/SignUpFrench";
 import ResetPasswordPage from "./pages/ResetPassword";
 import ForgotPasswordPage from "./pages/ForgotPassword";
 
@@ -73,10 +75,26 @@ const App = () => (
                 }
               />
               <Route
+                path='/login-french'
+                element={
+                  <PublicRoute>
+                    <SignInFrench />
+                  </PublicRoute>
+                }
+              />
+              <Route
                 path='/register'
                 element={
                   <PublicRoute>
                     <SignUpPage />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path='/register-french'
+                element={
+                  <PublicRoute>
+                    <SignUpFrench />
                   </PublicRoute>
                 }
               />
