@@ -157,7 +157,9 @@ export const AppSidebar = () => {
                 className='text-[#2E7D32]'
               />
             </div>
-            <div className='text-sm'>{profile?.full_name || "المستخدم"}</div>
+            <div className='text-sm'>
+              {profile?.full_name || "مستخدم"}
+            </div>
           </div>
           <Button
             variant='ghost'

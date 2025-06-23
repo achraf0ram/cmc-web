@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,9 +51,9 @@ const Settings = () => {
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      full_name: profile?.full_name || "",
-      email: user?.email || "",
-      phone: profile?.phone || "",
+      full_name: "",
+      email: "",
+      phone: "",
     },
   });
 
@@ -78,6 +77,7 @@ const Settings = () => {
   // Update form values when profile or settings change
   useEffect(() => {
     if (profile && user) {
+      console.log("Updating form with profile data:", profile);
       profileForm.reset({
         full_name: profile.full_name || "",
         email: user.email || "",
