@@ -26,11 +26,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">{t('loading')}</p>
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
-    console.log("User is not authenticated");
+    console.log("User is not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
@@ -43,11 +50,18 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">{t('loading')}</p>
+        </div>
+      </div>
+    );
   }
 
   if (isAuthenticated) {
-    console.log("User is authenticated");
+    console.log("User is authenticated, redirecting to dashboard");
     return <Navigate to="/" replace />;
   }
 
@@ -126,6 +140,8 @@ const App = () => (
                   element={<Settings />}
                 />
               </Route>
+              
+              {/* Catch all route */}
               <Route
                 path='*'
                 element={<NotFound />}
