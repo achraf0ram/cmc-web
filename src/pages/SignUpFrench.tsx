@@ -35,7 +35,7 @@ const SignUpFrench = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signup, isLoading } = useAuth();
+  const { register, isLoading } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,7 +54,7 @@ const SignUpFrench = () => {
     console.log("Signup attempt:", values);
     
     try {
-      const success = await signup(values.fullName, values.email, values.password);
+      const success = await register(values.fullName, values.email, values.password);
       console.log("Signup result:", success);
       
       if (success) {
