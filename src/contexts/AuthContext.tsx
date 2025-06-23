@@ -11,22 +11,9 @@ type UserProfile = {
   updated_at: string;
 };
 
-type UserSettings = {
-  id: string;
-  user_id: string;
-  email_notifications: boolean;
-  new_requests_notifications: boolean;
-  request_updates_notifications: boolean;
-  language: string;
-  theme: string;
-  created_at: string;
-  updated_at: string;
-};
-
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
-  userSettings: UserSettings | null;
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -36,7 +23,6 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<boolean>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   updateUser: (userData: Partial<UserProfile>) => Promise<boolean>;
-  updateSettings: (settings: Partial<UserSettings>) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,7 +30,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -58,11 +43,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           setTimeout(async () => {
             await fetchUserProfile(session.user.id);
-            await fetchUserSettings(session.user.id);
           }, 0);
         } else {
           setProfile(null);
-          setUserSettings(null);
         }
         
         setIsLoading(false);
@@ -74,7 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserProfile(session.user.id);
-        fetchUserSettings(session.user.id);
       }
       setIsLoading(false);
     });
@@ -100,27 +82,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('خطأ في جلب الملف الشخصي:', error);
-    }
-  };
-
-  const fetchUserSettings = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('خطأ في جلب الإعدادات:', error);
-        return;
-      }
-
-      if (data) {
-        setUserSettings(data);
-      }
-    } catch (error) {
-      console.error('خطأ في جلب الإعدادات:', error);
     }
   };
 
@@ -150,6 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
+      // Get the current domain for email confirmation redirect
       const redirectUrl = `${window.location.origin}/login`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -240,40 +202,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateSettings = async (settings: Partial<UserSettings>): Promise<boolean> => {
-    try {
-      if (!user) return false;
-      
-      const { error } = await supabase
-        .from('user_settings')
-        .update({
-          email_notifications: settings.email_notifications,
-          new_requests_notifications: settings.new_requests_notifications,
-          request_updates_notifications: settings.request_updates_notifications,
-          language: settings.language,
-          theme: settings.theme,
-        })
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('خطأ في تحديث الإعدادات:', error);
-        return false;
-      }
-
-      await fetchUserSettings(user.id);
-      return true;
-    } catch (error) {
-      console.error('خطأ في تحديث الإعدادات:', error);
-      return false;
-    }
-  };
-
   return (
     <AuthContext.Provider 
       value={{ 
         user,
         profile,
-        userSettings,
         session,
         isAuthenticated: !!user, 
         isLoading, 
@@ -282,8 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         resetPassword,
         register,
-        updateUser,
-        updateSettings
+        updateUser
       }}
     >
       {children}

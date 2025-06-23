@@ -1,33 +1,36 @@
 
+import { UseFormReturn } from "react-hook-form";
+import { FormData } from "@/types/vacationRequest";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useFormContext } from "react-hook-form";
-import { FormData } from "@/types/vacationRequest";
 
-const PersonalInfoSection = () => {
-  const { language, t } = useLanguage();
-  const { control } = useFormContext<FormData>();
+interface PersonalInfoSectionProps {
+  form: UseFormReturn<FormData>;
+}
+
+const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
+  const { language } = useLanguage();
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-800 border-b border-blue-200 pb-2">
-        {t('personalInfo')}
+        {language === 'ar' ? 'المعلومات الشخصية' : 'Informations Personnelles'}
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={control}
+          control={form.control}
           name="fullName"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {t('fullName')} *
+                {language === 'ar' ? 'الاسم الكامل' : 'Nom & Prénom'} *
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={t('fullNamePlaceholder')}
+                  placeholder={language === 'ar' ? 'أدخل الاسم الكامل' : 'Entrez le nom complet'}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -37,17 +40,17 @@ const PersonalInfoSection = () => {
         />
 
         <FormField
-          control={control}
+          control={form.control}
           name="matricule"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {t('matricule')} *
+                {language === 'ar' ? 'الرقم المالي' : 'Matricule'} *
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={t('matriculePlaceholder')}
+                  placeholder={language === 'ar' ? 'أدخل الرقم المالي' : 'Entrez le matricule'}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -57,17 +60,17 @@ const PersonalInfoSection = () => {
         />
 
         <FormField
-          control={control}
+          control={form.control}
           name="echelle"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {t('echelle')}
+                {language === 'ar' ? 'الرتبة' : 'Échelle'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={t('echellePlaceholder')}
+                  placeholder={language === 'ar' ? 'أدخل الرتبة' : 'Entrez l\'échelle'}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -77,17 +80,17 @@ const PersonalInfoSection = () => {
         />
 
         <FormField
-          control={control}
+          control={form.control}
           name="echelon"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {t('echelon')}
+                {language === 'ar' ? 'السلم' : 'Échelon'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={t('echelonPlaceholder')}
+                  placeholder={language === 'ar' ? 'أدخل السلم' : 'Entrez l\'échelon'}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -97,17 +100,17 @@ const PersonalInfoSection = () => {
         />
 
         <FormField
-          control={control}
+          control={form.control}
           name="grade"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {t('grade')}
+                {language === 'ar' ? 'الدرجة' : 'Grade'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={t('gradePlaceholder')}
+                  placeholder={language === 'ar' ? 'أدخل الدرجة' : 'Entrez le grade'}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -117,17 +120,17 @@ const PersonalInfoSection = () => {
         />
 
         <FormField
-          control={control}
+          control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {t('phone')}
+                {language === 'ar' ? 'الهاتف' : 'Téléphone'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={t('phonePlaceholder')}
+                  placeholder={language === 'ar' ? 'أدخل رقم الهاتف' : 'Entrez le numéro de téléphone'}
                   className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
@@ -139,22 +142,18 @@ const PersonalInfoSection = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={control}
+          control={form.control}
           name="fonction"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'الوظيفة (العربية)' : 'Fonction (Français)'}
+                Fonction (Français)
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? t('fonctionPlaceholder') : 'Entrez la fonction en français'}
-                  className={language === 'ar' ? 
-                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
-                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
-                  }
-                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                  placeholder="Entrez la fonction en français"
+                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
               <FormMessage />
@@ -163,22 +162,19 @@ const PersonalInfoSection = () => {
         />
 
         <FormField
-          control={control}
+          control={form.control}
           name="arabicFonction"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'الوظيفة (الفرنسية)' : 'Fonction (Arabe)'}
+                الوظيفة (العربية)
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل الوظيفة بالفرنسية' : 'Entrez la fonction en arabe'}
-                  className={language === 'ar' ? 
-                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
-                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  }
-                  dir={language === 'ar' ? 'ltr' : 'rtl'}
+                  placeholder="أدخل الوظيفة بالعربية"
+                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  dir="rtl"
                 />
               </FormControl>
               <FormMessage />
@@ -189,22 +185,18 @@ const PersonalInfoSection = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={control}
+          control={form.control}
           name="direction"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'المديرية (العربية)' : 'Direction (Français)'}
+                Direction (Français)
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? t('directionPlaceholder') : 'Entrez la direction en français'}
-                  className={language === 'ar' ? 
-                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
-                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
-                  }
-                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                  placeholder="Entrez la direction en français"
+                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
               <FormMessage />
@@ -213,22 +205,19 @@ const PersonalInfoSection = () => {
         />
 
         <FormField
-          control={control}
+          control={form.control}
           name="arabicDirection"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'المديرية (الفرنسية)' : 'Direction (Arabe)'}
+                المديرية (العربية)
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل المديرية بالفرنسية' : 'Entrez la direction en arabe'}
-                  className={language === 'ar' ? 
-                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
-                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  }
-                  dir={language === 'ar' ? 'ltr' : 'rtl'}
+                  placeholder="أدخل المديرية بالعربية"
+                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  dir="rtl"
                 />
               </FormControl>
               <FormMessage />
@@ -239,22 +228,18 @@ const PersonalInfoSection = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={control}
+          control={form.control}
           name="address"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'العنوان (العربية)' : 'Adresse (Français)'}
+                Adresse (Français)
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? t('addressPlaceholder') : 'Entrez l\'adresse en français'}
-                  className={language === 'ar' ? 
-                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
-                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
-                  }
-                  dir={language === 'ar' ? 'rtl' : 'ltr'}
+                  placeholder="Entrez l'adresse en français"
+                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                 />
               </FormControl>
               <FormMessage />
@@ -263,22 +248,19 @@ const PersonalInfoSection = () => {
         />
 
         <FormField
-          control={control}
+          control={form.control}
           name="arabicAddress"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'العنوان (الفرنسية)' : 'Adresse (Arabe)'}
+                العنوان (العربية)
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={language === 'ar' ? 'أدخل العنوان بالفرنسية' : 'Entrez l\'adresse en arabe'}
-                  className={language === 'ar' ? 
-                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
-                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  }
-                  dir={language === 'ar' ? 'ltr' : 'rtl'}
+                  placeholder="أدخل العنوان بالعربية"
+                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  dir="rtl"
                 />
               </FormControl>
               <FormMessage />

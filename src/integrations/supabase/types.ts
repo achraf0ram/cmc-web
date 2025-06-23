@@ -384,50 +384,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_notifications: {
-        Row: {
-          created_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          read_at: string | null
-          request_id: string | null
-          title: string
-          type: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          read_at?: string | null
-          request_id?: string | null
-          title: string
-          type?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          read_at?: string | null
-          request_id?: string | null
-          title?: string
-          type?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_notifications_request_id_fkey"
-            columns: ["request_id"]
-            isOneToOne: false
-            referencedRelation: "requests"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_roles: {
         Row: {
           assigned_at: string | null
@@ -451,42 +407,6 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_settings: {
-        Row: {
-          created_at: string
-          email_notifications: boolean | null
-          id: string
-          language: string | null
-          new_requests_notifications: boolean | null
-          request_updates_notifications: boolean | null
-          theme: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          email_notifications?: boolean | null
-          id?: string
-          language?: string | null
-          new_requests_notifications?: boolean | null
-          request_updates_notifications?: boolean | null
-          theme?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          email_notifications?: boolean | null
-          id?: string
-          language?: string | null
-          new_requests_notifications?: boolean | null
-          request_updates_notifications?: boolean | null
-          theme?: string | null
-          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -529,16 +449,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_user_notification: {
-        Args: {
-          p_user_id: string
-          p_title: string
-          p_message: string
-          p_type?: string
-          p_request_id?: string
-        }
-        Returns: string
-      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json

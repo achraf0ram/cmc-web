@@ -13,8 +13,8 @@ import MissionOrder from "./pages/MissionOrder";
 import VacationRequest from "./pages/VacationRequest";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import SignInFrench from "./pages/SignInFrench";
-import SignUpFrench from "./pages/SignUpFrench";
+import SignInPage from "./pages/SignIn";
+import SignUpPage from "./pages/SignUp";
 import ResetPasswordPage from "./pages/ResetPassword";
 import ForgotPasswordPage from "./pages/ForgotPassword";
 
@@ -26,18 +26,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">{t('loading')}</p>
-        </div>
-      </div>
-    );
+    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
   }
 
   if (!isAuthenticated) {
-    console.log("User is not authenticated, redirecting to login");
+    console.log("User is not authenticated");
     return <Navigate to="/login" replace />;
   }
 
@@ -50,18 +43,11 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">{t('loading')}</p>
-        </div>
-      </div>
-    );
+    return <div className="flex h-screen items-center justify-center">{t('loading')}</div>;
   }
 
   if (isAuthenticated) {
-    console.log("User is authenticated, redirecting to dashboard");
+    console.log("User is authenticated");
     return <Navigate to="/" replace />;
   }
 
@@ -82,7 +68,7 @@ const App = () => (
                 path='/login'
                 element={
                   <PublicRoute>
-                    <SignInFrench />
+                    <SignInPage />
                   </PublicRoute>
                 }
               />
@@ -90,7 +76,7 @@ const App = () => (
                 path='/register'
                 element={
                   <PublicRoute>
-                    <SignUpFrench />
+                    <SignUpPage />
                   </PublicRoute>
                 }
               />
@@ -140,8 +126,6 @@ const App = () => (
                   element={<Settings />}
                 />
               </Route>
-              
-              {/* Catch all route */}
               <Route
                 path='*'
                 element={<NotFound />}
