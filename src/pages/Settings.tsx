@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,9 +29,9 @@ const profileFormSchema = z.object({
 });
 
 const notificationsFormSchema = z.object({
-  emailNotifications: z.boolean().default(true),
-  newRequests: z.boolean(),
-  requestUpdates: z.boolean(),
+  email_notifications: z.boolean().default(true),
+  new_requests_notifications: z.boolean().default(true),
+  request_updates_notifications: z.boolean().default(true),
 });
 
 const passwordFormSchema = z.object({
@@ -46,7 +46,7 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useLanguage();
-  const { profile, updateUser, user } = useAuth();
+  const { profile, updateUser, user, userSettings, updateSettings } = useAuth();
   
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
@@ -59,9 +59,9 @@ const Settings = () => {
   const notificationsForm = useForm<z.infer<typeof notificationsFormSchema>>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues: {
-      emailNotifications: true,
-      newRequests: true,
-      requestUpdates: true,
+      email_notifications: userSettings?.email_notifications ?? true,
+      new_requests_notifications: userSettings?.new_requests_notifications ?? true,
+      request_updates_notifications: userSettings?.request_updates_notifications ?? true,
     },
   });
 
@@ -72,6 +72,26 @@ const Settings = () => {
       confirmPassword: "",
     },
   });
+
+  // Update form values when profile or settings change
+  useEffect(() => {
+    if (profile) {
+      profileForm.reset({
+        full_name: profile.full_name || "",
+        phone: profile.phone || "",
+      });
+    }
+  }, [profile, profileForm]);
+
+  useEffect(() => {
+    if (userSettings) {
+      notificationsForm.reset({
+        email_notifications: userSettings.email_notifications,
+        new_requests_notifications: userSettings.new_requests_notifications,
+        request_updates_notifications: userSettings.request_updates_notifications,
+      });
+    }
+  }, [userSettings, notificationsForm]);
 
   async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
     try {
@@ -108,13 +128,42 @@ const Settings = () => {
     }
   }
 
-  function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
-    console.log(values);
-    toast({
-      title: "تم تحديث إعدادات الإشعارات",
-      description: "تم حفظ إعدادات الإشعارات بنجاح",
-      className: "bg-green-50 border-green-200",
-    });
+  async function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
+    try {
+      setIsLoading(true);
+      console.log("Updating notifications:", values);
+      
+      const success = await updateSettings({
+        id: userSettings?.id || "",
+        user_id: user?.id || "",
+        email_notifications: values.email_notifications,
+        new_requests_notifications: values.new_requests_notifications,
+        request_updates_notifications: values.request_updates_notifications,
+        language: userSettings?.language || "ar",
+        theme: userSettings?.theme || "light",
+        created_at: userSettings?.created_at || "",
+        updated_at: userSettings?.updated_at || "",
+      });
+
+      if (success) {
+        toast({
+          title: "تم تحديث إعدادات الإشعارات",
+          description: "تم حفظ إعدادات الإشعارات بنجاح",
+          className: "bg-green-50 border-green-200",
+        });
+      } else {
+        throw new Error("فشل في تحديث الإعدادات");
+      }
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث إعدادات الإشعارات",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
@@ -250,7 +299,7 @@ const Settings = () => {
                     <div className="space-y-2">
                       <FormField
                         control={notificationsForm.control}
-                        name="emailNotifications"
+                        name="email_notifications"
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
@@ -272,7 +321,7 @@ const Settings = () => {
                       
                       <FormField
                         control={notificationsForm.control}
-                        name="newRequests"
+                        name="new_requests_notifications"
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
@@ -294,7 +343,7 @@ const Settings = () => {
                       
                       <FormField
                         control={notificationsForm.control}
-                        name="requestUpdates"
+                        name="request_updates_notifications"
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
@@ -318,9 +367,17 @@ const Settings = () => {
                     <div className="flex justify-end">
                       <Button 
                         type="submit" 
+                        disabled={isLoading}
                         className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                       >
-                        حفظ التغييرات
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            جاري الحفظ...
+                          </>
+                        ) : (
+                          "حفظ التغييرات"
+                        )}
                       </Button>
                     </div>
                   </form>

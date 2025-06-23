@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { UseFormReturn } from "react-hook-form";
 import { format } from "date-fns";
 import { ar, fr } from "date-fns/locale";
 import { CalendarIcon, FileImage } from "lucide-react";
@@ -14,15 +13,16 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useFormContext } from "react-hook-form";
 
 interface LeaveInfoSectionProps {
-  form: UseFormReturn<FormData>;
   signaturePreview: string | null;
   setSignaturePreview: (preview: string | null) => void;
 }
 
-const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: LeaveInfoSectionProps) => {
-  const { language } = useLanguage();
+const LeaveInfoSection = ({ signaturePreview, setSignaturePreview }: LeaveInfoSectionProps) => {
+  const { language, t } = useLanguage();
+  const { control, setValue } = useFormContext<FormData>();
   const [showCustomLeaveType, setShowCustomLeaveType] = useState(false);
 
   const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +32,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       reader.onloadend = () => {
         const result = reader.result as string;
         setSignaturePreview(result);
-        form.setValue("signature", result);
+        setValue("signature", result);
       };
       reader.readAsDataURL(file);
     }
@@ -41,17 +41,17 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-800 border-b border-green-200 pb-2">
-        {language === 'ar' ? 'معلومات الإجازة' : 'Informations de Congé'}
+        {t('leaveInfo')}
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="leaveType"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'نوع الإجازة' : 'Nature de congé'} *
+                {t('leaveType')} *
               </FormLabel>
               <Select 
                 onValueChange={(value) => {
@@ -62,7 +62,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
               >
                 <FormControl>
                   <SelectTrigger className="border-blue-300 focus:border-blue-500 focus:ring-blue-200">
-                    <SelectValue placeholder={language === 'ar' ? 'اختر نوع الإجازة' : 'Sélectionnez le type'} />
+                    <SelectValue placeholder={t('leaveTypePlaceholder')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -92,18 +92,22 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       {showCustomLeaveType && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
-            control={form.control}
+            control={control}
             name="customLeaveType"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-medium text-gray-700">
-                  نوع الإجازة المخصص (Français)
+                  {language === 'ar' ? 'نوع الإجازة المخصص (العربية)' : 'Type de congé personnalisé (Français)'}
                 </FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="Spécifiez le type de congé"
-                    className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                    placeholder={language === 'ar' ? t('customLeaveTypePlaceholder') : 'Spécifiez le type de congé'}
+                    className={language === 'ar' ? 
+                      "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
+                      "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                    }
+                    dir={language === 'ar' ? 'rtl' : 'ltr'}
                   />
                 </FormControl>
                 <FormMessage />
@@ -112,19 +116,22 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
           />
 
           <FormField
-            control={form.control}
+            control={control}
             name="arabicCustomLeaveType"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-medium text-gray-700">
-                  نوع الإجازة المخصص (العربية)
+                  {language === 'ar' ? 'نوع الإجازة المخصص (الفرنسية)' : 'Type de congé personnalisé (Arabe)'}
                 </FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="حدد نوع الإجازة"
-                    className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                    dir="rtl"
+                    placeholder={language === 'ar' ? 'حدد نوع الإجازة بالفرنسية' : 'Spécifiez le type de congé en arabe'}
+                    className={language === 'ar' ? 
+                      "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
+                      "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                    }
+                    dir={language === 'ar' ? 'ltr' : 'rtl'}
                   />
                 </FormControl>
                 <FormMessage />
@@ -136,18 +143,22 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="duration"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                Durée (Français) *
+                {t('duration')} *
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Ex: 5 jours"
-                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  placeholder={t('durationPlaceholder')}
+                  className={language === 'ar' ? 
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  }
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
               </FormControl>
               <FormMessage />
@@ -156,19 +167,22 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicDuration"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                المدة (العربية)
+                {language === 'ar' ? 'المدة (الفرنسية)' : 'Durée (Arabe)'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="مثال: 5 أيام"
-                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  dir="rtl"
+                  placeholder={language === 'ar' ? 'مثال: 5 jours' : 'Ex: 5 أيام'}
+                  className={language === 'ar' ? 
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  }
+                  dir={language === 'ar' ? 'ltr' : 'rtl'}
                 />
               </FormControl>
               <FormMessage />
@@ -179,12 +193,12 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="startDate"
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'تاريخ البداية' : 'Date de début'} *
+                {t('startDate')} *
               </FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -199,7 +213,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
                       {field.value ? (
                         format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
                       ) : (
-                        <span>{language === 'ar' ? 'اختر تاريخ البداية' : 'Choisir une date'}</span>
+                        <span>{t('startDatePlaceholder')}</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -223,12 +237,12 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="endDate"
           render={({ field }) => (
             <FormItem className="flex flex-col">
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'تاريخ النهاية' : 'Date de fin'} *
+                {t('endDate')} *
               </FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -243,7 +257,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
                       {field.value ? (
                         format(field.value, "PPP", { locale: language === 'ar' ? ar : fr })
                       ) : (
-                        <span>{language === 'ar' ? 'اختر تاريخ النهاية' : 'Choisir une date'}</span>
+                        <span>{t('endDatePlaceholder')}</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -269,18 +283,22 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="with"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                Avec (famille) - Français
+                {language === 'ar' ? 'مع (العائلة) - العربية' : 'Avec (famille) - Français'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Avec époux/épouse et enfants"
-                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  placeholder={language === 'ar' ? t('withPlaceholder') : 'Avec époux/épouse et enfants'}
+                  className={language === 'ar' ? 
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  }
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
               </FormControl>
               <FormMessage />
@@ -289,19 +307,22 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicWith"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                مع (العائلة) - العربية
+                {language === 'ar' ? 'مع (العائلة) - الفرنسية' : 'Avec (famille) - Arabe'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="مع الزوج/الزوجة والأطفال"
-                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  dir="rtl"
+                  placeholder={language === 'ar' ? 'مع الزوج/الزوجة والأطفال' : 'مع الزوج/الزوجة والأطفال'}
+                  className={language === 'ar' ? 
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  }
+                  dir={language === 'ar' ? 'ltr' : 'rtl'}
                 />
               </FormControl>
               <FormMessage />
@@ -312,18 +333,22 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="interim"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                Intérim (Nom et Fonction) - Français
+                {language === 'ar' ? 'النيابة (الاسم والوظيفة) - العربية' : 'Intérim (Nom et Fonction) - Français'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Nom et fonction du remplaçant"
-                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  placeholder={language === 'ar' ? t('interimPlaceholder') : 'Nom et fonction du remplaçant'}
+                  className={language === 'ar' ? 
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right" :
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                  }
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
               </FormControl>
               <FormMessage />
@@ -332,19 +357,22 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicInterim"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">
-                النيابة (الاسم والوظيفة) - العربية
+                {language === 'ar' ? 'النيابة (الاسم والوظيفة) - الفرنسية' : 'Intérim (Nom et Fonction) - Arabe'}
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="اسم ووظيفة المتنائب"
-                  className="border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
-                  dir="rtl"
+                  placeholder={language === 'ar' ? 'اسم ووظيفة المتنائب' : 'اسم ووظيفة المتنائب'}
+                  className={language === 'ar' ? 
+                    "border-blue-300 focus:border-blue-500 focus:ring-blue-200" :
+                    "border-green-300 focus:border-green-500 focus:ring-green-200 text-right"
+                  }
+                  dir={language === 'ar' ? 'ltr' : 'rtl'}
                 />
               </FormControl>
               <FormMessage />
@@ -354,7 +382,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       </div>
 
       <FormField
-        control={form.control}
+        control={control}
         name="leaveMorocco"
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-blue-200 p-4 bg-blue-50/50">
@@ -367,7 +395,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
             </FormControl>
             <div className="space-y-1 leading-none">
               <FormLabel className="text-sm font-medium text-gray-700">
-                {language === 'ar' ? 'مغادرة التراب الوطني' : 'Quitter le territoire Marocain'}
+                {t('leaveMorocco')}
               </FormLabel>
             </div>
           </FormItem>
@@ -375,12 +403,12 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="signature"
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-sm font-medium text-gray-700">
-              {language === 'ar' ? 'التوقيع (اختياري)' : 'Signature (optionnel)'}
+              {t('signatureOptional')}
             </FormLabel>
             <FormControl>
               <div className="flex items-center space-x-2 p-4 border border-dashed border-blue-300 rounded-lg bg-blue-50/30">

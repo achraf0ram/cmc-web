@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,11 +19,11 @@ import { LogIn, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
-  email: z.string().email({ message: "البريد الإلكتروني غير صحيح" }),
-  password: z.string().min(6, { message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" }),
+  email: z.string().email({ message: "Email invalide" }),
+  password: z.string().min(6, { message: "Le mot de passe doit contenir au moins 6 caractères" }),
 });
 
-export const SignIn = () => {
+const SignInFrench = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -51,35 +50,34 @@ export const SignIn = () => {
       
       if (success) {
         toast({
-          title: "تم تسجيل الدخول بنجاح",
-          description: "مرحباً بك في منصة CMC",
+          title: "Connexion réussie",
+          description: "Bienvenue sur la plateforme CMC",
           className: "bg-green-50 border-green-200",
         });
         
-        // انتظار قصير لضمان تحديث الحالة قبل التنقل
         setTimeout(() => {
           navigate("/", { replace: true });
         }, 100);
       } else {
-        throw new Error("فشل في تسجيل الدخول");
+        throw new Error("Échec de la connexion");
       }
     } catch (error: any) {
       console.error("Login error:", error);
       
-      let errorMessage = "يرجى التحقق من البيانات والمحاولة مرة أخرى";
+      let errorMessage = "Veuillez vérifier vos données et réessayer";
       
       if (error?.message) {
         if (error.message.includes("Invalid login credentials")) {
-          errorMessage = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+          errorMessage = "Email ou mot de passe incorrect";
         } else if (error.message.includes("Email not confirmed")) {
-          errorMessage = "يرجى تأكيد البريد الإلكتروني أولاً";
+          errorMessage = "Veuillez d'abord confirmer votre email";
         } else if (error.message.includes("Too many requests")) {
-          errorMessage = "محاولات كثيرة، يرجى المحاولة لاحقاً";
+          errorMessage = "Trop de tentatives, veuillez réessayer plus tard";
         }
       }
       
       toast({
-        title: "خطأ في تسجيل الدخول",
+        title: "Erreur de connexion",
         description: errorMessage,
         variant: "destructive",
       });
@@ -91,19 +89,30 @@ export const SignIn = () => {
   const isButtonDisabled = isLoading || isSubmitting;
 
   return (
-    <div className="min-h-screen cmc-page-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 relative"
+      style={{
+        backgroundImage: `url(/lovable-uploads/a2237828-d2dd-44ae-bf27-86f6b8f4a45e.png)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Overlay for subtle transparency */}
+      <div className="absolute inset-0 bg-white/80"></div>
+      
+      <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
-            <LogIn className="w-8 h-8 text-cmc-blue" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-full mb-4 shadow-lg">
+            <LogIn className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">تسجيل الدخول</h1>
-          <p className="text-slate-600">أدخل بياناتك للوصول إلى حسابك</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">Se connecter</h1>
+          <p className="text-slate-600">Entrez vos informations pour accéder à votre compte</p>
         </div>
 
-        <Card className="cmc-card">
-          <CardHeader className="cmc-gradient text-white rounded-t-lg p-6">
+        <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-t-lg p-6">
             <CardTitle className="text-xl font-semibold text-center">C M C</CardTitle>
           </CardHeader>
           <CardContent className="p-6 md:p-8">
@@ -114,12 +123,12 @@ export const SignIn = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">البريد الإلكتروني</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">E-mail</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="example@ofppt.ma"
-                          className="cmc-input"
+                          placeholder="exemple@ofppt.ma"
+                          className="h-12 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
                           disabled={isButtonDisabled}
                           {...field}
                         />
@@ -134,13 +143,13 @@ export const SignIn = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">كلمة المرور</FormLabel>
+                      <FormLabel className="text-slate-700 font-medium">Mot de passe</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="أدخل كلمة المرور"
-                            className="cmc-input pr-10"
+                            placeholder="Entrez votre mot de passe"
+                            className="h-12 border-slate-300 focus:border-blue-500 focus:ring-blue-500 pr-10"
                             disabled={isButtonDisabled}
                             {...field}
                           />
@@ -148,7 +157,7 @@ export const SignIn = () => {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                             onClick={() => setShowPassword(!showPassword)}
                             disabled={isButtonDisabled}
                           >
@@ -168,27 +177,27 @@ export const SignIn = () => {
                 <div className="flex items-center justify-between">
                   <Link
                     to="/forgot-password"
-                    className="text-sm text-cmc-blue hover:text-cmc-blue-dark transition-colors"
+                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
                   >
-                    نسيت كلمة المرور؟
+                    Mot de passe oublié ?
                   </Link>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full cmc-button-primary py-3"
+                  className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white py-3 h-12"
                   disabled={isButtonDisabled}
                 >
-                  {isButtonDisabled ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                  {isButtonDisabled ? "Connexion en cours..." : "Se connecter"}
                 </Button>
 
                 <div className="text-center">
-                  <span className="text-slate-600">ليس لديك حساب؟ </span>
+                  <span className="text-slate-600">Vous n'avez pas de compte ? </span>
                   <Link
                     to="/register"
-                    className="text-cmc-blue hover:text-cmc-blue-dark font-medium transition-colors"
+                    className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
                   >
-                    إنشاء حساب جديد
+                    Créer un nouveau compte
                   </Link>
                 </div>
               </form>
@@ -199,3 +208,5 @@ export const SignIn = () => {
     </div>
   );
 };
+
+export default SignInFrench;
