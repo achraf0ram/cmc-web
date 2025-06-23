@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -195,7 +194,7 @@ const SignInFrench = () => {
                 <div className="text-center">
                   <span className="text-slate-600">Vous n'avez pas de compte ? </span>
                   <Link
-                    to="/register-french"
+                    to="/register"
                     className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
                   >
                     Créer un nouveau compte

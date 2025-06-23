@@ -65,7 +65,7 @@ const SignUpFrench = () => {
         });
         
         setTimeout(() => {
-          navigate("/login-french", { replace: true });
+          navigate("/login", { replace: true });
         }, 2000);
       } else {
         throw new Error("Échec de l'inscription");
@@ -247,7 +247,7 @@ const SignUpFrench = () => {
                 <div className="text-center">
                   <span className="text-slate-600">Vous avez déjà un compte ? </span>
                   <Link
-                    to="/login-french"
+                    to="/login"
                     className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
                   >
                     Se connecter

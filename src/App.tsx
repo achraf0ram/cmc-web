@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!isAuthenticated) {
     console.log("User is not authenticated");
-    return <Navigate to="/login-french" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
@@ -65,7 +65,7 @@ const App = () => (
             <Routes>
               {/* Auth routes */}
               <Route
-                path='/login-french'
+                path='/login'
                 element={
                   <PublicRoute>
                     <SignInFrench />
@@ -73,7 +73,7 @@ const App = () => (
                 }
               />
               <Route
-                path='/register-french'
+                path='/register'
                 element={
                   <PublicRoute>
                     <SignUpFrench />
