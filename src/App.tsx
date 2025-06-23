@@ -13,8 +13,6 @@ import MissionOrder from "./pages/MissionOrder";
 import VacationRequest from "./pages/VacationRequest";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import SignInPage from "./pages/SignIn";
-import SignUpPage from "./pages/SignUp";
 import SignInFrench from "./pages/SignInFrench";
 import SignUpFrench from "./pages/SignUpFrench";
 import ResetPasswordPage from "./pages/ResetPassword";
@@ -33,7 +31,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!isAuthenticated) {
     console.log("User is not authenticated");
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login-french" replace />;
   }
 
   return <>{children}</>;
@@ -67,26 +65,10 @@ const App = () => (
             <Routes>
               {/* Auth routes */}
               <Route
-                path='/login'
-                element={
-                  <PublicRoute>
-                    <SignInPage />
-                  </PublicRoute>
-                }
-              />
-              <Route
                 path='/login-french'
                 element={
                   <PublicRoute>
                     <SignInFrench />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path='/register'
-                element={
-                  <PublicRoute>
-                    <SignUpPage />
                   </PublicRoute>
                 }
               />
