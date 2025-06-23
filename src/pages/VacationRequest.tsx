@@ -218,7 +218,7 @@ const VacationRequest = () => {
     
     // Show success immediately for better UX
     setIsSubmitted(true);
-    toast.success(language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!');
+    toast.success(language === 'ar' ? 'تم إنشاء وتحميل طلب الإجازة بنجاح!' : 'Demande de congé créée et téléchargée avec succès!');
     
     try {
       // Generate PDF
@@ -1427,19 +1427,33 @@ for (let i = 0; i < arabicNotes.length; i++) {
                 </div>
                 <div>
                   <h2 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-slate-800">
-                    {language === 'ar' ? 'تم إرسال الطلب بنجاح!' : 'Demande envoyée avec succès!'}
+                    {language === 'ar' ? 'تم إنشاء طلب الإجازة بنجاح!' : 'Demande de congé créée avec succès!'}
                   </h2>
                   <p className="text-slate-600 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">
                     {language === 'ar' ? 
-                      'تم تحميل ملف PDF وإرسال طلبك. سيتم مراجعة طلبك وإرسال رد قريباً.' : 
-                      'Le fichier PDF a été téléchargé et votre demande envoyée. Votre demande sera examinée et vous recevrez une réponse bientôt.'
+                      'تم تحميل ملف PDF وحفظ طلبك في النظام. يمكنك طباعة الملف وتقديمه للإدارة للمراجعة والموافقة.' : 
+                      'Le fichier PDF a été téléchargé et votre demande sauvegardée. Vous pouvez imprimer le fichier et le soumettre à l\'administration pour examen et approbation.'
                     }
                   </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="font-medium text-blue-800">
+                        {language === 'ar' ? 'الخطوات التالية:' : 'Prochaines étapes:'}
+                      </span>
+                    </div>
+                    <ul className="text-blue-700 space-y-1 text-right" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+                      <li>{language === 'ar' ? '• طباعة ملف PDF المحمّل' : '• Imprimer le fichier PDF téléchargé'}</li>
+                      <li>{language === 'ar' ? '• توقيع الطلب' : '• Signer la demande'}</li>
+                      <li>{language === 'ar' ? '• تقديم الطلب للإدارة' : '• Soumettre à l\'administration'}</li>
+                      <li>{language === 'ar' ? '• انتظار الموافقة والرد' : '• Attendre l\'approbation et la réponse'}</li>
+                    </ul>
+                  </div>
                   <Button 
                     onClick={handleReset}
                     className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-6 md:px-8 py-2 md:py-3 rounded-lg text-sm md:text-base shadow-lg hover:shadow-xl transition-all duration-200"
                   >
-                    {language === 'ar' ? 'طلب جديد' : 'Nouvelle demande'}
+                    {language === 'ar' ? 'إنشاء طلب جديد' : 'Créer une nouvelle demande'}
                   </Button>
                 </div>
               </div>
