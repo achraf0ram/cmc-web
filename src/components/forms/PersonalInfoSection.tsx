@@ -1,16 +1,13 @@
 
-import { UseFormReturn } from "react-hook-form";
-import { FormData } from "@/types/vacationRequest";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useFormContext } from "react-hook-form";
+import { FormData } from "@/types/vacationRequest";
 
-interface PersonalInfoSectionProps {
-  form: UseFormReturn<FormData>;
-}
-
-const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
+const PersonalInfoSection = () => {
   const { language, t } = useLanguage();
+  const { control } = useFormContext<FormData>();
 
   return (
     <div className="space-y-4">
@@ -20,7 +17,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="fullName"
           render={({ field }) => (
             <FormItem>
@@ -40,7 +37,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="matricule"
           render={({ field }) => (
             <FormItem>
@@ -60,7 +57,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="echelle"
           render={({ field }) => (
             <FormItem>
@@ -80,7 +77,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="echelon"
           render={({ field }) => (
             <FormItem>
@@ -100,7 +97,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="grade"
           render={({ field }) => (
             <FormItem>
@@ -120,7 +117,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="phone"
           render={({ field }) => (
             <FormItem>
@@ -142,7 +139,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="fonction"
           render={({ field }) => (
             <FormItem>
@@ -166,7 +163,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicFonction"
           render={({ field }) => (
             <FormItem>
@@ -192,7 +189,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="direction"
           render={({ field }) => (
             <FormItem>
@@ -216,7 +213,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicDirection"
           render={({ field }) => (
             <FormItem>
@@ -242,7 +239,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="address"
           render={({ field }) => (
             <FormItem>
@@ -266,7 +263,7 @@ const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicAddress"
           render={({ field }) => (
             <FormItem>

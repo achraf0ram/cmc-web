@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,9 @@ const VacationRequest = () => {
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const form = useForm<FormData>({
+  console.log('VacationRequest component rendered');
+
+  const methods = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: '',
@@ -51,6 +53,7 @@ const VacationRequest = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
+      console.log('Form submitted with data:', data);
       setIsSubmitting(true);
       
       // Generate PDF
@@ -69,7 +72,7 @@ const VacationRequest = () => {
           description: t('requestSubmitted'),
         });
         
-        form.reset();
+        methods.reset();
         setSignaturePreview(null);
       } else {
         throw new Error(result.error || 'Unknown error');
@@ -95,27 +98,26 @@ const VacationRequest = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <PersonalInfoSection 
-              form={form}
-            />
-            
-            <LeaveInfoSection 
-              form={form}
-              signaturePreview={signaturePreview}
-              setSignaturePreview={setSignaturePreview}
-            />
+          <FormProvider {...methods}>
+            <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
+              <PersonalInfoSection />
+              
+              <LeaveInfoSection 
+                signaturePreview={signaturePreview}
+                setSignaturePreview={setSignaturePreview}
+              />
 
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-8 py-2"
-              >
-                {isSubmitting ? t('submitting') : t('submitRequest')}
-              </Button>
-            </div>
-          </form>
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 py-2"
+                >
+                  {isSubmitting ? t('submitting') : t('submitRequest')}
+                </Button>
+              </div>
+            </form>
+          </FormProvider>
         </CardContent>
       </Card>
     </div>

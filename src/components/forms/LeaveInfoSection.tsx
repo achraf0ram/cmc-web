@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { UseFormReturn } from "react-hook-form";
 import { format } from "date-fns";
 import { ar, fr } from "date-fns/locale";
 import { CalendarIcon, FileImage } from "lucide-react";
@@ -14,15 +13,16 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useFormContext } from "react-hook-form";
 
 interface LeaveInfoSectionProps {
-  form: UseFormReturn<FormData>;
   signaturePreview: string | null;
   setSignaturePreview: (preview: string | null) => void;
 }
 
-const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: LeaveInfoSectionProps) => {
+const LeaveInfoSection = ({ signaturePreview, setSignaturePreview }: LeaveInfoSectionProps) => {
   const { language, t } = useLanguage();
+  const { control, setValue } = useFormContext<FormData>();
   const [showCustomLeaveType, setShowCustomLeaveType] = useState(false);
 
   const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +32,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       reader.onloadend = () => {
         const result = reader.result as string;
         setSignaturePreview(result);
-        form.setValue("signature", result);
+        setValue("signature", result);
       };
       reader.readAsDataURL(file);
     }
@@ -46,7 +46,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="leaveType"
           render={({ field }) => (
             <FormItem>
@@ -92,7 +92,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       {showCustomLeaveType && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
-            control={form.control}
+            control={control}
             name="customLeaveType"
             render={({ field }) => (
               <FormItem>
@@ -116,7 +116,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
           />
 
           <FormField
-            control={form.control}
+            control={control}
             name="arabicCustomLeaveType"
             render={({ field }) => (
               <FormItem>
@@ -143,7 +143,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="duration"
           render={({ field }) => (
             <FormItem>
@@ -167,7 +167,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicDuration"
           render={({ field }) => (
             <FormItem>
@@ -193,7 +193,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="startDate"
           render={({ field }) => (
             <FormItem className="flex flex-col">
@@ -237,7 +237,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="endDate"
           render={({ field }) => (
             <FormItem className="flex flex-col">
@@ -283,7 +283,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="with"
           render={({ field }) => (
             <FormItem>
@@ -307,7 +307,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicWith"
           render={({ field }) => (
             <FormItem>
@@ -333,7 +333,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
+          control={control}
           name="interim"
           render={({ field }) => (
             <FormItem>
@@ -357,7 +357,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="arabicInterim"
           render={({ field }) => (
             <FormItem>
@@ -382,7 +382,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       </div>
 
       <FormField
-        control={form.control}
+        control={control}
         name="leaveMorocco"
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-blue-200 p-4 bg-blue-50/50">
@@ -403,7 +403,7 @@ const LeaveInfoSection = ({ form, signaturePreview, setSignaturePreview }: Leave
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="signature"
         render={({ field }) => (
           <FormItem>
