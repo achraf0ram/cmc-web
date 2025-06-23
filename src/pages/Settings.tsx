@@ -25,6 +25,7 @@ import { Loader2 } from "lucide-react";
 
 const profileFormSchema = z.object({
   full_name: z.string().min(2, "الاسم يجب أن يكون أكثر من حرفين"),
+  email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
   phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
 });
 
@@ -52,6 +53,7 @@ const Settings = () => {
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       full_name: profile?.full_name || "",
+      email: user?.email || "",
       phone: profile?.phone || "",
     },
   });
@@ -75,13 +77,14 @@ const Settings = () => {
 
   // Update form values when profile or settings change
   useEffect(() => {
-    if (profile) {
+    if (profile && user) {
       profileForm.reset({
         full_name: profile.full_name || "",
+        email: user.email || "",
         phone: profile.phone || "",
       });
     }
-  }, [profile, profileForm]);
+  }, [profile, user, profileForm]);
 
   useEffect(() => {
     if (userSettings) {
@@ -98,11 +101,23 @@ const Settings = () => {
       setIsLoading(true);
       console.log("Updating profile:", values);
       
+      // Update email if changed
+      if (values.email !== user?.email) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: values.email
+        });
+
+        if (emailError) {
+          throw emailError;
+        }
+      }
+
+      // Update profile data
       const success = await updateUser({
         id: user?.id || "",
         full_name: values.full_name,
         phone: values.phone,
-        email: user?.email || "",
+        email: values.email,
         created_at: "",
         updated_at: "",
       });
@@ -209,6 +224,11 @@ const Settings = () => {
           <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-2">
             الإعدادات
           </h1>
+          {profile?.full_name && (
+            <p className="text-lg text-slate-600">
+              مرحباً، {profile.full_name}
+            </p>
+          )}
         </div>
 
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
@@ -243,7 +263,7 @@ const Settings = () => {
               <TabsContent value="profile">
                 <Form {...profileForm}>
                   <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-                    <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="grid gap-6 sm:grid-cols-1">
                       <FormField
                         control={profileForm.control}
                         name="full_name"
@@ -253,6 +273,23 @@ const Settings = () => {
                             <FormControl>
                               <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={profileForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700 font-medium">البريد الإلكتروني</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="email" className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
+                            </FormControl>
+                            <FormDescription className="text-slate-500 text-sm">
+                              سيتم إرسال رسالة تأكيد إلى البريد الجديد عند التغيير
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
