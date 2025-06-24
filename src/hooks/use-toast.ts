@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -158,6 +159,9 @@ function toast({ ...props }: Toast) {
       onOpenChange: (open) => {
         if (!open) dismiss()
       },
+      className: props.variant === 'destructive' 
+        ? 'bg-red-50 border-red-200 text-red-800'
+        : 'bg-gradient-to-r from-blue-50 to-green-50 border-blue-200 text-blue-800'
     },
   })
 
