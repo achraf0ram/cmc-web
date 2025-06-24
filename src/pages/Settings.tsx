@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,9 +61,9 @@ const Settings = () => {
   const notificationsForm = useForm<z.infer<typeof notificationsFormSchema>>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues: {
-      email_notifications: userSettings?.email_notifications ?? true,
-      new_requests_notifications: userSettings?.new_requests_notifications ?? true,
-      request_updates_notifications: userSettings?.request_updates_notifications ?? true,
+      email_notifications: true,
+      new_requests_notifications: true,
+      request_updates_notifications: true,
     },
   });
 
@@ -77,7 +78,7 @@ const Settings = () => {
   // Update form values when profile or settings change
   useEffect(() => {
     if (profile && user) {
-      console.log("Updating form with profile data:", profile);
+      console.log("Updating profile form with data:", profile);
       profileForm.reset({
         full_name: profile.full_name || "",
         email: user.email || "",
@@ -88,6 +89,7 @@ const Settings = () => {
 
   useEffect(() => {
     if (userSettings) {
+      console.log("Updating notifications form with data:", userSettings);
       notificationsForm.reset({
         email_notifications: userSettings.email_notifications,
         new_requests_notifications: userSettings.new_requests_notifications,
@@ -99,20 +101,23 @@ const Settings = () => {
   async function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
     try {
       setIsLoading(true);
-      console.log("Updating profile:", values);
+      console.log("Submitting profile update:", values);
       
       // Update email if changed
       if (values.email !== user?.email) {
+        console.log("Updating email...");
         const { error: emailError } = await supabase.auth.updateUser({
           email: values.email
         });
 
         if (emailError) {
+          console.error("Email update error:", emailError);
           throw emailError;
         }
       }
 
       // Update profile data
+      console.log("Updating profile...");
       const success = await updateUser({
         id: user?.id || "",
         full_name: values.full_name,
@@ -123,21 +128,14 @@ const Settings = () => {
       });
 
       if (success) {
-        toast({
-          title: "تم التحديث بنجاح",
-          description: "تم تحديث المعلومات الشخصية بنجاح",
-          className: "bg-green-50 border-green-200",
-        });
+        console.log("Profile updated successfully");
+        toast.success("تم تحديث المعلومات الشخصية بنجاح");
       } else {
         throw new Error("فشل في تحديث المعلومات");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تحديث المعلومات",
-        variant: "destructive",
-      });
+      toast.error("حدث خطأ أثناء تحديث المعلومات");
     } finally {
       setIsLoading(false);
     }
@@ -146,36 +144,56 @@ const Settings = () => {
   async function onNotificationsSubmit(values: z.infer<typeof notificationsFormSchema>) {
     try {
       setIsLoading(true);
-      console.log("Updating notifications:", values);
+      console.log("Submitting notifications update:", values);
       
-      const success = await updateSettings({
-        id: userSettings?.id || "",
-        user_id: user?.id || "",
-        email_notifications: values.email_notifications,
-        new_requests_notifications: values.new_requests_notifications,
-        request_updates_notifications: values.request_updates_notifications,
-        language: userSettings?.language || "ar",
-        theme: userSettings?.theme || "light",
-        created_at: userSettings?.created_at || "",
-        updated_at: userSettings?.updated_at || "",
-      });
+      if (!userSettings) {
+        console.log("Creating new user settings...");
+        // إنشاء إعدادات جديدة إذا لم تكن موجودة
+        const { data, error } = await supabase
+          .from('user_settings')
+          .insert([
+            {
+              user_id: user?.id || "",
+              email_notifications: values.email_notifications,
+              new_requests_notifications: values.new_requests_notifications,
+              request_updates_notifications: values.request_updates_notifications,
+              language: "ar",
+              theme: "light",
+            }
+          ])
+          .select()
+          .single();
 
-      if (success) {
-        toast({
-          title: "تم تحديث إعدادات الإشعارات",
-          description: "تم حفظ إعدادات الإشعارات بنجاح",
-          className: "bg-green-50 border-green-200",
-        });
+        if (error) {
+          console.error("Error creating settings:", error);
+          throw error;
+        }
+        
+        console.log("Settings created successfully:", data);
       } else {
-        throw new Error("فشل في تحديث الإعدادات");
+        console.log("Updating existing user settings...");
+        const success = await updateSettings({
+          id: userSettings.id,
+          user_id: user?.id || "",
+          email_notifications: values.email_notifications,
+          new_requests_notifications: values.new_requests_notifications,
+          request_updates_notifications: values.request_updates_notifications,
+          language: userSettings.language || "ar",
+          theme: userSettings.theme || "light",
+          created_at: userSettings.created_at || "",
+          updated_at: userSettings.updated_at || "",
+        });
+
+        if (!success) {
+          throw new Error("فشل في تحديث الإعدادات");
+        }
       }
+
+      console.log("Notifications updated successfully");
+      toast.success("تم تحديث إعدادات الإشعارات بنجاح");
     } catch (error) {
-      console.error("Error updating settings:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تحديث إعدادات الإشعارات",
-        variant: "destructive",
-      });
+      console.error("Error updating notifications:", error);
+      toast.error("حدث خطأ أثناء تحديث إعدادات الإشعارات");
     } finally {
       setIsLoading(false);
     }
@@ -184,21 +202,19 @@ const Settings = () => {
   async function onPasswordSubmit(values: z.infer<typeof passwordFormSchema>) {
     try {
       setIsLoading(true);
-      console.log("Updating password");
+      console.log("Updating password...");
       
       const { error } = await supabase.auth.updateUser({
         password: values.newPassword
       });
 
       if (error) {
+        console.error("Password update error:", error);
         throw error;
       }
 
-      toast({
-        title: "تم تغيير كلمة المرور",
-        description: "تم تغيير كلمة المرور بنجاح",
-        className: "bg-green-50 border-green-200",
-      });
+      console.log("Password updated successfully");
+      toast.success("تم تغيير كلمة المرور بنجاح");
       
       passwordForm.reset({
         newPassword: "",
@@ -206,11 +222,7 @@ const Settings = () => {
       });
     } catch (error) {
       console.error("Error updating password:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تغيير كلمة المرور",
-        variant: "destructive",
-      });
+      toast.error("حدث خطأ أثناء تغيير كلمة المرور");
     } finally {
       setIsLoading(false);
     }
@@ -239,7 +251,7 @@ const Settings = () => {
           </CardHeader>
           <CardContent className="p-4 md:p-8">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="space-x-5 grid-cols-1 md:grid-cols-3 mb-3 bg-blue-50/50">
+              <TabsList className="grid w-full grid-cols-3 mb-6 bg-blue-50/50">
                 <TabsTrigger 
                   value="profile" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-green-600 data-[state=active]:text-white"
@@ -333,7 +345,7 @@ const Settings = () => {
               <TabsContent value="notifications">
                 <Form {...notificationsForm}>
                   <form onSubmit={notificationsForm.handleSubmit(onNotificationsSubmit)} className="space-y-6">
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <FormField
                         control={notificationsForm.control}
                         name="email_notifications"
