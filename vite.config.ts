@@ -36,4 +36,14 @@ export default defineConfig(({ mode }) => ({
   esbuild: {
     // We don't need jsxInject when using automatic runtime
   },
+  // Add optimizeDeps to force esbuild version compatibility
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'es2020'
+    }
+  },
+  // Force resolve esbuild to compatible version
+  build: {
+    target: 'es2020'
+  }
 }));
