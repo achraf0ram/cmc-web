@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,7 @@ import SignInFrench from "./pages/SignInFrench";
 import SignUpFrench from "./pages/SignUpFrench";
 import ResetPasswordPage from "./pages/ResetPassword";
 import ForgotPasswordPage from "./pages/ForgotPassword";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -134,6 +134,10 @@ const App = () => (
                 <Route
                   path='vacation-request'
                   element={<VacationRequest />}
+                />
+                <Route
+                  path='admin-dashboard'
+                  element={<AdminDashboard />}
                 />
                 <Route
                   path='settings'

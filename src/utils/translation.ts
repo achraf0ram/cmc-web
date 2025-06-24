@@ -1,95 +1,60 @@
+// This file contains translation utilities and common translations
 
-export const translateToArabic = (frenchText: string): string => {
-  if (!frenchText || frenchText.trim() === "") return "";
-  
-  const translations: Record<string, string> = {
-    "Administratif": "إدارية",
-    "Mariage": "زواج", 
-    "Naissance": "ازدياد",
-    "Exceptionnel": "استثنائية",
-    "jour": "يوم",
-    "jours": "أيام",
-    "semaine": "أسبوع",
-    "semaines": "أسابيع",
-    "mois": "شهر",
-    "avec": "مع",
-    "sans": "بدون",
-    "famille": "عائلة",
-    "époux": "زوج",
-    "épouse": "زوجة",
-    "enfant": "طفل",
-    "enfants": "أطفال",
-    "parent": "والد",
-    "parents": "والدين",
-    "Directeur": "مدير",
-    "Chef": "رئيس",
-    "Responsable": "مسؤول",
-    "Adjoint": "مساعد",
-    "Secrétaire": "كاتب",
-    "Comptable": "محاسب",
-    "Informaticien": "مختص في المعلوميات",
-    "Technicien": "تقني",
-    "Ingénieur": "مهندس",
-    "Direction": "مديرية",
-    "Service": "مصلحة",
-    "Bureau": "مكتب",
-    "Département": "قسم",
-    "urgence": "طارئ",
-    "maladie": "مرض",
-    "personnel": "شخصي",
-    "voyage": "سفر",
-    "formation": "تكوين",
-    "repos": "راحة",
+export const translations = {
+  ar: {
+    home: 'الرئيسية',
+    workCertificate: 'شهادة عمل',
+    missionOrder: 'أمر مهمة',
+    vacationRequest: 'طلب إجازة',
+    adminDashboard: 'لوحة تحكم الأدمن',
+    settings: 'الإعدادات',
+    logout: 'تسجيل الخروج',
+    dashboard: 'لوحة التحكم',
+    loading: 'جاري التحميل...',
+    dataLoadError: 'خطأ في تحميل البيانات',
+    pendingRequests: 'الطلبات المعلقة',
+    approvedRequests: 'الطلبات الموافق عليها',
+    vacationDays: 'أيام الإجازة',
+    awaitingApproval: 'في انتظار الموافقة',
+    thisMonth: 'هذا الشهر',
+    remaining: 'المتبقية',
+    quickActions: 'الإجراءات السريعة',
+    newVacationRequest: 'طلب إجازة جديد',
+    newVacationRequestDesc: 'تقديم طلب إجازة سنوية أو مرضية',
+    workCertificateDesc: 'طلب شهادة عمل للمعاملات الرسمية',
+    missionOrderDesc: 'طلب أمر مهمة للسفر والعمل خارج المكتب'
+  },
+  fr: {
+    home: 'Accueil',
+    workCertificate: 'Certificat de travail',
+    missionOrder: 'Ordre de mission',
+    vacationRequest: 'Demande de congé',
+    adminDashboard: 'Tableau de bord Admin',
+    settings: 'Paramètres',
+    logout: 'Déconnexion',
+    dashboard: 'Tableau de bord',
+    loading: 'Chargement...',
+    dataLoadError: 'Erreur de chargement des données',
+    pendingRequests: 'Demandes en attente',
+    approvedRequests: 'Demandes approuvées',
+    vacationDays: 'Jours de congé',
+    awaitingApproval: 'En attente d\'approbation',
+    thisMonth: 'Ce mois-ci',
+    remaining: 'Restants',
+    quickActions: 'Actions rapides',
+    newVacationRequest: 'Nouvelle demande de congé',
+    newVacationRequestDesc: 'Soumettre une demande de congé annuel ou maladie',
+    workCertificateDesc: 'Demander un certificat de travail pour les démarches officielles',
+    missionOrderDesc: 'Demander un ordre de mission pour les déplacements professionnels'
+  }
+};
+
+export const useTranslation = () => {
+  const getTranslation = (key: keyof typeof translations.ar, language: keyof typeof translations) => {
+    return translations[language][key] || key;
   };
 
-  let arabicText = frenchText;
-  Object.entries(translations).forEach(([french, arabic]) => {
-    const regex = new RegExp(`\\b${french}\\b`, 'gi');
-    arabicText = arabicText.replace(regex, arabic);
-  });
-
-  return arabicText !== frenchText ? arabicText : frenchText;
-};
-
-// تحسين دالة تنسيق النص العربي للـ PDF
-export const formatArabicForPDF = (text: string): string => {
-  if (!text || text.trim() === "") return "";
-  
-  try {
-    // ترجمة النص أولاً
-    const arabicText = translateToArabic(text);
-    
-    // استخدام المكتبات المثبتة بالفعل
-    const reshaper = require("arabic-persian-reshaper");
-    const bidi = require("bidi-js");
-    
-    // تشكيل النص العربي وتطبيق BIDI
-    const shaped = reshaper.reshape(arabicText);
-    const bidirectional = bidi.from_string(shaped);
-    
-    return bidirectional.toString();
-  } catch (error) {
-    console.warn("Error formatting Arabic text for PDF:", error);
-    // في حالة الخطأ، إرجاع النص المترجم فقط
-    return translateToArabic(text);
-  }
-};
-
-// دالة مساعدة لتحديد اتجاه النص
-export const isArabicText = (text: string): boolean => {
-  const arabicPattern = /[\u0600-\u06FF\u0750-\u077F]/;
-  return arabicPattern.test(text);
-};
-
-// دالة لتحسين عرض النص في PDF
-export const optimizeTextForPDF = (text: string): string => {
-  if (!text) return "";
-  
-  // إذا كان النص يحتوي على عربي، استخدم التنسيق المحسن
-  if (isArabicText(text)) {
-    return formatArabicForPDF(text);
-  }
-  
-  // إذا كان النص لاتيني، أرجعه كما هو
-  return text;
+  return {
+    t: getTranslation
+  };
 };

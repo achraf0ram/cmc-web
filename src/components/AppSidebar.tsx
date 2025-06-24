@@ -33,6 +33,7 @@ export const AppSidebar = () => {
     { icon: FileText, name: 'workCertificate', path: "/work-certificate" },
     { icon: ClipboardCheck, name: 'missionOrder', path: "/mission-order" },
     { icon: Calendar, name: 'vacationRequest', path: "/vacation-request" },
+    { icon: User, name: 'adminDashboard', path: "/admin-dashboard" },
     { icon: Settings, name: 'settings', path: "/settings" },
   ];
 
