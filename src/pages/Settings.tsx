@@ -24,9 +24,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
 const profileFormSchema = z.object({
-  full_name: z.string().min(2, "الاسم يجب أن يكون أكثر من حرفين"),
-  email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
-  phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
+  full_name: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(10),
 });
 
 const notificationsFormSchema = z.object({
@@ -36,17 +36,17 @@ const notificationsFormSchema = z.object({
 });
 
 const passwordFormSchema = z.object({
-  newPassword: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
-  confirmPassword: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
+  newPassword: z.string().min(8),
+  confirmPassword: z.string().min(8),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "كلمات المرور غير متطابقة",
+  message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"],
 });
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isLoading, setIsLoading] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { profile, updateUser, user, userSettings, updateSettings } = useAuth();
   
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
@@ -129,13 +129,13 @@ const Settings = () => {
 
       if (success) {
         console.log("Profile updated successfully");
-        toast.success("تم تحديث المعلومات الشخصية بنجاح");
+        toast.success(language === 'ar' ? "تم تحديث المعلومات الشخصية بنجاح" : "Profil mis à jour avec succès");
       } else {
         throw new Error("فشل في تحديث المعلومات");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("حدث خطأ أثناء تحديث المعلومات");
+      toast.error(language === 'ar' ? "حدث خطأ أثناء تحديث المعلومات" : "Erreur lors de la mise à jour du profil");
     } finally {
       setIsLoading(false);
     }
@@ -190,10 +190,10 @@ const Settings = () => {
       }
 
       console.log("Notifications updated successfully");
-      toast.success("تم تحديث إعدادات الإشعارات بنجاح");
+      toast.success(language === 'ar' ? "تم تحديث إعدادات الإشعارات بنجاح" : "Paramètres de notification mis à jour avec succès");
     } catch (error) {
       console.error("Error updating notifications:", error);
-      toast.error("حدث خطأ أثناء تحديث إعدادات الإشعارات");
+      toast.error(language === 'ar' ? "حدث خطأ أثناء تحديث إعدادات الإشعارات" : "Erreur lors de la mise à jour des notifications");
     } finally {
       setIsLoading(false);
     }
@@ -214,7 +214,7 @@ const Settings = () => {
       }
 
       console.log("Password updated successfully");
-      toast.success("تم تغيير كلمة المرور بنجاح");
+      toast.success(language === 'ar' ? "تم تغيير كلمة المرور بنجاح" : "Mot de passe modifié avec succès");
       
       passwordForm.reset({
         newPassword: "",
@@ -222,7 +222,7 @@ const Settings = () => {
       });
     } catch (error) {
       console.error("Error updating password:", error);
-      toast.error("حدث خطأ أثناء تغيير كلمة المرور");
+      toast.error(language === 'ar' ? "حدث خطأ أثناء تغيير كلمة المرور" : "Erreur lors du changement de mot de passe");
     } finally {
       setIsLoading(false);
     }
@@ -234,11 +234,11 @@ const Settings = () => {
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-2">
-            الإعدادات
+            {t('settings')}
           </h1>
           {profile?.full_name && (
             <p className="text-lg text-slate-600">
-              مرحباً، {profile.full_name}
+              {language === 'ar' ? `مرحباً، ${profile.full_name}` : `Bonjour, ${profile.full_name}`}
             </p>
           )}
         </div>
@@ -246,7 +246,7 @@ const Settings = () => {
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-t-lg p-4 md:p-6">
             <CardTitle className="text-lg md:text-xl font-semibold text-center">
-              إعدادات الحساب
+              {language === 'ar' ? 'إعدادات الحساب' : 'Paramètres du compte'}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-8">
@@ -256,19 +256,19 @@ const Settings = () => {
                   value="profile" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-green-600 data-[state=active]:text-white"
                 >
-                  المعلومات الشخصية
+                  {language === 'ar' ? 'المعلومات الشخصية' : 'Informations personnelles'}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="notifications" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-green-600 data-[state=active]:text-white"
                 >
-                  الإشعارات
+                  {language === 'ar' ? 'الإشعارات' : 'Notifications'}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="password" 
                   className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-green-600 data-[state=active]:text-white"
                 >
-                  كلمة المرور
+                  {language === 'ar' ? 'كلمة المرور' : 'Mot de passe'}
                 </TabsTrigger>
               </TabsList>
               
@@ -281,7 +281,9 @@ const Settings = () => {
                         name="full_name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">الاسم الكامل</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">
+                              {language === 'ar' ? 'الاسم الكامل' : 'Nom complet'}
+                            </FormLabel>
                             <FormControl>
                               <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
@@ -295,12 +297,14 @@ const Settings = () => {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">البريد الإلكتروني</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">
+                              {language === 'ar' ? 'البريد الإلكتروني' : 'Adresse e-mail'}
+                            </FormLabel>
                             <FormControl>
                               <Input {...field} type="email" className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
                             <FormDescription className="text-slate-500 text-sm">
-                              سيتم إرسال رسالة تأكيد إلى البريد الجديد عند التغيير
+                              {language === 'ar' ? 'سيتم إرسال رسالة تأكيد إلى البريد الجديد عند التغيير' : 'Un e-mail de confirmation sera envoyé lors du changement'}
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -312,7 +316,9 @@ const Settings = () => {
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">رقم الهاتف</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">
+                              {language === 'ar' ? 'رقم الهاتف' : 'Numéro de téléphone'}
+                            </FormLabel>
                             <FormControl>
                               <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
@@ -331,10 +337,10 @@ const Settings = () => {
                         {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            جاري الحفظ...
+                            {language === 'ar' ? 'جاري الحفظ...' : 'Enregistrement...'}
                           </>
                         ) : (
-                          "حفظ التغييرات"
+                          language === 'ar' ? 'حفظ التغييرات' : 'Enregistrer les modifications'
                         )}
                       </Button>
                     </div>
@@ -352,9 +358,11 @@ const Settings = () => {
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base text-slate-700 font-medium">إشعارات البريد الإلكتروني</FormLabel>
+                              <FormLabel className="text-base text-slate-700 font-medium">
+                                {language === 'ar' ? 'إشعارات البريد الإلكتروني' : 'Notifications par e-mail'}
+                              </FormLabel>
                               <FormDescription className="text-slate-600">
-                                تلقي إشعارات عبر البريد الإلكتروني
+                                {language === 'ar' ? 'تلقي إشعارات عبر البريد الإلكتروني' : 'Recevoir des notifications par e-mail'}
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -374,9 +382,11 @@ const Settings = () => {
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base text-slate-700 font-medium">الطلبات الجديدة</FormLabel>
+                              <FormLabel className="text-base text-slate-700 font-medium">
+                                {language === 'ar' ? 'الطلبات الجديدة' : 'Nouvelles demandes'}
+                              </FormLabel>
                               <FormDescription className="text-slate-600">
-                                تلقي إشعارات عند تقديم طلبات جديدة
+                                {language === 'ar' ? 'تلقي إشعارات عند تقديم طلبات جديدة' : 'Recevoir des notifications pour les nouvelles demandes'}
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -396,9 +406,11 @@ const Settings = () => {
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border border-blue-200 p-4 bg-white/50">
                             <div className="space-y-0.5">
-                              <FormLabel className="text-base text-slate-700 font-medium">تحديثات الطلبات</FormLabel>
+                              <FormLabel className="text-base text-slate-700 font-medium">
+                                {language === 'ar' ? 'تحديثات الطلبات' : 'Mises à jour des demandes'}
+                              </FormLabel>
                               <FormDescription className="text-slate-600">
-                                تلقي إشعارات عند تحديث حالة الطلبات
+                                {language === 'ar' ? 'تلقي إشعارات عند تحديث حالة الطلبات' : 'Recevoir des notifications lors des mises à jour'}
                               </FormDescription>
                             </div>
                             <FormControl>
@@ -422,10 +434,10 @@ const Settings = () => {
                         {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            جاري الحفظ...
+                            {language === 'ar' ? 'جاري الحفظ...' : 'Enregistrement...'}
                           </>
                         ) : (
-                          "حفظ التغييرات"
+                          language === 'ar' ? 'حفظ التغييرات' : 'Enregistrer les modifications'
                         )}
                       </Button>
                     </div>
@@ -442,7 +454,9 @@ const Settings = () => {
                         name="newPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">كلمة المرور الجديدة</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">
+                              {language === 'ar' ? 'كلمة المرور الجديدة' : 'Nouveau mot de passe'}
+                            </FormLabel>
                             <FormControl>
                               <Input type="password" {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
@@ -456,7 +470,9 @@ const Settings = () => {
                         name="confirmPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700 font-medium">تأكيد كلمة المرور</FormLabel>
+                            <FormLabel className="text-slate-700 font-medium">
+                              {language === 'ar' ? 'تأكيد كلمة المرور' : 'Confirmer le mot de passe'}
+                            </FormLabel>
                             <FormControl>
                               <Input type="password" {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
                             </FormControl>
@@ -475,10 +491,10 @@ const Settings = () => {
                         {isLoading ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            جاري التغيير...
+                            {language === 'ar' ? 'جاري التغيير...' : 'Modification...'}
                           </>
                         ) : (
-                          "تغيير كلمة المرور"
+                          language === 'ar' ? 'تغيير كلمة المرور' : 'Changer le mot de passe'
                         )}
                       </Button>
                     </div>
