@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,18 +51,18 @@ const Settings = () => {
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      full_name: "",
-      email: "",
-      phone: "",
+      full_name: profile?.full_name || "",
+      email: user?.email || "",
+      phone: profile?.phone || "",
     },
   });
 
   const notificationsForm = useForm<z.infer<typeof notificationsFormSchema>>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues: {
-      email_notifications: true,
-      new_requests_notifications: true,
-      request_updates_notifications: true,
+      email_notifications: userSettings?.email_notifications ?? true,
+      new_requests_notifications: userSettings?.new_requests_notifications ?? true,
+      request_updates_notifications: userSettings?.request_updates_notifications ?? true,
     },
   });
 
@@ -79,22 +78,26 @@ const Settings = () => {
   useEffect(() => {
     if (profile && user) {
       console.log("Updating profile form with data:", profile);
-      profileForm.reset({
+      const formData = {
         full_name: profile.full_name || "",
         email: user.email || "",
         phone: profile.phone || "",
-      });
+      };
+      console.log("Form data being set:", formData);
+      profileForm.reset(formData);
     }
   }, [profile, user, profileForm]);
 
   useEffect(() => {
     if (userSettings) {
       console.log("Updating notifications form with data:", userSettings);
-      notificationsForm.reset({
+      const notificationData = {
         email_notifications: userSettings.email_notifications,
         new_requests_notifications: userSettings.new_requests_notifications,
         request_updates_notifications: userSettings.request_updates_notifications,
-      });
+      };
+      console.log("Notification data being set:", notificationData);
+      notificationsForm.reset(notificationData);
     }
   }, [userSettings, notificationsForm]);
 
@@ -234,7 +237,7 @@ const Settings = () => {
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-2">
-            {t('settings')}
+            {language === 'ar' ? 'الإعدادات' : 'Paramètres'}
           </h1>
           {profile?.full_name && (
             <p className="text-lg text-slate-600">
@@ -285,7 +288,12 @@ const Settings = () => {
                               {language === 'ar' ? 'الاسم الكامل' : 'Nom complet'}
                             </FormLabel>
                             <FormControl>
-                              <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
+                              <Input 
+                                {...field} 
+                                value={field.value || profile?.full_name || ""}
+                                placeholder={language === 'ar' ? 'أدخل الاسم الكامل' : 'Entrez le nom complet'}
+                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -301,7 +309,13 @@ const Settings = () => {
                               {language === 'ar' ? 'البريد الإلكتروني' : 'Adresse e-mail'}
                             </FormLabel>
                             <FormControl>
-                              <Input {...field} type="email" className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
+                              <Input 
+                                {...field} 
+                                value={field.value || user?.email || ""}
+                                type="email" 
+                                placeholder={language === 'ar' ? 'أدخل البريد الإلكتروني' : 'Entrez l\'adresse e-mail'}
+                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" 
+                              />
                             </FormControl>
                             <FormDescription className="text-slate-500 text-sm">
                               {language === 'ar' ? 'سيتم إرسال رسالة تأكيد إلى البريد الجديد عند التغيير' : 'Un e-mail de confirmation sera envoyé lors du changement'}
@@ -320,7 +334,12 @@ const Settings = () => {
                               {language === 'ar' ? 'رقم الهاتف' : 'Numéro de téléphone'}
                             </FormLabel>
                             <FormControl>
-                              <Input {...field} className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" />
+                              <Input 
+                                {...field} 
+                                value={field.value || profile?.phone || ""}
+                                placeholder={language === 'ar' ? 'أدخل رقم الهاتف' : 'Entrez le numéro de téléphone'}
+                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-200" 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
