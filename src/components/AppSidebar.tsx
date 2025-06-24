@@ -24,18 +24,26 @@ export const AppSidebar = () => {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { logout, profile } = useAuth();
+  const { logout, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   
-
-  const menuItems = [
+  // Menu items for regular users
+  const baseMenuItems = [
     { icon: Home, name: 'home', path: "/" },
     { icon: FileText, name: 'workCertificate', path: "/work-certificate" },
     { icon: ClipboardCheck, name: 'missionOrder', path: "/mission-order" },
     { icon: Calendar, name: 'vacationRequest', path: "/vacation-request" },
-    { icon: User, name: 'adminDashboard', path: "/admin-dashboard" },
     { icon: Settings, name: 'settings', path: "/settings" },
   ];
+
+  // Add admin dashboard for admin users
+  const menuItems = isAdmin 
+    ? [
+        ...baseMenuItems.slice(0, 4), // Keep first 4 items
+        { icon: User, name: 'adminDashboard', path: "/admin-dashboard" }, // Insert admin dashboard
+        ...baseMenuItems.slice(4) // Add remaining items (settings)
+      ]
+    : baseMenuItems;
 
   const handleSignOut = () => {
     logout();
@@ -159,7 +167,8 @@ export const AppSidebar = () => {
               />
             </div>
             <div className='text-sm'>
-              {profile?.full_name || "مستخدم"}
+              <div>{profile?.full_name || "مستخدم"}</div>
+              {isAdmin && <div className="text-xs text-green-600 font-medium">أدمن</div>}
             </div>
           </div>
           <Button

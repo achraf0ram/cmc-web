@@ -1,3 +1,4 @@
+
 // This file contains translation utilities and common translations
 
 export const translations = {
@@ -57,4 +58,14 @@ export const useTranslation = () => {
   return {
     t: getTranslation
   };
+};
+
+// Helper functions for PDF optimization
+export const optimizeTextForPDF = (text: string): string => {
+  return text.replace(/\u200F/g, '').replace(/\u200E/g, '');
+};
+
+export const isArabicText = (text: string): boolean => {
+  const arabicRegex = /[\u0600-\u06FF\u0750-\u077F]/;
+  return arabicRegex.test(text);
 };

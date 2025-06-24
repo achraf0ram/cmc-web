@@ -29,6 +29,7 @@ interface AuthContextType {
   userSettings: UserSettings | null;
   session: Session | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (fullName: string, email: string, password: string, phone?: string) => Promise<boolean>;
@@ -41,12 +42,18 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Admin email configuration
+const ADMIN_EMAIL = "cmc.rh.ram@gmail.com";
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Check if current user is admin
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -276,6 +283,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userSettings,
         session,
         isAuthenticated: !!user, 
+        isAdmin,
         isLoading, 
         login, 
         signup, 
