@@ -14,12 +14,14 @@ import {
   XCircle,
   AlertTriangle,
   TrendingUp,
-  Activity
+  Activity,
+  Settings
 } from 'lucide-react';
 import { AdminStats } from '@/components/admin/AdminStats';
 import { AdminRequestsTable } from '@/components/admin/AdminRequestsTable';
 import { UsersTable } from '@/components/admin/UsersTable';
 import { AdminNotifications } from '@/components/admin/AdminNotifications';
+import { AdminActions } from '@/components/admin/AdminActions';
 import { useAdminData } from '@/hooks/useAdminData';
 
 export const HRDashboard: React.FC = () => {
@@ -75,7 +77,7 @@ export const HRDashboard: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              منصة إدارة الموارد البشرية
+              منصة إدارة الموارد البشرية - CMC
             </h1>
             <p className="text-gray-600">
               مركز التحكم الشامل لإدارة الموظفين والطلبات والإشعارات
@@ -93,6 +95,9 @@ export const HRDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* إجراءات إدارية سريعة */}
+      <AdminActions onRefresh={refreshData} stats={stats} />
 
       {/* إحصائيات سريعة */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -190,7 +195,7 @@ export const HRDashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {requests.slice(0, 6).map((request) => (
+                    {requests.length > 0 ? requests.slice(0, 6).map((request) => (
                       <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
                           <p className="font-semibold text-sm">
@@ -213,7 +218,9 @@ export const HRDashboard: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <p className="text-center text-gray-500 py-8">لا توجد طلبات حالياً</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -228,7 +235,7 @@ export const HRDashboard: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {users.slice(0, 6).map((user) => (
+                    {users.length > 0 ? users.slice(0, 6).map((user) => (
                       <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
                           <p className="font-semibold text-sm">
@@ -240,7 +247,9 @@ export const HRDashboard: React.FC = () => {
                           {new Date(user.created_at).toLocaleDateString('ar-SA')}
                         </span>
                       </div>
-                    ))}
+                    )) : (
+                      <p className="text-center text-gray-500 py-8">لا يوجد موظفون مسجلون حالياً</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>

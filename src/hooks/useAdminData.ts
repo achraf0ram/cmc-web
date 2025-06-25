@@ -35,36 +35,49 @@ export const useAdminData = (): AdminData & { refreshData: () => void } => {
   const { user, isAdmin } = useAuth();
 
   const fetchAdminData = async () => {
-    if (!user || !isAdmin) {
-      setData(prev => ({ ...prev, isLoading: false, error: 'غير مصرح لك بالوصول' }));
-      return;
-    }
-
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
 
-      // جلب الطلبات مع بيانات المستخدمين
+      console.log('Starting to fetch admin data...');
+
+      // جلب الطلبات مع بيانات المستخدمين باستخدام استعلام منفصل
       const { data: requestsData, error: requestsError } = await supabase
         .from('requests')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            email,
-            phone
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (requestsError) throw requestsError;
+      if (requestsError) {
+        console.error('Error fetching requests:', requestsError);
+        throw new Error('فشل في تحميل الطلبات');
+      }
 
-      // جلب بيانات المستخدمين
+      console.log('Requests fetched:', requestsData?.length);
+
+      // جلب بيانات المستخدمين منفصلة
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (usersError) throw usersError;
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+        throw new Error('فشل في تحميل بيانات المستخدمين');
+      }
+
+      console.log('Users fetched:', usersData?.length);
+
+      // ربط بيانات المستخدمين بالطلبات
+      const requestsWithProfiles = requestsData?.map(request => {
+        const profile = usersData?.find(user => user.id === request.user_id);
+        return {
+          ...request,
+          profiles: profile ? {
+            full_name: profile.full_name,
+            email: profile.email,
+            phone: profile.phone
+          } : null
+        };
+      }) || [];
 
       // حساب الإحصائيات
       const stats = {
@@ -75,8 +88,10 @@ export const useAdminData = (): AdminData & { refreshData: () => void } => {
         rejectedRequests: requestsData?.filter(r => r.status === 'rejected').length || 0,
       };
 
+      console.log('Admin data processed successfully:', stats);
+
       setData({
-        requests: requestsData || [],
+        requests: requestsWithProfiles,
         users: usersData || [],
         stats,
         isLoading: false,
@@ -84,17 +99,34 @@ export const useAdminData = (): AdminData & { refreshData: () => void } => {
       });
 
     } catch (error) {
-      console.error('Error fetching admin data:', error);
+      console.error('Error in fetchAdminData:', error);
       setData(prev => ({
         ...prev,
         isLoading: false,
-        error: 'حدث خطأ في تحميل البيانات'
+        error: error instanceof Error ? error.message : 'حدث خطأ في تحميل البيانات'
       }));
     }
   };
 
   useEffect(() => {
-    fetchAdminData();
+    if (user && isAdmin) {
+      console.log('Admin user detected, fetching data...');
+      fetchAdminData();
+    } else if (user && !isAdmin) {
+      console.log('Non-admin user, not fetching admin data');
+      setData(prev => ({ 
+        ...prev, 
+        isLoading: false, 
+        error: 'غير مصرح لك بالوصول لهذه البيانات' 
+      }));
+    } else {
+      console.log('No user logged in');
+      setData(prev => ({ 
+        ...prev, 
+        isLoading: false, 
+        error: 'يجب تسجيل الدخول أولاً' 
+      }));
+    }
   }, [user, isAdmin]);
 
   return {
