@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Users, FileText, BarChart3 } from 'lucide-react';
+import { RefreshCw, Users, FileText, BarChart3, Bell } from 'lucide-react';
 import { AdminStats } from '@/components/admin/AdminStats';
 import { AdminRequestsTable } from '@/components/admin/AdminRequestsTable';
 import { UsersTable } from '@/components/admin/UsersTable';
+import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { useAdminData } from '@/hooks/useAdminData';
+import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -15,6 +17,7 @@ const AdminDashboard = () => {
   const { t } = useLanguage();
   const { isAdmin } = useAuth();
   const { requests, users, stats, isLoading, error, refreshData } = useAdminData();
+  const { unreadCount } = useAdminNotifications();
   const [activeTab, setActiveTab] = useState('overview');
 
   if (!isAdmin) {
@@ -69,7 +72,7 @@ const AdminDashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">لوحة تحكم الأدمن</h1>
-          <p className="text-gray-600 mt-1">إدارة المستخدمين والطلبات</p>
+          <p className="text-gray-600 mt-1">إدارة المستخدمين والطلبات والإشعارات</p>
         </div>
         <Button onClick={refreshData} variant="outline">
           <RefreshCw className="w-4 h-4 ml-1" />
@@ -86,10 +89,19 @@ const AdminDashboard = () => {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
             نظرة عامة
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="w-4 h-4" />
+            الإشعارات
+            {unreadCount > 0 && (
+              <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 ml-1">
+                {unreadCount}
+              </span>
+            )}
           </TabsTrigger>
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
@@ -154,6 +166,10 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-4">
+          <AdminNotifications />
         </TabsContent>
 
         <TabsContent value="requests" className="space-y-4">

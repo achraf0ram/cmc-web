@@ -69,15 +69,12 @@ export const sendRequestWithEmail = async (requestData: RequestData): Promise<{ 
       console.error('Error calling edge function:', error);
       // حتى لو فشل الإيميل، الطلب محفوظ في قاعدة البيانات
       console.log('Request saved but email failed to send');
-      return { success: true }; // نعتبره نجاح لأن الطلب محفوظ
     }
 
     console.log('Edge function response:', data);
 
-    if (!data || !data.success) {
-      console.log('Email failed but request is saved in database');
-      return { success: true }; // نعتبره نجاح لأن الطلب محفوظ
-    }
+    // إرسال إشعار للأدمن (يتم تشغيله تلقائياً عبر الـ realtime subscription)
+    console.log('Admin notification will be sent automatically via realtime');
 
     console.log('Request sent successfully');
     return { success: true };
