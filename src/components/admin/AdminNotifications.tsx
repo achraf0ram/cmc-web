@@ -28,51 +28,53 @@ export const AdminNotifications: React.FC = () => {
 
   const fetchNotifications = async () => {
     try {
-      // جلب الطلبات الجديدة
+      // جلب الطلبات الجديدة مع بيانات المستخدمين منفصلة
       const { data: pendingRequests } = await supabase
         .from('requests')
-        .select(`
-          id,
-          type,
-          created_at,
-          status,
-          profiles:user_id (
-            full_name,
-            email
-          )
-        `)
+        .select('id, type, created_at, status, user_id')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      // جلب المستخدمين الجدد
+      // جلب بيانات المستخدمين لكل طلب
+      const requestNotifications: AdminNotification[] = [];
+      if (pendingRequests) {
+        for (const request of pendingRequests) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', request.user_id)
+            .single();
+
+          requestNotifications.push({
+            id: `request-${request.id}`,
+            title: 'طلب جديد يحتاج للمراجعة',
+            message: `طلب ${getRequestTypeLabel(request.type)} من ${profile?.full_name || 'مستخدم'}`,
+            type: 'new_request' as const,
+            is_read: false,
+            created_at: request.created_at,
+            request_id: request.id,
+            user_name: profile?.full_name || 'مستخدم',
+            request_type: request.type
+          });
+        }
+      }
+
+      // جلب المستخدمين الجدد (آخر 24 ساعة)
       const { data: newUsers } = await supabase
         .from('profiles')
         .select('id, full_name, email, created_at')
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: false });
 
-      // تحويل البيانات إلى إشعارات
-      const requestNotifications: AdminNotification[] = (pendingRequests || []).map(request => ({
-        id: `request-${request.id}`,
-        title: 'طلب جديد يحتاج للمراجعة',
-        message: `طلب ${getRequestTypeLabel(request.type)} من ${request.profiles?.full_name || 'مستخدم'}`,
-        type: 'new_request' as const,
-        is_read: false,
-        created_at: request.created_at,
-        request_id: request.id,
-        user_name: request.profiles?.full_name,
-        request_type: request.type
-      }));
-
       const userNotifications: AdminNotification[] = (newUsers || []).map(user => ({
         id: `user-${user.id}`,
         title: 'مستخدم جديد سجل في المنصة',
-        message: `المستخدم ${user.full_name} سجل في المنصة`,
+        message: `المستخدم ${user.full_name || 'مستخدم'} سجل في المنصة`,
         type: 'user_registered' as const,
         is_read: false,
         created_at: user.created_at,
         user_id: user.id,
-        user_name: user.full_name
+        user_name: user.full_name || 'مستخدم'
       }));
 
       const allNotifications = [...requestNotifications, ...userNotifications]
