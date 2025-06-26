@@ -1,118 +1,190 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { BarChart3, Calendar, CheckCircle } from "lucide-react";
-import { useDashboardData } from "@/hooks/useDashboardData";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { 
+  FileText, 
+  Calendar, 
+  Clock, 
+  CheckCircle, 
+  XCircle, 
+  Bell,
+  TrendingUp,
+  Activity
+} from 'lucide-react';
+import { useDashboardData } from '@/hooks/useDashboardData';
+import { useRealTimeNotifications } from '@/hooks/useRealTimeNotifications';
+import { NotificationCenter } from '@/components/NotificationCenter';
 
-export const Dashboard = () => {
-  const { t } = useLanguage();
-  const { pendingRequests, approvedRequests, vacationDaysRemaining, isLoading, error } = useDashboardData();
+const Dashboard = () => {
+  const { data, isLoading, error } = useDashboardData();
+  const { unreadCount } = useRealTimeNotifications();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-cmc-blue"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">جاري تحميل البيانات...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-red-600 mb-2">{t('dataLoadError')}</h2>
-          <p className="text-gray-600">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-red-800 mb-2">خطأ في تحميل البيانات</h3>
+            <p className="text-red-600">{error}</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  const stats = [
-    {
-      title: t('pendingRequests'),
-      value: pendingRequests.toString(),
-      description: t('awaitingApproval'),
-      icon: Calendar,
-      color: 'from-cmc-blue to-cmc-blue-dark'
-    },
-    {
-      title: t('approvedRequests'),
-      value: approvedRequests.toString(),
-      description: t('thisMonth'),
-      icon: CheckCircle,
-      color: 'from-cmc-green to-emerald-600'
-    },
-    {
-      title: t('vacationDays'),
-      value: vacationDaysRemaining.toString(),
-      description: t('remaining'),
-      icon: BarChart3,
-      color: 'from-cmc-blue to-cmc-green'
-    },
-  ];
+  const { requests, stats } = data;
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-6 md:mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-cmc-blue-light to-cmc-green-light rounded-full mb-4 shadow-lg">
-            <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-cmc-blue" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-6 rounded-lg">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">مرحباً بك في منصة الموارد البشرية</h1>
+            <p className="text-blue-100">
+              تابع طلباتك واستلم الإشعارات في الوقت الفعلي
+            </p>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">{t('dashboard')}</h1>
-          <p className="text-slate-600 text-sm md:text-base">{t('dashboard')}</p>
+          <div className="flex items-center gap-4">
+            {unreadCount > 0 && (
+              <div className="flex items-center gap-2 bg-white/20 rounded-lg px-4 py-2">
+                <Bell className="w-5 h-5" />
+                <span className="font-semibold">{unreadCount} إشعار جديد</span>
+              </div>
+            )}
+            <Activity className="w-12 h-12 text-blue-200" />
+          </div>
         </div>
-        
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3 mb-6 md:mb-8">
-          {stats.map((stat) => (
-            <Card key={stat.title} className="cmc-card">
-              <CardHeader className={`bg-gradient-to-r ${stat.color} text-white rounded-t-lg p-4 md:p-6`}>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base md:text-lg font-semibold">
-                    {stat.title}
-                  </CardTitle>
-                  <stat.icon className="w-5 h-5 md:w-6 md:h-6" />
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 md:p-6">
-                <div className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">{stat.value}</div>
-                <p className="text-xs md:text-sm text-slate-600">
-                  {stat.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      </div>
 
-        {/* Quick Actions */}
-        <Card className="cmc-card">
-          <CardHeader className="cmc-gradient text-white rounded-t-lg p-4 md:p-6">
-            <CardTitle className="text-lg md:text-xl font-semibold text-center">
-              {t('quickActions')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 md:p-8">
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-              <div className="text-center p-4 md:p-6 bg-gradient-to-br from-cmc-blue-light/50 to-cmc-blue-light/30 rounded-lg border border-cmc-blue/20 hover:shadow-lg transition-all duration-200 cursor-pointer">
-                <Calendar className="w-10 h-10 md:w-12 md:h-12 text-cmc-blue mx-auto mb-3 md:mb-4" />
-                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">{t('newVacationRequest')}</h3>
-                <p className="text-xs md:text-sm text-slate-600">{t('newVacationRequestDesc')}</p>
+      {/* إحصائيات سريعة */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm">إجمالي الطلبات</p>
+                <p className="text-2xl font-bold">{stats.totalRequests}</p>
               </div>
-              <div className="text-center p-4 md:p-6 bg-gradient-to-br from-cmc-green-light/50 to-cmc-green-light/30 rounded-lg border border-cmc-green/20 hover:shadow-lg transition-all duration-200 cursor-pointer">
-                <CheckCircle className="w-10 h-10 md:w-12 md:h-12 text-cmc-green mx-auto mb-3 md:mb-4" />
-                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">{t('workCertificate')}</h3>
-                <p className="text-xs md:text-sm text-slate-600">{t('workCertificateDesc')}</p>
+              <FileText className="w-8 h-8 text-blue-200" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-yellow-100 text-sm">قيد المراجعة</p>
+                <p className="text-2xl font-bold">{stats.pendingRequests}</p>
               </div>
-              <div className="text-center p-4 md:p-6 bg-gradient-to-br from-emerald-100/50 to-emerald-50/30 rounded-lg border border-emerald-200/50 hover:shadow-lg transition-all duration-200 cursor-pointer">
-                <BarChart3 className="w-10 h-10 md:w-12 md:h-12 text-emerald-600 mx-auto mb-3 md:mb-4" />
-                <h3 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">{t('missionOrder')}</h3>
-                <p className="text-xs md:text-sm text-slate-600">{t('missionOrderDesc')}</p>
+              <Clock className="w-8 h-8 text-yellow-200" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm">موافق عليها</p>
+                <p className="text-2xl font-bold">{stats.approvedRequests}</p>
               </div>
+              <CheckCircle className="w-8 h-8 text-green-200" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-red-500 to-red-600 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-red-100 text-sm">مرفوضة</p>
+                <p className="text-2xl font-bold">{stats.rejectedRequests}</p>
+              </div>
+              <XCircle className="w-8 h-8 text-red-200" />
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* مركز الإشعارات */}
+        <NotificationCenter />
+
+        {/* أحدث الطلبات */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              أحدث الطلبات
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {requests.length > 0 ? requests.slice(0, 5).map((request) => (
+                <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-semibold text-sm">
+                      {request.type === 'vacation' ? 'طلب إجازة' :
+                       request.type === 'work-certificate' ? 'شهادة عمل' :
+                       request.type === 'mission-order' ? 'أمر مهمة' : request.type}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {new Date(request.created_at).toLocaleDateString('ar-SA')}
+                    </p>
+                  </div>
+                  <Badge
+                    className={
+                      request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      'bg-red-100 text-red-800'
+                    }
+                  >
+                    {request.status === 'pending' ? 'قيد المراجعة' :
+                     request.status === 'approved' ? 'موافق عليه' : 'مرفوض'}
+                  </Badge>
+                </div>
+              )) : (
+                <p className="text-center text-gray-500 py-8">لا توجد طلبات حالياً</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* معلومات إضافية */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <TrendingUp className="w-8 h-8 text-blue-600" />
+            <div>
+              <h3 className="font-semibold text-blue-800 mb-1">
+                تحديثات في الوقت الفعلي
+              </h3>
+              <p className="text-blue-600 text-sm">
+                ستتلقى إشعارات فورية عند تغيير حالة طلباتك. 
+                {unreadCount > 0 && ` لديك ${unreadCount} إشعار جديد لم تقرأه بعد.`}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
+
+export default Dashboard;

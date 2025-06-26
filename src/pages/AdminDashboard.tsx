@@ -53,8 +53,12 @@ const AdminDashboard = () => {
     );
   }
 
-  // عرض منصة الموارد البشرية للمدير
-  return <HRDashboard />;
+  // عرض منصة الموارد البشرية للمدير فقط (بدون الوصول للـ Dashboard العادي)
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <HRDashboard />
+    </div>
+  );
 };
 
 export default AdminDashboard;
