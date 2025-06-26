@@ -39,8 +39,16 @@ export const useRealTimeNotifications = () => {
         return;
       }
 
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.is_read).length || 0);
+      // تأكد من أن نوع الإشعار صحيح
+      const validNotifications = (data || []).map(notification => ({
+        ...notification,
+        type: ['success', 'error', 'info', 'warning'].includes(notification.type) 
+          ? notification.type as 'success' | 'error' | 'info' | 'warning'
+          : 'info' as const
+      }));
+
+      setNotifications(validNotifications);
+      setUnreadCount(validNotifications.filter(n => !n.is_read).length);
     } catch (error) {
       console.error('Error in fetchNotifications:', error);
     } finally {
@@ -111,19 +119,29 @@ export const useRealTimeNotifications = () => {
         
         const newNotification = payload.new as RealTimeNotification;
         
+        // التأكد من صحة نوع الإشعار
+        const validType = ['success', 'error', 'info', 'warning'].includes(newNotification.type) 
+          ? newNotification.type 
+          : 'info' as const;
+
+        const validatedNotification = {
+          ...newNotification,
+          type: validType
+        };
+        
         // إضافة الإشعار للقائمة
-        setNotifications(prev => [newNotification, ...prev]);
+        setNotifications(prev => [validatedNotification, ...prev]);
         setUnreadCount(prev => prev + 1);
 
         // عرض toast للإشعار الجديد
         toast({
-          title: newNotification.title,
-          description: newNotification.message,
-          variant: newNotification.type === 'error' ? 'destructive' : 'default',
+          title: validatedNotification.title,
+          description: validatedNotification.message,
+          variant: validatedNotification.type === 'error' ? 'destructive' : 'default',
           className: `${
-            newNotification.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
-            newNotification.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
-            newNotification.type === 'warning' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
+            validatedNotification.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+            validatedNotification.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+            validatedNotification.type === 'warning' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
             'bg-blue-50 border-blue-200 text-blue-800'
           }`,
         });

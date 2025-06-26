@@ -18,7 +18,7 @@ import { useRealTimeNotifications } from '@/hooks/useRealTimeNotifications';
 import { NotificationCenter } from '@/components/NotificationCenter';
 
 const Dashboard = () => {
-  const { data, isLoading, error } = useDashboardData();
+  const { requests, stats, isLoading, error } = useDashboardData();
   const { unreadCount } = useRealTimeNotifications();
 
   if (isLoading) {
@@ -44,8 +44,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const { requests, stats } = data;
 
   return (
     <div className="space-y-6">
