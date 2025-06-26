@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Upload } from 'lucide-react';
 import { sendRequestWithEmail } from '@/services/requestService';
@@ -25,7 +24,6 @@ const WorkCertificate = () => {
     hireDate: '',
     function: '',
     purpose: '',
-    certificateType: 'work-certificate', // Default value
     additionalInfo: ''
   });
 
@@ -55,13 +53,11 @@ const WorkCertificate = () => {
     setIsSubmitting(true);
 
     try {
-      // Generate PDF based on certificate type
       const pdfBase64 = await generateWorkCertificatePDF({
         ...formData,
         signature: signature ? await convertFileToBase64(signature) : undefined
-      }, formData.certificateType);
+      }, 'work-certificate');
 
-      // Send request with email
       const result = await sendRequestWithEmail({
         type: 'work-certificate',
         data: formData,
@@ -83,7 +79,6 @@ const WorkCertificate = () => {
           hireDate: '',
           function: '',
           purpose: '',
-          certificateType: 'work-certificate',
           additionalInfo: ''
         });
         setSignature(null);
@@ -128,26 +123,6 @@ const WorkCertificate = () => {
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Certificate Type Selection */}
-            <div className="space-y-2">
-              <Label htmlFor="certificateType" className="text-sm font-medium">
-                {t('certificateType')} <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.certificateType}
-                onValueChange={(value) => handleInputChange('certificateType', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('selectCertificateType')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="work-certificate">{t('workCertificate')}</SelectItem>
-                  <SelectItem value="salary-domiciliation">{t('salaryDomiciliation')}</SelectItem>
-                  <SelectItem value="annual-income">{t('annualIncome')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Personal Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
