@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export interface RequestData {
-  type: 'vacation' | 'work-certificate' | 'mission-order';
+  type: 'vacation' | 'work-certificate' | 'mission-order' | 'salary-domiciliation' | 'annual-income';
   data: any;
   pdfBase64?: string;
 }
