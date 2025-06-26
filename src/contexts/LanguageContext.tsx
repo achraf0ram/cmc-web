@@ -172,7 +172,13 @@ const translations: Translations = {
     loginError: "خطأ في تسجيل الدخول",
     invalidEmail: "البريد الإلكتروني غير صحيح",
     passwordMinLength: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
-    submitError: "حدث خطأ أثناء إرسال الطلب"
+    submitError: "حدث خطأ أثناء إرسال الطلب",
+    // ترجمات الشهادات الجديدة
+    certificateType: "نوع الشهادة",
+    selectCertificateType: "اختر نوع الشهادة",
+    salaryDomiciliation: "شهادة إقامة راتب غير قابلة للإلغاء",
+    annualIncome: "شهادة الدخل السنوي",
+    hireDate: "تاريخ التوظيف"
   },
   fr: {
     home: "Accueil",
@@ -337,7 +343,13 @@ const translations: Translations = {
     loginError: "Erreur de connexion",
     invalidEmail: "Email invalide",
     passwordMinLength: "Le mot de passe doit contenir au moins 6 caractères",
-    submitError: "Une erreur s'est produite lors de la soumission de la demande"
+    submitError: "Une erreur s'est produite lors de la soumission de la demande",
+    // ترجمات الشهادات الجديدة
+    certificateType: "Type d'attestation",
+    selectCertificateType: "Sélectionnez le type d'attestation",
+    salaryDomiciliation: "Attestation de domiciliation irrévocable de salaire",
+    annualIncome: "Attestation de revenus annuels",
+    hireDate: "Date d'embauche"
   }
 };
 

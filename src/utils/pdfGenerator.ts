@@ -1,103 +1,156 @@
 
 import jsPDF from "jspdf";
-import { format } from "date-fns";
-import { ar, fr } from "date-fns/locale";
+import { PDFHelper } from "./pdfUtils";
 
-// Import the Arabic font data
-import { AmiriFont } from "../fonts/AmiriFont";
+interface WorkCertificateData {
+  fullName: string;
+  matricule: string;
+  grade?: string;
+  hireDate?: string;
+  function?: string;
+  purpose: string;
+  additionalInfo?: string;
+  signature?: string;
+}
 
-export const generateVacationPDF = async (data: any): Promise<string> => {
-  const doc = new jsPDF('p', 'mm', 'a4');
-  const currentDate = format(new Date(), "EEEE d MMMM yyyy", { locale: fr });
-
-  // رأس المستند
-  const logoPath = "/lovable-uploads/d44e75ac-eac5-4ed3-bf43-21a71c6a089d.png";
+export const generateWorkCertificatePDF = async (
+  data: WorkCertificateData, 
+  certificateType: string = 'work-certificate'
+): Promise<string> => {
+  console.log("Starting PDF generation for certificate type:", certificateType);
   
-  // Load and add logo
+  const helper = new PDFHelper();
+  
   try {
-    const img = new Image();
-    img.src = logoPath;
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
+    // إضافة الشعار
+    await helper.addLogo();
+    
+    // تحديد العنوان حسب نوع الشهادة
+    let title = "";
+    let content = "";
+    
+    switch (certificateType) {
+      case 'salary-domiciliation':
+        title = "ATTESTATION DE DOMICILIATION IRREVOCABLE DE SALAIRE";
+        content = `
+Je soussigné, Directeur de la Cité des Métiers et des Compétences de Casablanca-Settat, certifie que :
+
+Monsieur/Madame : ${data.fullName}
+Matricule : ${data.matricule}
+${data.grade ? `Grade : ${data.grade}` : ''}
+${data.function ? `Fonction : ${data.function}` : ''}
+${data.hireDate ? `Date d'embauche : ${data.hireDate}` : ''}
+
+Est employé(e) de façon permanente dans notre établissement et accepte par la présente la domiciliation irrévocable de son salaire auprès de l'établissement bancaire désigné ci-après pour les besoins suivants :
+
+${data.purpose}
+
+Cette attestation est délivrée pour servir et valoir ce que de droit.
+
+${data.additionalInfo ? `\nInformations complémentaires :\n${data.additionalInfo}` : ''}
+        `;
+        break;
+        
+      case 'annual-income':
+        title = "ATTESTATION DE REVENUS ANNUELS";
+        content = `
+Je soussigné, Directeur de la Cité des Métiers et des Compétences de Casablanca-Settat, certifie que :
+
+Monsieur/Madame : ${data.fullName}
+Matricule : ${data.matricule}
+${data.grade ? `Grade : ${data.grade}` : ''}
+${data.function ? `Fonction : ${data.function}` : ''}
+${data.hireDate ? `Date d'embauche : ${data.hireDate}` : ''}
+
+Perçoit un revenu annuel dans le cadre de ses fonctions au sein de notre établissement.
+
+Cette attestation est délivrée dans le cadre de :
+${data.purpose}
+
+En foi de quoi, la présente attestation lui est délivrée pour servir et valoir ce que de droit.
+
+${data.additionalInfo ? `\nInformations complémentaires :\n${data.additionalInfo}` : ''}
+        `;
+        break;
+        
+      default: // work-certificate
+        title = "ATTESTATION DE TRAVAIL";
+        content = `
+Je soussigné, Directeur de la Cité des Métiers et des Compétences de Casablanca-Settat, certifie que :
+
+Monsieur/Madame : ${data.fullName}
+Matricule : ${data.matricule}
+${data.grade ? `Grade : ${data.grade}` : ''}
+${data.function ? `Fonction : ${data.function}` : ''}
+${data.hireDate ? `Date d'embauche : ${data.hireDate}` : ''}
+
+Est effectivement employé(e) dans notre établissement en qualité de fonctionnaire.
+
+Cette attestation est établie à sa demande pour :
+${data.purpose}
+
+En foi de quoi, la présente attestation lui est délivrée pour servir et valoir ce que de droit.
+
+${data.additionalInfo ? `\nInformations complémentaires :\n${data.additionalInfo}` : ''}
+        `;
+    }
+
+    // إضافة العنوان
+    helper.addText(title, 105, 60, {
+      align: 'center',
+      fontSize: 16,
+      fontStyle: 'bold',
+      maxWidth: 180
     });
-    doc.addImage(img, "PNG", 6, 6, 98, 33);
+
+    // إضافة المحتوى
+    const lines = content.trim().split('\n');
+    let yPosition = 85;
+    
+    lines.forEach((line) => {
+      if (line.trim()) {
+        const fontSize = line.includes(':') ? 12 : 11;
+        const fontStyle = line.includes('Je soussigné') || line.includes('certifie que') ? 'bold' : 'normal';
+        
+        helper.addText(line.trim(), 20, yPosition, {
+          fontSize,
+          fontStyle,
+          maxWidth: 170
+        });
+        yPosition += fontSize === 12 ? 8 : 6;
+      } else {
+        yPosition += 4;
+      }
+    });
+
+    // إضافة التاريخ والمكان
+    helper.addText(`Casablanca, le ${new Date().toLocaleDateString('fr-FR')}`, 130, yPosition + 20, {
+      fontSize: 12,
+      fontStyle: 'bold'
+    });
+
+    // إضافة التوقيع إذا كان متوفراً
+    if (data.signature) {
+      try {
+        const img = new Image();
+        img.src = data.signature;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+        helper.getDoc().addImage(img, "PNG", 130, yPosition + 30, 40, 20);
+      } catch (error) {
+        console.warn("Could not add signature image:", error);
+      }
+    }
+
+    // إضافة التذييل
+    helper.addFooters();
+
+    console.log("PDF generation completed successfully");
+    return helper.getBase64();
   } catch (error) {
-    console.error("Error loading logo:", error);
+    console.error("Error generating PDF:", error);
+    throw error;
   }
-
-  // Add Arabic font
-  doc.addFileToVFS("Amiri-Regular.ttf", AmiriFont);
-  doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
-
-  // Set font for Latin text
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.text("N/Réf : OFP/DR Casa Settat/DRHU/", 20, 45);
-  doc.text(`Casablanca, le ${currentDate}`, 140, 45);
-
-  // العنوان
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("DEMANDE DE CONGÉ", 105, 65, { align: "center" });
-
-  // تفاصيل الطلب
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "normal");
-  
-  let yPosition = 85;
-  
-  doc.text(`Nom complet: ${data.fullName}`, 20, yPosition);
-  yPosition += 10;
-  doc.text(`Numéro d'employé: ${data.employeeId}`, 20, yPosition);
-  yPosition += 10;
-  doc.text(`Téléphone: ${data.phoneNumber}`, 20, yPosition);
-  yPosition += 10;
-  doc.text(`Poste: ${data.position}`, 20, yPosition);
-  yPosition += 10;
-  doc.text(`Département: ${data.department}`, 20, yPosition);
-  yPosition += 15;
-  
-  doc.text(`Type de congé: ${data.leaveType}`, 20, yPosition);
-  yPosition += 10;
-  doc.text(`Date de début: ${format(data.startDate, "yyyy-MM-dd")}`, 20, yPosition);
-  yPosition += 10;
-  doc.text(`Date de fin: ${format(data.endDate, "yyyy-MM-dd")}`, 20, yPosition);
-  yPosition += 10;
-  doc.text(`Nombre de jours: ${data.numberOfDays}`, 20, yPosition);
-  yPosition += 15;
-  
-  doc.text("Raison:", 20, yPosition);
-  yPosition += 8;
-  
-  // Handle long text for reason
-  const splitReason = doc.splitTextToSize(data.reason, 170);
-  doc.text(splitReason, 20, yPosition);
-  yPosition += splitReason.length * 5 + 20;
-
-  // Signature section
-  doc.text("Signature de l'employé:", 20, yPosition);
-  doc.text("Visa de l'administration:", 120, yPosition);
-  
-  // Footer with Arabic
-  doc.setFont('Amiri', 'normal');
-  doc.setFontSize(9);
-  doc.text("المديرية الجهوية لجهة الدارالبيضاء – سطات", 190, 260, { align: "right" });
-  doc.text("50 زنقة الكابورال إدريس اشباكو", 190, 265, { align: "right" });
-  doc.text("عين البرجة - الدار البيضاء", 190, 270, { align: "right" });
-
-  // French footer
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text("Direction Régionale CASABLANCA-SETTAT", 20, 260);
-  doc.text("50, rue Caporal Driss Chbakou", 20, 265);
-  doc.text("Ain Bordja-Casablanca", 20, 270);
-
-  // Convert to base64 and return
-  const pdfBase64 = doc.output('datauristring').split(',')[1];
-  
-  // Save the PDF for download
-  doc.save(`demande_conge_${data.fullName.replace(/\s+/g, '_')}.pdf`);
-  
-  return pdfBase64;
 };
