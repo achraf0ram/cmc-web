@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +9,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { MainLayout } from "./layouts/MainLayout";
 import Index from "./pages/Index";
 import WorkCertificate from "./pages/WorkCertificate";
+import SalaryDomiciliation from "./pages/SalaryDomiciliation";
+import AnnualIncome from "./pages/AnnualIncome";
 import MissionOrder from "./pages/MissionOrder";
 import VacationRequest from "./pages/VacationRequest";
 import Settings from "./pages/Settings";
@@ -126,6 +129,14 @@ const App = () => (
                 <Route
                   path='work-certificate'
                   element={<WorkCertificate />}
+                />
+                <Route
+                  path='salary-domiciliation'
+                  element={<SalaryDomiciliation />}
+                />
+                <Route
+                  path='annual-income'
+                  element={<AnnualIncome />}
                 />
                 <Route
                   path='mission-order'

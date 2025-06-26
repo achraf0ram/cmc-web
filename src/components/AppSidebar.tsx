@@ -12,6 +12,8 @@ import {
   ChevronRight,
   ChevronLeft,
   Menu,
+  CreditCard,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,6 +33,8 @@ export const AppSidebar = () => {
   const baseMenuItems = [
     { icon: Home, name: 'home', path: "/" },
     { icon: FileText, name: 'workCertificate', path: "/work-certificate" },
+    { icon: CreditCard, name: 'salaryDomiciliation', path: "/salary-domiciliation" },
+    { icon: DollarSign, name: 'annualIncome', path: "/annual-income" },
     { icon: ClipboardCheck, name: 'missionOrder', path: "/mission-order" },
     { icon: Calendar, name: 'vacationRequest', path: "/vacation-request" },
     { icon: Settings, name: 'settings', path: "/settings" },
@@ -39,9 +43,9 @@ export const AppSidebar = () => {
   // Add admin dashboard for admin users
   const menuItems = isAdmin 
     ? [
-        ...baseMenuItems.slice(0, 4), // Keep first 4 items
+        ...baseMenuItems.slice(0, 6), // Keep first 6 items
         { icon: User, name: 'adminDashboard', path: "/admin-dashboard" }, // Insert admin dashboard
-        ...baseMenuItems.slice(4) // Add remaining items (settings)
+        ...baseMenuItems.slice(6) // Add remaining items (settings)
       ]
     : baseMenuItems;
 
