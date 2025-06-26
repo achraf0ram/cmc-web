@@ -197,7 +197,7 @@ const SalaryDomiciliation = () => {
                 id="purpose"
                 value={formData.purpose}
                 onChange={(e) => handleInputChange('purpose', e.target.value)}
-                placeholder="اذكر البنك والغرض من الشهادة (قرض، حساب بنكي، إلخ)..."
+                placeholder="اذكر الغرض من الشهادة والمؤسسة المالية..."
                 rows={3}
                 required
               />

@@ -33,7 +33,7 @@ export const AppSidebar = () => {
   const baseMenuItems = [
     { icon: Home, name: 'home', path: "/" },
     { icon: FileText, name: 'workCertificate', path: "/work-certificate" },
-    { icon: CreditCard, name: 'salaryDomiciliation', path: "/salary-domiciliation", smallText: true },
+    { icon: CreditCard, name: 'salaryDomiciliation', path: "/salary-domiciliation" },
     { icon: DollarSign, name: 'annualIncome', path: "/annual-income" },
     { icon: ClipboardCheck, name: 'missionOrder', path: "/mission-order" },
     { icon: Calendar, name: 'vacationRequest', path: "/vacation-request" },
@@ -155,7 +155,7 @@ export const AppSidebar = () => {
                   "hover:bg-[#E8F5E9] hover:text-[#2E7D32]"
                 )}>
                 <item.icon size={20} />
-                <span className={cn(item.smallText && "text-xs")}>{t(item.name)}</span>
+                <span>{t(item.name)}</span>
               </Button>
             </Link>
           ))}
@@ -179,7 +179,7 @@ export const AppSidebar = () => {
             variant='ghost'
             className={cn(
               "flex justify-start items-center gap-3 w-full rounded-none px-4 h-12",
-              "hover:bg-[#E8F5E9] hover:text-[#2E7D32] text-minted-foreground"
+              "hover:bg-[#E8F5E9] hover:text-[#2E7D32] text-muted-foreground"
             )}
             onClick={handleSignOut}>
             <LogOut size={18} />
