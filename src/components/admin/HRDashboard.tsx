@@ -22,6 +22,7 @@ import { AdminRequestsTable } from '@/components/admin/AdminRequestsTable';
 import { UsersTable } from '@/components/admin/UsersTable';
 import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { AdminActions } from '@/components/admin/AdminActions';
+import { MetricsCard } from '@/components/admin/MetricsCard';
 import { useAdminData } from '@/hooks/useAdminData';
 
 export const HRDashboard: React.FC = () => {
@@ -41,6 +42,45 @@ export const HRDashboard: React.FC = () => {
     }).length,
     urgentRequests: requests.filter(r => r.priority === 'urgent' && r.status === 'pending').length
   };
+
+  // إحصائيات إضافية للمتريكس كارد
+  const metricsData = [
+    {
+      title: 'معدل الاستجابة',
+      value: '95%',
+      previousValue: 87,
+      trend: 'up' as const,
+      description: 'نسبة الطلبات المعالجة خلال 24 ساعة',
+      icon: TrendingUp
+    },
+    {
+      title: 'متوسط وقت المعالجة',
+      value: '2.3 أيام',
+      description: 'متوسط الوقت لمعالجة الطلبات',
+      icon: Clock
+    },
+    {
+      title: 'رضا الموظفين',
+      value: '4.7/5',
+      previousValue: 4.5,
+      trend: 'up' as const,
+      description: 'تقييم جودة الخدمة',
+      icon: CheckCircle
+    },
+    {
+      title: 'الطلبات الشهرية',
+      value: requests.filter(r => {
+        const thisMonth = new Date();
+        const requestDate = new Date(r.created_at);
+        return requestDate.getMonth() === thisMonth.getMonth() && 
+               requestDate.getFullYear() === thisMonth.getFullYear();
+      }).length,
+      previousValue: 45,
+      trend: requests.length > 45 ? 'up' as const : 'down' as const,
+      description: 'إجمالي الطلبات هذا الشهر',
+      icon: BarChart3
+    }
+  ];
 
   if (isLoading) {
     return (
@@ -98,6 +138,24 @@ export const HRDashboard: React.FC = () => {
 
       {/* إجراءات إدارية سريعة */}
       <AdminActions onRefresh={refreshData} stats={stats} />
+
+      {/* بطاقات المقاييس المتقدمة */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">مقاييس الأداء</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {metricsData.map((metric, index) => (
+            <MetricsCard
+              key={index}
+              title={metric.title}
+              value={metric.value}
+              previousValue={metric.previousValue}
+              trend={metric.trend}
+              description={metric.description}
+              icon={metric.icon}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* إحصائيات سريعة */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
