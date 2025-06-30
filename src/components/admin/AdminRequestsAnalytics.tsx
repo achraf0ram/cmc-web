@@ -60,14 +60,22 @@ export const AdminRequestsAnalytics: React.FC = () => {
           type,
           status,
           created_at,
-          user_id,
-          profiles!inner(full_name, email)
+          user_id
         `)
         .order('created_at', { ascending: false });
 
       if (requestsError) {
         console.error('Error fetching requests:', requestsError);
         return;
+      }
+
+      // جلب بيانات المستخدمين
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email');
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
       }
 
       // جلب الملفات المرفقة
@@ -81,6 +89,7 @@ export const AdminRequestsAnalytics: React.FC = () => {
 
       // ربط البيانات
       const processedRequests: RequestWithAttachments[] = requestsData?.map(request => {
+        const userProfile = profilesData?.find(profile => profile.id === request.user_id);
         const requestAttachments = attachmentsData?.filter(att => att.request_id === request.id) || [];
         
         return {
@@ -88,8 +97,8 @@ export const AdminRequestsAnalytics: React.FC = () => {
           type: request.type,
           status: request.status,
           created_at: request.created_at,
-          user_name: request.profiles?.full_name || 'غير معروف',
-          user_email: request.profiles?.email || '',
+          user_name: userProfile?.full_name || 'غير معروف',
+          user_email: userProfile?.email || '',
           attachments_count: requestAttachments.length,
           attachments: requestAttachments.map(att => ({
             id: att.id,

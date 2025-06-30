@@ -57,7 +57,18 @@ const AdminAnalytics = () => {
         return;
       }
       
-      setAnalyticsData(data);
+      // تحويل البيانات إلى النوع المطلوب
+      const parsedData: AnalyticsData = {
+        total_requests: data.total_requests || 0,
+        requests_by_type: data.requests_by_type || {},
+        requests_by_status: data.requests_by_status || {},
+        requests_with_attachments: data.requests_with_attachments || 0,
+        total_attachments: data.total_attachments || 0,
+        users_with_requests: data.users_with_requests || 0,
+        avg_processing_time: data.avg_processing_time || 0
+      };
+      
+      setAnalyticsData(parsedData);
     } catch (error) {
       console.error('Analytics fetch error:', error);
       setError('حدث خطأ في تحميل البيانات');
