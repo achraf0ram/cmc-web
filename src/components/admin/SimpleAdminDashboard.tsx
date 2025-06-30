@@ -18,7 +18,9 @@ import {
   XCircle, 
   Eye,
   Activity,
-  AlertTriangle
+  Download,
+  Image,
+  FileIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +37,13 @@ interface Request {
     full_name: string;
     email: string;
   };
+  request_attachments?: {
+    id: string;
+    file_name: string;
+    file_url: string;
+    file_type: string;
+    file_size: number;
+  }[];
 }
 
 interface DashboardStats {
@@ -67,10 +76,19 @@ export const SimpleAdminDashboard: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // جلب الطلبات المعلقة مع بيانات المستخدمين
+      // جلب الطلبات المعلقة مع بيانات المستخدمين والملفات المرفقة
       const { data: requestsData, error: requestsError } = await supabase
         .from('requests')
-        .select('*')
+        .select(`
+          *,
+          request_attachments (
+            id,
+            file_name,
+            file_url,
+            file_type,
+            file_size
+          )
+        `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
         .limit(10);
@@ -134,6 +152,15 @@ export const SimpleAdminDashboard: React.FC = () => {
   };
 
   const handleRequestAction = async (requestId: string, action: 'approve' | 'reject') => {
+    if (action === 'reject' && !rejectionReason.trim()) {
+      toast({
+        title: 'خطأ',
+        description: 'يجب كتابة سبب الرفض',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const updateData: any = {
@@ -193,6 +220,13 @@ export const SimpleAdminDashboard: React.FC = () => {
       'annual-income': 'شهادة دخل سنوي'
     };
     return labels[type as keyof typeof labels] || type;
+  };
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) {
+      return <Image className="w-4 h-4" />;
+    }
+    return <FileIcon className="w-4 h-4" />;
   };
 
   const metricsData = [
@@ -270,6 +304,11 @@ export const SimpleAdminDashboard: React.FC = () => {
                         <FileText className="w-4 h-4 text-blue-600" />
                         <h3 className="font-semibold">{getTypeLabel(request.type)}</h3>
                         <Badge variant="secondary">معلق</Badge>
+                        {request.request_attachments && request.request_attachments.length > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            {request.request_attachments.length} ملف مرفق
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-sm text-gray-600">
                         <p>المستخدم: {request.profiles?.full_name || 'غير محدد'}</p>
@@ -325,7 +364,7 @@ export const SimpleAdminDashboard: React.FC = () => {
 
       {/* نافذة تفاصيل الطلب */}
       <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               تفاصيل {selectedRequest ? getTypeLabel(selectedRequest.type) : ''}
@@ -353,6 +392,35 @@ export const SimpleAdminDashboard: React.FC = () => {
                 </div>
               </div>
 
+              {/* عرض الملفات المرفقة */}
+              {selectedRequest.request_attachments && selectedRequest.request_attachments.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">الملفات المرفقة:</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedRequest.request_attachments.map((attachment) => (
+                      <div key={attachment.id} className="flex items-center gap-2 p-2 border rounded">
+                        {getFileIcon(attachment.file_type)}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{attachment.file_name}</p>
+                          <p className="text-xs text-gray-500">
+                            {(attachment.file_size / 1024).toFixed(1)} KB
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(attachment.file_url, '_blank')}
+                          className="flex items-center gap-1"
+                        >
+                          <Download className="w-3 h-3" />
+                          عرض
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="text-sm font-medium">تفاصيل الطلب:</label>
                 <div className="bg-gray-100 p-3 rounded text-sm mt-1">
@@ -374,7 +442,7 @@ export const SimpleAdminDashboard: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">سبب الرفض (في حالة الرفض):</label>
+                  <label className="text-sm font-medium">سبب الرفض (مطلوب في حالة الرفض):</label>
                   <Textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}

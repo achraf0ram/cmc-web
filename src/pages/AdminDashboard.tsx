@@ -6,7 +6,6 @@ import { Users, Shield, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { SimpleAdminDashboard } from '@/components/admin/SimpleAdminDashboard';
-import { AdminActions } from '@/components/admin/AdminActions';
 
 const AdminDashboard = () => {
   const { isAdmin, user } = useAuth();
@@ -88,15 +87,6 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* إجراءات إدارية سريعة */}
-      <AdminActions onRefresh={() => {}} stats={{
-        totalUsers: 0,
-        totalRequests: 0,
-        pendingRequests: 0,
-        approvedRequests: 0,
-        rejectedRequests: 0
-      }} />
 
       {/* لوحة التحكم البسيطة */}
       <SimpleAdminDashboard />
