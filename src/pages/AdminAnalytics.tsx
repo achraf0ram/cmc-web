@@ -57,18 +57,21 @@ const AdminAnalytics = () => {
         return;
       }
       
-      // تحويل البيانات إلى النوع المطلوب
-      const parsedData: AnalyticsData = {
-        total_requests: data.total_requests || 0,
-        requests_by_type: data.requests_by_type || {},
-        requests_by_status: data.requests_by_status || {},
-        requests_with_attachments: data.requests_with_attachments || 0,
-        total_attachments: data.total_attachments || 0,
-        users_with_requests: data.users_with_requests || 0,
-        avg_processing_time: data.avg_processing_time || 0
-      };
-      
-      setAnalyticsData(parsedData);
+      // تحويل البيانات إلى النوع المطلوب - التعامل مع Json type بشكل صحيح
+      if (data && typeof data === 'object') {
+        const analyticsResult = data as any; // Type assertion للتعامل مع Json type
+        const parsedData: AnalyticsData = {
+          total_requests: analyticsResult.total_requests || 0,
+          requests_by_type: analyticsResult.requests_by_type || {},
+          requests_by_status: analyticsResult.requests_by_status || {},
+          requests_with_attachments: analyticsResult.requests_with_attachments || 0,
+          total_attachments: analyticsResult.total_attachments || 0,
+          users_with_requests: analyticsResult.users_with_requests || 0,
+          avg_processing_time: analyticsResult.avg_processing_time || 0
+        };
+        
+        setAnalyticsData(parsedData);
+      }
     } catch (error) {
       console.error('Analytics fetch error:', error);
       setError('حدث خطأ في تحميل البيانات');
