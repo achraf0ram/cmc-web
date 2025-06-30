@@ -2,11 +2,20 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, Shield } from 'lucide-react';
-import { HRDashboard } from '@/components/admin/HRDashboard';
+import { Users, Shield, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { SimpleAdminDashboard } from '@/components/admin/SimpleAdminDashboard';
+import { AdminActions } from '@/components/admin/AdminActions';
 
 const AdminDashboard = () => {
   const { isAdmin, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // تسجيل الخروج من الحساب
+    navigate('/');
+  };
 
   // التحقق من صلاحيات الأدمن
   if (!user) {
@@ -53,10 +62,44 @@ const AdminDashboard = () => {
     );
   }
 
-  // عرض منصة الموارد البشرية للمدير فقط (بدون الوصول للـ Dashboard العادي)
+  // عرض لوحة التحكم البسيطة للمدير
   return (
-    <div className="min-h-screen bg-gray-50">
-      <HRDashboard />
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              لوحة تحكم المدير - CMC
+            </h1>
+            <p className="text-gray-600">
+              مركز التحكم البسيط لإدارة الطلبات والموظفين
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button 
+              onClick={handleLogout}
+              variant="outline"
+              className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4" />
+              تسجيل الخروج
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* إجراءات إدارية سريعة */}
+      <AdminActions onRefresh={() => {}} stats={{
+        totalUsers: 0,
+        totalRequests: 0,
+        pendingRequests: 0,
+        approvedRequests: 0,
+        rejectedRequests: 0
+      }} />
+
+      {/* لوحة التحكم البسيطة */}
+      <SimpleAdminDashboard />
     </div>
   );
 };
