@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,8 @@ import SignUpFrench from "./pages/SignUpFrench";
 import ResetPasswordPage from "./pages/ResetPassword";
 import ForgotPasswordPage from "./pages/ForgotPassword";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLogin from "./pages/AdminLogin";
+import AdminAnalytics from "./pages/AdminAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,16 @@ const App = () => (
                     <ResetPasswordPage />
                   </PublicRoute>
                 }
+              />
+
+              {/* Admin routes - outside of protected routes */}
+              <Route
+                path='/admin-login'
+                element={<AdminLogin />}
+              />
+              <Route
+                path='/admin-analytics'
+                element={<AdminAnalytics />}
               />
 
               {/* Protected routes */}

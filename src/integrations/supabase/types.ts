@@ -81,6 +81,33 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean | null
+          last_login: string | null
+          password_hash: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          password_hash: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          last_login?: string | null
+          password_hash?: string
+        }
+        Relationships: []
+      }
       departments: {
         Row: {
           code: string
@@ -283,6 +310,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      request_attachments: {
+        Row: {
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          request_id: string
+          uploaded_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          request_id: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          request_id?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_attachments_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       request_status_history: {
         Row: {
@@ -575,6 +643,10 @@ export type Database = {
         }
         Returns: string
       }
+      get_admin_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -608,6 +680,10 @@ export type Database = {
           admin_notes?: string
           rejection_reason?: string
         }
+        Returns: boolean
+      }
+      verify_admin_login: {
+        Args: { admin_email: string; admin_password: string }
         Returns: boolean
       }
     }
